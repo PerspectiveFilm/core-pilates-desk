@@ -299,6 +299,18 @@
 #cpd h1{font-size:1.45rem}
 }
 #cpd .mobilewho{display:none;justify-content:space-between;align-items:center;gap:8px;font-size:.85rem}
+@media (max-width:760px){#cpd .nav{justify-content:flex-start;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#cpd .nav::-webkit-scrollbar{display:none}
+#cpd .nav button{flex:0 0 auto;min-width:62px}
+#cpd .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+#cpd .stats .stat:last-child:nth-child(odd){grid-column:1/-1}
+#cpd .stat .v{font-size:1.2rem;white-space:nowrap}
+#cpd .stat{padding:12px}
+#cpd .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#cpd .pagehead h1{font-size:1.4rem}
+#cpd .modal{padding:16px}
+#cpd .overlay{padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:90px}
+}
 @media (prefers-reduced-motion:reduce){#cpd *{transition:none!important;animation:none!important}
 }
 
@@ -513,6 +525,7 @@ function render(){
   if(!UI.qsReset)for(const k in keep){const el=document.getElementById(k);if(el){el.value=keep[k];if(el.dataset.cpick)cpHint(el)}}UI.qsReset=false;
   if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch{}}}
   if(modalRefresh)modalRefresh();
+  if(window.innerWidth<=760){const nb=document.querySelector('.nav [aria-current]');if(nb){const nv=nb.parentNode;nv.scrollLeft=nb.offsetLeft-nv.clientWidth/2+nb.clientWidth/2}}
 }
 function login(){
   if(UI.lockTrainer){const st=S.staff[UI.lockTrainer];
@@ -543,7 +556,7 @@ function shell(){
       <nav class="nav" aria-label="Pages">${nav}</nav>
       <div class="who"><span class="pill acc">${p.label}${UI.role==='trainer'?' \u00b7 '+esc(staffName(UI.trainer)):''}</span>${FB?'<button class="btn sm" data-act="chgcode">Change my code</button>':''}<button class="btn sm" data-act="logout">${FB?'Log out':'Lock desk'}</button></div></aside>
     <main class="main">
-      <div class="mobilewho"><b style="font-family:var(--display);display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:7px;background:var(--navy);display:grid;place-items:center">${LOGO.replace('<svg ','<svg width="22" height="22" ')}</span>Core Pilates</b><span style="display:flex;gap:8px;align-items:center"><span class="pill acc">${p.label}</span><button class="btn sm" data-act="logout">Lock</button></span></div>
+      <div class="mobilewho"><b style="font-family:var(--display);display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:7px;background:var(--navy);display:grid;place-items:center">${LOGO.replace('<svg ','<svg width="22" height="22" ')}</span>Core Pilates</b><span style="display:flex;gap:6px;align-items:center"><span class="pill acc">${p.label}</span>${FB?'<button class="btn sm" data-act="chgcode">Code</button>':''}<button class="btn sm" data-act="logout">${FB?'Log out':'Lock'}</button></span></div>
       ${store&&store.mode==='local'?'<div class="banner info"><span>Preview mode. Changes stay in this tab only. Open the published link while signed in to save studio data.</span></div>':''}
       ${body}
     </main></div>`;
@@ -1230,7 +1243,7 @@ function pLog(){
   const shown=list.slice(0,300);
   const col={added:'ok',edited:'warn',deleted:'bad'};
   return `<div class="pagehead"><div><div class="eyebrow">Owner only</div><h1>Change history</h1><div class="muted" style="margin-top:4px">Every add, edit and delete — who did it and when.</div></div></div>
-  <div class="panel"><header><div class="toolbar" style="flex:1"><input id="logQ" placeholder="Search name, client, staff…" value="${esc(UI.logQ||'')}" style="max-width:320px"></div>
+  <div class="panel"><header><div class="toolbar" style="flex:1"><input id="logQ" placeholder="Search name, client, staff…" value="${esc(UI.logQ||'')}" style="max-width:320px;min-width:180px;flex:1"></div>
     <div class="chips">${[['all','All'],['added','Added'],['edited','Edited'],['deleted','Deleted']].map(([k,n])=>`<button class="chip" data-logf="${k}" aria-pressed="${f===k}">${n}</button>`).join('')}</div></header>
   ${shown.length?`<div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Item</th><th>Details</th></tr></thead><tbody>${shown.map(x=>`<tr><td class="num" style="white-space:nowrap">${new Date(x.ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} ${new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td>${esc(x.who)}</td><td><span class="pill ${col[x.action]||''}">${esc(x.action)}</span> <span class="muted">${esc(COL_NAMES[x.col]||x.col)}</span></td><td><b>${esc(x.label)}</b></td><td class="muted" style="font-size:.85rem">${esc(x.changes||'')}</td></tr>`).join('')}</tbody></table></div>${list.length>300?`<div class="muted" style="padding:10px">Showing latest 300 of ${list.length}.</div>`:''}`:'<div class="empty">No changes recorded yet. From now on every change shows here.</div>'}
   </div>`;
