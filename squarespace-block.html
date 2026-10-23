@@ -1,8 +1,9 @@
 <div id="cpd-mount"><p style="font-family:sans-serif;padding:24px;color:#5B6F79">Loading studio desk…</p></div>
 <script>
 (async function(){
-  var m=document.getElementById('cpd-mount'),url='https://raw.githubusercontent.com/PerspectiveFilm/core-pilates-desk/main/desk.html?t='+Date.now();
-  try{var r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error(r.status);m.innerHTML=await r.text();}
+  var m=document.getElementById('cpd-mount'),repo='PerspectiveFilm/core-pilates-desk',ref='main';
+  try{var c=await fetch('https://api.github.com/repos/'+repo+'/commits/main',{headers:{Accept:'application/vnd.github.sha'},cache:'no-store'});if(c.ok)ref=(await c.text()).trim()}catch(e){}
+  try{var r=await fetch('https://raw.githubusercontent.com/'+repo+'/'+ref+'/desk.html?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);m.innerHTML=await r.text();}
   catch(e){m.innerHTML='<p style="font-family:sans-serif;padding:24px">Could not load the studio desk. Check your internet and reload the page.</p>';return}
   var olds=Array.prototype.slice.call(m.querySelectorAll('script'));
   for(var i=0;i<olds.length;i++){var o=olds[i],s=document.createElement('script');
