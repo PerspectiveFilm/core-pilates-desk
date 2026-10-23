@@ -981,9 +981,16 @@ function clientPicker(id){
 const findClient=n=>{n=String(n||'').trim().toLowerCase();if(!n)return null;const e=Object.entries(S.clients).find(([,c])=>c.name.trim().toLowerCase()===n);return e?e[0]:null};
 async function ensureClient(name){name=String(name||'').trim().replace(/\s+/g,' ');if(!name)return null;const ex=findClient(name);if(ex)return ex;
   const id=uid();const ok=await save(()=>store.set('clients',id,{name,phone:'',email:'',notes:'',credits:0,plan:'',joined:today()}));if(!ok)return null;toast('New client added: '+name);return id}
+const DISC={loyalty:['Loyalty',10],influencer:['Influencer',30],other:['Other',0]};
+const discOf=c=>!c||!c.discType||!DISC[c.discType]?0:c.discType==='other'?Math.max(0,Math.min(100,+c.discPct||0)):DISC[c.discType][1];
+const discLabel=c=>discOf(c)?DISC[c.discType][0]+' '+discOf(c)+'%':'';
+const DISC_SEED={"cx_237ee0c555":10,"cx_4291871c32":5,"cx_9647339dc6":10,"cx_4928891acb":10,"cx_d9ad31d95f":10,"cx_e7b67ae698":10,"cx_690f98b101":10,"cx_d12bd44d08":10,"cx_2eb2e2eebc":5,"cx_35e1b26e0f":10,"cx_627d989aed":10,"cx_be2064665b":10,"cx_a85a3fed5c":10,"cx_a73f77d922":10,"cx_b9a224a67a":10,"cx_8d5f294f14":10,"cx_fd26e1abd6":30,"cx_2c55eab64d":10,"cx_e03ed762af":10,"cx_0a6b5ae43e":10,"cx_856c06ac63":10,"cx_67704b58ce":10,"cx_1c231fb3c2":10,"cx_ad6ef58967":10,"cx_0cf8076f49":10,"cx_6e5c9c7f39":10,"cx_7e6c9fada0":10,"cx_a39276fea4":20,"cx_9f31685669":10,"cx_aa902a5223":10,"cx_e404648e87":10,"cx_bb4f100cf2":10,"cx_dea28b34b4":10};
+async function seedDisc(){let n=0;for(const[id,pct]of Object.entries(DISC_SEED)){const c=S.clients[id];if(!c||c.discType)continue;const d=pct===10?{discType:'loyalty'}:pct===30?{discType:'influencer'}:{discType:'other',discPct:pct};await store.upd('clients',id,d);n++}
+  await store.set('settings','disc2026',{done:true,at:Date.now(),count:n});toast('Discounts added to '+n+' clients')}
+function applyDisc(cid,pid,aid){const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100}
 function cpHint(el){const h=document.getElementById(el.id+'_hint');if(!h)return;const v=el.value.trim();
   if(!v){h.textContent='';h.className='cphint';return}
-  if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+leftOf(c)+' left';h.className='cphint ok'}
+  if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+leftOf(c)+' left'+(discOf(c)?' \u00b7 '+discLabel(c):'');h.className='cphint ok'}
   else{h.textContent='+ New client will be added';h.className='cphint new'}}
 function ageOf(b){const d=parse(b),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))a--;return a}
 function bdayPanel(){
@@ -1029,18 +1036,19 @@ function clientStats(){
 function pClients(){
   const q=UI.clientQ.trim().toLowerCase(),f=UI.clientFilter;
   let list=Object.entries(S.clients).map(([id,c])=>({id,c,s:clientStatus(c)}));
-  if(q)list=list.filter(x=>(x.c.name+' '+(x.c.phone||'')+' '+(x.c.email||'')+' '+((x.c.form||{}).medical||'')+' '+natName(x.c.nationality)+' '+(x.c.source||'')).toLowerCase().includes(q));
+  if(q)list=list.filter(x=>(x.c.name+' '+(x.c.phone||'')+' '+(x.c.email||'')+' '+((x.c.form||{}).medical||'')+' '+natName(x.c.nationality)+' '+(x.c.source||'')+' '+discLabel(x.c)).toLowerCase().includes(q));
   if(f==='active')list=list.filter(x=>isActC(x.c));else if(f!=='all')list=list.filter(x=>clientFlags(x.c).some(g=>g.k===f));
   list.sort((a,b)=>a.c.name.localeCompare(b.c.name));
   const chips=[['active','Active ('+Object.values(S.clients).filter(isActC).length+')'],['all','All'],['exp','Expires soon'],['expired','Expired']];
   return `<div class="pagehead"><div><div class="eyebrow">${Object.keys(S.clients).length} clients</div><h1>Clients</h1></div>
     <button class="btn primary" data-act="addclient">New client</button></div>
+    ${UI.role==='owner'&&!S.settings.disc2026&&Object.keys(S.clients).some(id=>DISC_SEED[id])?`<div class="banner info"><span>Add discounts from the trainer sheets: ${Object.keys(DISC_SEED).length} clients (Loyalty 10%, Influencer 30%, Other 5% / 20%).</span><button class="btn sm primary" data-act="discseed">Add discounts</button></div>`:''}
   ${clientStats()}
   <div class="panel">
     <header><div class="toolbar" style="flex:1"><input id="clientQ" placeholder="Search name, country, source\u2026" value="${esc(UI.clientQ)}" style="max-width:320px"></div>
       <div class="chips">${chips.map(([k,n])=>`<button class="chip" data-cf="${k}" aria-pressed="${f===k}">${n}</button>`).join('')}</div></header>
-    ${list.length?`<div class="tablewrap"><table><thead><tr><th>Name</th><th>Trainer</th><th>Country</th><th>Found us via</th><th>Session type</th><th class="r">Sessions</th><th class="r">Total sessions</th><th class="r">Sessions left</th><th>Status</th><th>Package start</th><th>Package expires</th></tr></thead><tbody>
-    ${list.map(x=>{const lv=lastVisit(x.id);return `<tr class="click" data-client="${x.id}"><td><b>${esc(x.c.name)}</b>${(x.c.packages||[]).length?` <span class="pill" title="Packages bought">${x.c.packages.length+1} pkgs</span>`:''}${x.c.demo?' <span class="pill">demo</span>':''}${healthFlag(x.c)?` <span title="${esc(healthText(x.c))}" style="color:var(--bad);font-weight:700">\u26a0</span>`:''}</td><td>${(x.c.trainers||[]).map(t=>esc(staffName(t))).join(', ')||'<span class="muted">\u2014</span>'}</td><td>${esc(natName(x.c.nationality)||'\u2014')}</td><td>${x.c.source?`<span class="pill acc">${esc(x.c.source)}</span>`:'<span class="muted">\u2014</span>'}</td>${pkgCells(x.c.plan)}
+    ${list.length?`<div class="tablewrap"><table><thead><tr><th>Name</th><th>Trainer</th><th>Country</th><th>Found us via</th><th>Discount</th><th>Session type</th><th class="r">Sessions</th><th class="r">Total sessions</th><th class="r">Sessions left</th><th>Status</th><th>Package start</th><th>Package expires</th></tr></thead><tbody>
+    ${list.map(x=>{const lv=lastVisit(x.id);return `<tr class="click" data-client="${x.id}"><td><b>${esc(x.c.name)}</b>${(x.c.packages||[]).length?` <span class="pill" title="Packages bought">${x.c.packages.length+1} pkgs</span>`:''}${x.c.demo?' <span class="pill">demo</span>':''}${healthFlag(x.c)?` <span title="${esc(healthText(x.c))}" style="color:var(--bad);font-weight:700">\u26a0</span>`:''}</td><td>${(x.c.trainers||[]).map(t=>esc(staffName(t))).join(', ')||'<span class="muted">\u2014</span>'}</td><td>${esc(natName(x.c.nationality)||'\u2014')}</td><td>${x.c.source?`<span class="pill acc">${esc(x.c.source)}</span>`:'<span class="muted">\u2014</span>'}</td><td>${discOf(x.c)?`<span class="pill ok" style="white-space:nowrap">${esc(discLabel(x.c))}</span>`:'<span class="muted">\u2014</span>'}</td>${pkgCells(x.c.plan)}
       <td class="r num">${totalSessions(x.id)}</td><td class="r num">${leftCell(x.c)}</td><td><span style="display:inline-flex;gap:4px;flex-wrap:wrap">${flagPills(x.c,1)}</span></td><td style="white-space:nowrap">${x.c.packageStart?esc(parse(x.c.packageStart).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})):'<span class="muted">—</span>'}</td><td>${expCell(x.c)}</td></tr>`}).join('')}
     </tbody></table></div>`:`<div class="empty">${Object.keys(S.clients).length?'No clients match this filter.':'No clients yet. Add your first client to start booking.'}</div>`}
   </div>
@@ -1113,7 +1121,7 @@ async function exportExcel(){
   const cname=x=>x.kind==='product'?'Product':(x.client&&S.clients[x.client]?S.clients[x.client].name:(x.name||'Walk-in'));
   const P=pays.map(x=>({Date:x.date,Client:cname(x),Item:x.item,Type:x.kind==='product'?'Product':'Package',Method:x.unpaid?'Unpaid':x.method,'Amount (L)':x.unpaid?0:+x.amount||0,'Unpaid (L)':x.unpaid?+x.owed||0:'',By:x.by||''}));
   const E=exps.map(x=>({Date:x.date,Item:x.note||'',Category:x.cat||'','Amount (L)':+x.amount||0,By:x.by||''}));
-  const C=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,c])=>{const i=pkgInfo(c.plan);return{Name:c.name,Status:isActC(c)?'Active':'Inactive',Phone:c.phone||'',Email:c.email||'',Country:natName(c.nationality)||'',Birthday:c.birthday||'',Package:i?i.label:'',Sessions:i?(+i.n||''):'','Sessions left':c.plan?leftOf(c):'','Package start':c.packageStart||'','Package expires':c.expires||'',Trainers:(c.trainers||[]).map(staffName).join(', '),'Total sessions':totalSessions(id),'Packages bought':(c.plan?1:0)+(c.packages||[]).length,Burned:burnedOf(id),Joined:c.joined||''}});
+  const C=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,c])=>{const i=pkgInfo(c.plan);return{Name:c.name,Status:isActC(c)?'Active':'Inactive',Phone:c.phone||'',Email:c.email||'',Country:natName(c.nationality)||'',Birthday:c.birthday||'',Package:i?i.label:'',Sessions:i?(+i.n||''):'','Sessions left':c.plan?leftOf(c):'','Package start':c.packageStart||'','Package expires':c.expires||'',Trainers:(c.trainers||[]).map(staffName).join(', '),Discount:discLabel(c),'Total sessions':totalSessions(id),'Packages bought':(c.plan?1:0)+(c.packages||[]).length,Burned:burnedOf(id),Joined:c.joined||''}});
   const amt=rows=>rows.reduce((t,r)=>t+(+r['Amount (L)']||0),0),tot=amt(P),ex=amt(E);
   const by=f=>amt(P.filter(f));
   const Sm=[['Period',label],['Total sales (L)',tot],['Packages (L)',by(r=>r.Type==='Package')],['Products (L)',by(r=>r.Type==='Product')],['Cash (L)',by(r=>r.Method==='Cash')],['Card (L)',by(r=>r.Method==='Card')],['Bank transfer (L)',by(r=>r.Method==='Bank transfer')],['Unpaid (L)',P.reduce((t,r)=>t+(+r['Unpaid (L)']||0),0)],['Studio expenses (L)',ex],['Sales minus expenses (L)',tot-ex],['Clients (all)',C.length],['Active clients',C.filter(c=>c.Status==='Active').length],['Exported',new Date().toLocaleString('en-GB')]].map(([Item,Value])=>({Item,Value}));
@@ -1394,6 +1402,7 @@ function clientModal(id){
     <div class="field"><label for="clEmail">Email</label><input id="clEmail" type="email" value="${esc(c.email||'')}"></div>
     <div class="field"><label for="clNat">Country</label><input id="clNat" list="natList" value="${esc(natName(c.nationality))}" placeholder="e.g. Albania"><datalist id="natList">${NATIONALITIES.map(n=>`<option value="${n}">`).join('')}</datalist></div>
     <div class="field"><label for="clBday">Birthday</label><input id="clBday" type="date" value="${esc(c.birthday||'')}"></div>
+    <div class="field"><label for="clDisc">Discount</label><div style="display:flex;gap:6px"><select id="clDisc"><option value="">None</option><option value="loyalty" ${c.discType==='loyalty'?'selected':''}>Loyalty 10%</option><option value="influencer" ${c.discType==='influencer'?'selected':''}>Influencer 30%</option><option value="other" ${c.discType==='other'?'selected':''}>Other</option></select><input id="clDiscPct" type="number" min="0" max="100" placeholder="%" value="${c.discType==='other'?esc(c.discPct||''):''}" style="width:80px" title="Other discount %"></div></div>
     <div class="field"><label for="clSrc">How they found us</label><select id="clSrc"><option value="">Choose\u2026</option>${SOURCES.map(x=>`<option ${x===c.source?'selected':''}>${x}</option>`).join('')}</select></div>
     <div class="field wide pkgedit"><div class="eyebrow" style="margin-bottom:8px">Active package</div><div class="form" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
       ${(()=>{const pi=pkgInfo(c.plan),tl=pi?String(c.plan).split('·')[0].trim():'';return `<div class="field"><label for="clPType">Type</label><select id="clPType"><option value="">No package</option>${(tl&&!PKG_TYPES.some(t=>t.toLowerCase()===tl.toLowerCase())?[tl,...PKG_TYPES]:PKG_TYPES).map(t=>`<option ${t.toLowerCase()===tl.toLowerCase()?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
@@ -1595,6 +1604,7 @@ document.addEventListener('click',async e=>{
     case'bkdown':downloadBackup();break;
     case'bkup':if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Replaces all data — tap again';break}restoreBackup();break;
     case'finexcel':exportFinances();break;
+    case'discseed':{t.disabled=true;await save(seedDisc);break}
     case'cledit':{const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='';t.remove();f.querySelector('#clName')?.focus()}break}
     case'addcli':{const w=$('#cCliWrap');if(w){const n=w.querySelectorAll('[data-cpick]').length;w.insertAdjacentHTML('beforeend',clientPicker('cCli'+n));document.getElementById('cCli'+n)?.focus()}break}
     case'callmore':UI.callAll=!UI.callAll;render();break;
@@ -1609,7 +1619,7 @@ document.addEventListener('click',async e=>{
   }
 });
 document.addEventListener('input',e=>{
-  if(e.target.dataset&&e.target.dataset.cpick)cpHint(e.target);
+  if(e.target.dataset&&e.target.dataset.cpick){cpHint(e.target);if(e.target.id==='qsClient')applyDisc('qsClient','qsProd','qsAmt');if(e.target.id==='sClient')applyDisc('sClient','sProd','sAmt')}
   if(e.target.id==='clientQ'){UI.clientQ=e.target.value;render()}
   if(e.target.id==='logQ'){UI.logQ=e.target.value;render()}
 });
@@ -1629,8 +1639,8 @@ document.addEventListener('change',e=>{
   if(e.target.id==='noteFilter'){UI.noteFilter=e.target.value;render()}
   if(e.target.id==='loginTrainer'){UI.loginTrainer=e.target.value}
   if(e.target.id==='bkType'){UI.bookType=e.target.value;UI.bookDate=$('#bkDate').value;UI.bookTime=$('#bkTime').value;render()}
-  if(e.target.id==='qsProd'){const pr=PRODUCTS.find(x=>x.k===e.target.value);$('#qsAmt').value=pr.p}
-  if(e.target.id==='sProd'){const pr=PRODUCTS.find(x=>x.k===e.target.value);$('#sAmt').value=pr.p}
+  if(e.target.id==='qsProd'){applyDisc('qsClient','qsProd','qsAmt')}
+  if(e.target.id==='sProd'){applyDisc('sClient','sProd','sAmt')}
 });
 document.addEventListener('submit',async e=>{
   e.preventDefault();const f=e.target;
@@ -1710,7 +1720,7 @@ document.addEventListener('submit',async e=>{
       if(await save(()=>store.set('classes',uid(),{...d,booked:ids.map(c=>({c,in:false,u:false}))}),'Session added')){closeModal();UI.week=monday(d.date);UI.schedDay=d.date;render()}}
   }
   if(f.id==='clientForm'){
-    const id=f.dataset.id,d={name:$('#clName').value.trim(),phone:$('#clPhone').value.trim(),emergency:$('#clEmer').value.trim(),email:$('#clEmail').value.trim(),nationality:$('#clNat').value.trim(),source:$('#clSrc').value,birthday:$('#clBday').value,trainers:[...document.querySelectorAll('input[name=clTr]:checked')].map(x=>x.value),packageStart:$('#clStart').value,expires:$('#clExp').value};
+    const id=f.dataset.id,d={name:$('#clName').value.trim(),phone:$('#clPhone').value.trim(),emergency:$('#clEmer').value.trim(),email:$('#clEmail').value.trim(),nationality:$('#clNat').value.trim(),source:$('#clSrc').value,discType:$('#clDisc')?$('#clDisc').value:'',discPct:$('#clDisc')&&$('#clDisc').value==='other'?Math.max(0,Math.min(100,+$('#clDiscPct').value||0)):0,birthday:$('#clBday').value,trainers:[...document.querySelectorAll('input[name=clTr]:checked')].map(x=>x.value),packageStart:$('#clStart').value,expires:$('#clExp').value};
     if(!d.name){toast('Enter the client’s name.');return}
     {const rf=readRegForm(id?S.clients[id]?.form:null);if(rf)d.form=rf}
     if($('#clPrev'))d.sessionsBefore=Math.max(0,+$('#clPrev').value||0);
