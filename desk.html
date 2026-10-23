@@ -339,7 +339,7 @@ html.cpd-lock,html.cpd-lock body{overflow:hidden!important}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>window.CP_FB=(function(){var cfg={apiKey:"AIzaSyCUV0twVEPR_7TI-_DVuN625KD-z7VD53A",authDomain:"core-pilates---system.firebaseapp.com",projectId:"core-pilates---system",storageBucket:"core-pilates---system.firebasestorage.app",messagingSenderId:"250362942816",appId:"1:250362942816:web:68c94bc6a9eb6ad1c6fa05"};firebase.initializeApp(cfg);return{cfg:cfg,auth:firebase.auth(),fs:firebase.firestore()}})();</script>
+<script>window.CP_FB=(function(){var cfg={apiKey:"AIzaSyCUV0twVEPR_7TI-_DVuN625KD-z7VD53A",authDomain:"core-pilates---system.firebaseapp.com",projectId:"core-pilates---system",storageBucket:"core-pilates---system.firebasestorage.app",messagingSenderId:"250362942816",appId:"1:250362942816:web:68c94bc6a9eb6ad1c6fa05"};firebase.initializeApp(cfg);var fs=firebase.firestore();try{fs.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}return{cfg:cfg,auth:firebase.auth(),fs:fs}})();</script>
 <script>
 try{if(!document.body.classList.contains('sqs-edit-mode-active'))document.documentElement.classList.add('cpd-lock')}catch(e){}
 /* ---------- helpers ---------- */
@@ -512,7 +512,8 @@ async function fbStart(render){
     if(UI.lockTrainer&&!(r.role==='trainer'&&r.tid===UI.lockTrainer)){FB.auth.signOut();return}
     UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':(UI.page||'dash');
     if(!subs){subs=true;const cols=r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups'];
-      for(const c of cols)store.sub(c,o=>{S[c]=o;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(!UI.importing)render()})}
+      UI.got={};UI.loadT0=Date.now();setTimeout(()=>{if(!UI.dataReady)render()},12000);
+      for(const c of cols)store.sub(c,o=>{S[c]=o;UI.got[c]=1;if(!UI.dataReady&&UI.got.clients&&UI.got.staff)UI.dataReady=true;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(!UI.importing)render()})}
     UI.loaded=true;render()});
 }
 let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id,name:s.name})),sig=JSON.stringify(t);if(sig===_pubSig||sig===JSON.stringify((S.pub||{}).trainers||[]))return;_pubSig=sig;FB.fs.collection('settings').doc('public').set({trainers:t}).catch(()=>{})}
@@ -587,7 +588,8 @@ function pDash(){
   return `<div class="pagehead"><div><div class="eyebrow">${esc(fmtLong(d))}</div><h1>Today at the studio</h1></div></div>
   ${defaultPins?'<div class="banner"><span>Default PINs are active (1111 / 2222 / 3333). Change them before sharing this page.</span><button class="btn sm" data-nav="staff">Change PINs</button></div>':''}
   ${isEmpty&&UI.role==='owner'?`<div class="banner info"><span>No data yet. Add staff, clients and classes, or load demo data to explore.</span><button class="btn sm" data-act="demo">Load demo data</button></div>`:''}
-  ${UI.role==='owner'&&!(S.settings.hist2026h||{}).done?`<div class="banner info"><span id="histMsg">First time here: import your studio data from the backup file (core-pilates-backup.json).</span><button class="btn sm primary" data-act="histimport">Choose backup file</button></div>`:''}
+  ${FB&&!UI.dataReady?`<div class="banner info"><span>${Date.now()-(UI.loadT0||Date.now())>11000?'Still loading studio data\u2026 Check the internet connection, turn off any content blocker for this site, then reload the page.':'Loading studio data\u2026'}</span></div>`:''}
+  ${(!FB||UI.dataReady)&&UI.role==='owner'&&!(S.settings.hist2026h||{}).done&&!Object.keys(S.clients).length?`<div class="banner info"><span id="histMsg">First time here: import your studio data from the backup file (core-pilates-backup.json).</span><button class="btn sm primary" data-act="histimport">Choose backup file</button></div>`:''}
   ${hasDemo&&UI.role==='owner'?`<div class="banner info"><span>Demo data is loaded. Remove it before real use.</span><button class="btn sm" data-act="cleardemo">Remove demo data</button></div>`:''}
   <div class="stats">
     <div class="stat"><span class="eyebrow">Sessions today</span><span class="v">${cls.length}</span></div>
