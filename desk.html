@@ -1,0 +1,1739 @@
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>#cpd{
+  --bg:#F2F4F5; --surface:#FFFFFF; --sunk:#E8EDEF; --ink:#132D3A; --muted:#5B6F79; --line:#D5DEE2;
+  --accent:#132D3A; --accent-ink:#FFFFFF; --accent-soft:#F6E5DC;
+  --brand:#D9967A; --navy:#132D3A; --rail-ink:#C9D6DC;
+  --ok:#2E7A4E; --ok-soft:#DCEFE3; --warn:#9A6514; --warn-soft:#F6EBD6; --bad:#A93D2C; --bad-soft:#F6DFDA;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:10px;
+  --s-pt:#CFEBD9; --s-pt-ink:#14432A; --s-pt-line:#8FCBA6;
+  --s-duo:#2F6FDB; --s-duo-ink:#FFFFFF;
+  --s-grp:#EE8A2E; --s-grp-ink:#231205;
+  --s-ok:#2E9E5B; --s-ok-ink:#FFFFFF;
+}
+#cpd{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;text-align:left;letter-spacing:normal;word-spacing:normal;-webkit-font-smoothing:antialiased}
+#cpd h1,#cpd h2,#cpd h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+#cpd h1{font-size:1.75rem}
+#cpd h2{font-size:1.15rem}
+#cpd h3{font-size:1rem}
+#cpd .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+#cpd .muted{color:var(--muted)}
+#cpd .eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+#cpd button,#cpd input,#cpd select,#cpd textarea{font:inherit;color:inherit}
+#cpd button{cursor:pointer}
+#cpd :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#cpd .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.5rem .85rem;font-weight:500}
+#cpd .btn:hover{border-color:var(--muted)}
+#cpd .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+#cpd .btn.primary:hover{filter:brightness(1.08)}
+#cpd .btn.danger{color:var(--bad);border-color:var(--bad-soft)}
+#cpd .btn.sm{padding:.3rem .6rem;font-size:.85rem}
+#cpd .btn:disabled{opacity:.5;cursor:not-allowed}
+#cpd .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+#cpd .field label{font-size:.78rem;color:var(--muted);font-weight:500}
+#cpd input,#cpd select,#cpd textarea{background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:.5rem .6rem;width:100%;box-sizing:border-box}
+#cpd textarea{min-height:70px;resize:vertical}
+#cpd .pill{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+#cpd .pill.ok{background:var(--ok-soft);color:var(--ok)}
+#cpd .pill.warn{background:var(--warn-soft);color:var(--warn)}
+#cpd .pill.bad{background:var(--bad-soft);color:var(--bad)}
+#cpd .pill.acc{background:var(--accent-soft);color:var(--accent)}
+#cpd .app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+#cpd .rail{background:var(--navy);border-right:1px solid var(--navy);color:#fff;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;display:flex;flex-direction:column;gap:20px;position:sticky;top:0;height:100vh;box-sizing:border-box}
+#cpd .brand{display:flex;align-items:center;gap:10px}
+#cpd .brand svg{width:38px;height:38px;flex:none}
+#cpd .brand div{display:flex;flex-direction:column;gap:1px}
+#cpd .brand b{font-family:var(--display);font-size:1.2rem;letter-spacing:-.01em}
+#cpd .brand span{font-size:.75rem;color:var(--rail-ink)}
+#cpd .brand b{color:#fff}
+#cpd .nav{display:flex;flex-direction:column;gap:2px}
+#cpd .nav button{display:flex;align-items:center;gap:10px;border:0;background:none;padding:.55rem .65rem;border-radius:8px;text-align:left;color:var(--rail-ink);font-weight:500}
+#cpd .nav button svg{width:18px;height:18px;flex:none}
+#cpd .nav button:hover{background:rgb(255 255 255 / .07);color:#fff}
+#cpd .nav button[aria-current="page"]{background:rgb(217 150 122 / .16);color:var(--brand)}
+#cpd .rail .who .pill{background:rgb(217 150 122 / .18);color:var(--brand)}
+#cpd .rail .who .btn{background:transparent;color:#fff;border-color:rgb(255 255 255 / .2)}
+#cpd .who{margin-top:auto;display:flex;flex-direction:column;gap:8px;font-size:.85rem}
+#cpd .main{padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0;max-width:1560px;width:100%;box-sizing:border-box;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+#cpd .pagehead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+#cpd .pagehead .sub{color:var(--muted);margin-top:4px}
+#cpd .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+#cpd .panel>header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+#cpd .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+#cpd .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+#cpd .stat{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+#cpd .stat .v{font-family:var(--mono);font-size:1.45rem;font-weight:500;font-variant-numeric:tabular-nums}
+#cpd .banner{border-radius:var(--r);padding:10px 14px;background:var(--warn-soft);color:var(--warn);font-weight:500;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+#cpd .banner.info{background:var(--accent-soft);color:var(--accent)}
+#cpd .rows{display:flex;flex-direction:column}
+#cpd .row{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+#cpd .row:first-child{border-top:0}
+#cpd .months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+#cpd .mon{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem;color:var(--muted)}
+#cpd .mon b{font-size:.85rem;color:var(--ink);font-weight:500}
+#cpd .mon:hover:not(:disabled){border-color:var(--accent)}
+#cpd .mon:disabled{opacity:.45;cursor:default}
+#cpd .mon.cur{border-color:var(--accent)}
+#cpd .mon.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+#cpd .mon.on b{color:var(--accent-ink)}
+@media (max-width:760px){#cpd .months{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+#cpd .tlrow{grid-template-columns:110px minmax(0,1fr) auto}
+#cpd .pinbox{display:flex;gap:6px}
+#cpd .pinbox input{width:80px;padding:.35rem .5rem}
+@media (max-width:760px){#cpd .tlrow{grid-template-columns:minmax(0,1fr)}
+}
+#cpd .linkbox{display:flex;gap:6px;min-width:0}
+#cpd .linkbox input{flex:1;min-width:0;font-family:var(--mono);font-size:.78rem;padding:.35rem .5rem}
+#cpd .notegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+#cpd .note{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--sunk);min-width:0}
+#cpd .fin{font-size:.85rem}
+#cpd .fin th.fname{position:sticky;left:0;background:var(--surface);z-index:1;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--ink);font-weight:500;white-space:nowrap;min-width:170px}
+#cpd .fin thead th{background:var(--surface)}
+#cpd .fin td{padding:2px 3px}
+#cpd .fin tr.sec th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;padding-top:14px}
+#cpd .fin .cell{width:96px;text-align:right;border:1px solid transparent;background:transparent;padding:.35rem .4rem;border-radius:6px}
+#cpd .fin .cell:hover{border-color:var(--line)}
+#cpd .fin .cell:focus{background:var(--sunk);border-color:var(--accent);outline:none}
+#cpd .fin td.tot{font-weight:600;padding-right:10px}
+#cpd .fin tr.sum td,#cpd .fin tr.sum th{background:var(--sunk);font-weight:700;padding:9px 10px}
+#cpd .fin tr.sum th.fname{background:var(--sunk);font-weight:700}
+#cpd .fin tr.sales th.fname{font-weight:700;color:var(--accent)}
+#cpd .fin tr.ref td,#cpd .fin tr.ref th{color:var(--muted);font-size:.78rem;padding:8px 10px}
+#cpd .fin tr.ref th.fname{color:var(--muted)}
+#cpd .frow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+#cpd .frow:first-child{border-top:0}
+#cpd .frow label{font-size:.9rem;color:var(--ink);font-weight:400}
+#cpd .frow .cell{width:150px;text-align:right;background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:.4rem .5rem}
+#cpd .frow .cell:focus{border-color:var(--accent);outline:none}
+#cpd .frow.total{font-weight:700;font-size:1rem;border-top:2px solid var(--line);padding-top:10px}
+#cpd .tl{min-width:1750px;display:flex;flex-direction:column}
+#cpd .vgrid{display:grid;min-width:min-content}
+#cpd .vhead{position:sticky;top:0;z-index:3;background:var(--surface);padding:10px;border-bottom:1px solid var(--line);border-left:1px solid var(--line);display:flex;flex-direction:column;gap:2px;font-size:.9rem;text-align:center}
+#cpd .vcorner{border-left:0;left:0;z-index:4}
+#cpd .vhours{margin-bottom:16px;position:sticky;left:0;background:var(--surface);z-index:2}
+#cpd .vhours span{position:absolute;right:8px;transform:translateY(-50%);font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+#cpd .vhours span:first-child{transform:none}
+#cpd .vtrack{position:relative;border-left:1px solid var(--line);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px 64px)!important;margin:0 0 16px!important;cursor:default}
+#cpd .vtrack.canadd{cursor:copy}
+#cpd .vblk{position:absolute;left:4px;right:4px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:1px;padding:3px 7px!important;border-radius:7px!important;overflow:hidden;text-align:left;font-family:var(--body)!important;font-size:.74rem!important;line-height:1.2;box-shadow:0 1px 2px rgb(0 0 0 / .08);z-index:1}
+#cpd .vblk b{font-family:var(--mono);font-size:.72rem;font-weight:600}
+#cpd .vblk span{font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#cpd .vnow{position:absolute;left:0;right:0;height:2px;background:var(--bad);z-index:2;pointer-events:none}
+#cpd .tlrowx{display:grid;grid-template-columns:140px minmax(0,1fr);border-bottom:1px solid var(--line);min-height:58px}
+#cpd .tlrowx:last-child{border-bottom:0}
+#cpd .tlname{position:sticky;left:0;z-index:2;background:var(--surface);padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px;border-right:1px solid var(--line);font-size:.9rem}
+#cpd .tlname span{font-size:.75rem}
+#cpd .tltrack{position:relative;margin-right:28px;background-image:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px calc(100%/14));cursor:default}
+#cpd .tltrack.canadd{cursor:copy}
+#cpd .tlhead{min-height:34px}
+#cpd .tlhead .tltrack{background:none}
+#cpd .tlh{position:absolute;top:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+#cpd .tlh:first-child{transform:translate(4px,-50%)}
+#cpd .blk{position:absolute;top:6px;bottom:6px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:2px 7px!important;border-radius:7px!important;overflow:hidden;text-align:left;font-family:var(--body)!important;font-size:.74rem!important;line-height:1.2;box-shadow:0 1px 2px rgb(0 0 0 / .08)}
+#cpd .blk b{font-family:var(--mono);font-size:.72rem;font-weight:600}
+#cpd .blk span{font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#cpd .tlnow{position:absolute;top:0;bottom:0;width:2px;background:var(--bad);z-index:1;pointer-events:none}
+#cpd .autorow th.fname,#cpd .frow.autorow label{color:var(--accent)}
+#cpd .tick{display:grid;place-items:center;cursor:pointer;position:relative}
+#cpd .tick input{position:absolute;opacity:0;width:1px;height:1px}
+#cpd .tick span{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;transition:background .15s,border-color .15s}
+#cpd .tick input:checked+span{background:var(--ok);border-color:var(--ok)}
+#cpd .tick input:checked+span::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+#cpd .tick input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+#cpd .callrow.done b{text-decoration:line-through;color:var(--muted)}
+#cpd .callrow.done{opacity:.75}
+#cpd .snum{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--sunk);color:var(--muted);font:700 .68rem var(--mono);vertical-align:1px;margin-left:4px;box-sizing:border-box}
+#cpd .snum.zero{background:var(--bad);color:#fff}
+#cpd .leftnum{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:13px;background:var(--bad);color:#fff;font-family:var(--mono);font-weight:700;font-size:.9rem;box-sizing:border-box}
+#cpd .linkbtn{border:0;background:none;padding:0;color:var(--brand);font-weight:600;font-size:.76rem;cursor:pointer}
+#cpd .linkbtn:hover{text-decoration:underline}
+#cpd .form input,#cpd .form select{height:40px;box-sizing:border-box}
+#cpd input[type=date],#cpd input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;display:block;height:40px;line-height:1.2;font:inherit;text-align:left}
+#cpd input[type=date]::-webkit-date-and-time-value,#cpd input[type=time]::-webkit-date-and-time-value{text-align:left;margin:0;min-height:1.2em}
+@media(max-width:640px){#cpd #bookForm{grid-template-columns:1fr 1fr!important}
+#cpd #bookForm .field{min-width:0}
+#cpd #bookForm input,#cpd #bookForm select{font-size:16px}
+}
+#cpd .cphint{position:absolute;top:100%;left:2px;margin-top:3px;font-size:.74rem;line-height:1.2;color:var(--muted);white-space:nowrap;pointer-events:none}
+#cpd #qsForm,#cpd #saleForm{row-gap:22px;padding-bottom:16px}
+#cpd .cphint.ok{color:var(--ok)}
+#cpd .cphint.new{color:var(--brand);font-weight:600}
+#cpd .bdays{display:flex;gap:8px;flex-wrap:wrap}
+#cpd .bd{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
+#cpd .bd span{font-size:.78rem;color:var(--muted)}
+#cpd .bd.today{background:var(--accent-soft);border-color:var(--brand)}
+#cpd .bd.today b{color:var(--ink)}
+#cpd .bd:hover{border-color:var(--brand)}
+#cpd .expadd{display:grid;grid-template-columns:160px minmax(0,1fr) 120px auto;gap:8px;margin-bottom:10px}
+#cpd .expadd input,#cpd .expadd select{height:38px;box-sizing:border-box}
+@media (max-width:600px){#cpd .expadd{grid-template-columns:1fr 1fr}
+#cpd .expadd #exNote{grid-column:1/-1;order:3}
+}
+#cpd .exrow{display:grid;grid-template-columns:60px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:.9rem}
+#cpd .exrow:first-child{border-top:0}
+#cpd .xbtn{border:0;background:none;color:var(--muted);font-size:1.1rem;line-height:1;cursor:pointer;padding:0}
+#cpd .xbtn:hover{color:var(--bad)}
+#cpd .regform{border-top:1px solid var(--line);padding-top:14px}
+#cpd .rf{display:flex;flex-direction:column;gap:6px;margin:0}
+#cpd .rfrow{display:grid;grid-template-columns:130px minmax(0,1fr);gap:10px;font-size:.88rem}
+#cpd .rfrow dt{color:var(--muted)}
+#cpd .rfrow dd{margin:0;display:flex;flex-wrap:wrap;gap:4px}
+#cpd .hbox{background:var(--bad-soft);color:var(--ink);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-size:.88rem;margin-bottom:10px}
+#cpd .hbox>b{color:var(--bad)}
+#cpd .hflag{display:inline-block;font-size:.72rem;font-weight:600;color:var(--bad);background:var(--bad-soft);border-radius:6px;padding:1px 6px;margin-left:4px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+#cpd .rfedit{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+#cpd .rfedit summary{cursor:pointer}
+#cpd .rfav th,#cpd .rfav td{padding:4px 6px;text-align:center;font-size:.78rem}
+#cpd .rfav tbody th{text-align:left;text-transform:none;letter-spacing:0;color:var(--ink)}
+#cpd .rfav input{width:18px!important;height:18px!important}
+#cpd .pkglist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px}
+#cpd .pkgrow{display:grid;grid-template-columns:auto 2.5ch minmax(0,1.6fr) minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-top:1px solid var(--line);font-size:.86rem}
+#cpd .pkgrow:first-child{border-top:0}
+#cpd .pkgrow.cur{background:var(--accent-soft)}
+@media (max-width:600px){#cpd .pkgrow{grid-template-columns:auto 2.5ch minmax(0,1fr)}
+#cpd .pkgrow>span:nth-child(n+4){grid-column:1/-1}
+}
+#cpd .minis{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem;color:var(--muted);padding:8px 12px;border:1px solid var(--line);border-radius:8px}
+#cpd .minis b{color:var(--ink)}
+#cpd .pkgedit{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--accent-soft)}
+#cpd .btn.burned{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+#cpd #clientForm :disabled{opacity:1;color:var(--ink);background:var(--surface);cursor:default}
+#cpd html.modal-open,#cpd html.modal-open body{overflow:hidden}
+#cpd .overlay{overscroll-behavior:contain}
+#cpd .trchk{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+#cpd .trchk input{width:auto!important;height:auto!important;margin:0}
+#cpd .gdot{display:inline-block;width:10px;height:10px;border-radius:5px}
+#cpd .gspots{color:#fff;font:700 .9rem var(--mono);padding:3px 10px;border-radius:99px;white-space:nowrap}
+#cpd .gcard{gap:10px}
+#cpd .rowlink{cursor:pointer}
+#cpd .rowlink:hover{background:var(--sunk)}
+#cpd .row .t{font-family:var(--mono);font-size:.95rem}
+#cpd .fill{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin-top:6px;max-width:220px}
+#cpd .fill i{display:block;height:100%;background:var(--accent)}
+#cpd .fill.full i{background:var(--warn)}
+#cpd .tablewrap{overflow-x:auto}
+#cpd table{width:100%;border-collapse:collapse;font-size:.9rem}
+#cpd th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+#cpd td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+#cpd tbody tr.click{cursor:pointer}
+#cpd tbody tr.click:hover td{background:var(--sunk)}
+#cpd td.r,#cpd th.r{text-align:right}
+#cpd .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#cpd .chips{display:flex;gap:6px;flex-wrap:wrap}
+#cpd .chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:.3rem .75rem;font-size:.85rem;color:var(--muted)}
+#cpd .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#cpd .empty{padding:28px 12px;text-align:center;color:var(--muted)}
+#cpd .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+#cpd .day{display:flex;flex-direction:column;gap:6px;min-width:0}
+#cpd .day h3{font-family:var(--body);font-size:.8rem;font-weight:600;color:var(--muted);padding:6px 4px;border-bottom:2px solid var(--line)}
+#cpd .day.today h3{color:var(--accent);border-color:var(--accent)}
+#cpd .cls{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0}
+#cpd .cls:hover{border-color:var(--accent)}
+#cpd .cls .t{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+#cpd .cls b{font-size:.88rem;font-weight:600;overflow-wrap:anywhere}
+#cpd .cls small{color:var(--muted);font-size:.78rem}
+#cpd .tgrid th.tname{font-size:.9rem;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:600;white-space:nowrap;padding:10px 14px;position:sticky;left:0;background:var(--surface);z-index:1}
+#cpd .tgrid td{padding:8px 6px;min-width:86px;vertical-align:top}
+#cpd .tgrid .tcol{background:var(--accent-soft)}
+#cpd .tgrid tfoot td,#cpd .tgrid tfoot th{border-bottom:0;font-weight:600}
+#cpd .slots{display:flex;flex-wrap:wrap;gap:4px}
+#cpd .slot{font-family:var(--mono);font-size:.78rem;border:1px solid var(--line);background:var(--sunk);border-radius:6px;padding:2px 6px;color:var(--muted)}
+#cpd .slot:hover{border-color:var(--accent)}
+#cpd .slot.pt,#cpd .cls.pt{background:var(--s-pt);color:var(--s-pt-ink);border-color:var(--s-pt-line)}
+#cpd .slot.duo,#cpd .cls.duo{background:var(--s-duo);color:var(--s-duo-ink);border-color:var(--s-duo)}
+#cpd .slot.grp,#cpd .cls.grp{background:var(--s-grp);color:var(--s-grp-ink);border-color:var(--s-grp)}
+#cpd .slot.burn,#cpd .cls.burn{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+#cpd .slot.ok,#cpd .cls.ok{background:var(--s-ok);color:var(--s-ok-ink);border-color:var(--s-ok)}
+#cpd .slot.open,#cpd .cls.open{border-style:dashed;opacity:.7}
+#cpd .cls.pt .t,#cpd .cls.pt small,#cpd .cls.duo .t,#cpd .cls.duo small,#cpd .cls.grp .t,#cpd .cls.grp small,#cpd .cls.ok .t,#cpd .cls.ok small{color:inherit;opacity:.85}
+#cpd .cls.duo .pill,#cpd .cls.grp .pill,#cpd .cls.ok .pill{background:rgb(255 255 255 / .25);color:inherit}
+#cpd .legend{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.82rem;color:var(--muted)}
+#cpd .legend span{display:inline-flex;align-items:center;gap:5px}
+#cpd .legend .slot{cursor:default;padding:1px 8px;font-style:normal;border-width:1px;border-style:solid}
+#cpd .legend .slot.open{border-style:dashed}
+#cpd .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+#cpd .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;text-align:left}
+#cpd .card:hover{border-color:var(--accent)}
+#cpd .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.88rem}
+#cpd .kv dt{color:var(--muted)}
+#cpd .kv dd{margin:0;text-align:right}
+#cpd .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+#cpd .form .wide{grid-column:1/-1}
+#cpd .overlay{position:fixed;inset:0;background:rgb(10 16 14 / .45);display:flex;align-items:flex-start;justify-content:center;padding:calc(40px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));overflow-y:auto;z-index:50}
+#cpd .modal{background:var(--surface);border:1px solid var(--line);border-radius:14px;width:100%;max-width:560px;padding:20px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box}
+#cpd .modal header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+#cpd .x{border:0;background:var(--sunk);border-radius:8px;width:32px;height:32px;font-size:1.1rem;line-height:1}
+#cpd .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#cpd .booked{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px}
+#cpd .booked>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-top:1px solid var(--line);flex-wrap:wrap}
+#cpd .booked>div:first-child{border-top:0}
+#cpd .confirm{background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#cpd .login{min-height:100%;display:grid;place-items:center;padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#cpd .loginlogo{width:76px;height:76px;border-radius:18px;background:var(--navy);display:grid;place-items:center}
+#cpd .loginlogo svg{width:60px;height:60px}
+#cpd .login .box{width:100%;max-width:400px;display:flex;flex-direction:column;gap:18px}
+#cpd .login h1{font-size:2.1rem;line-height:1.05}
+#cpd .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#cpd .roles button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:12px 6px;font-weight:600;display:flex;flex-direction:column;gap:2px;align-items:center}
+#cpd .roles button small{font-weight:400;color:var(--muted);font-size:.72rem}
+#cpd .roles button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+#cpd .pin{font-family:var(--mono);font-size:1.4rem;letter-spacing:.5em;text-align:center}
+#cpd .err{color:var(--bad);font-size:.85rem;min-height:1.2em}
+#cpd .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:500;z-index:60;max-width:calc(100% - 32px)}
+@media (max-width:900px){#cpd .grid2{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){#cpd .app{grid-template-columns:minmax(0,1fr)}
+#cpd .rail{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;padding-block:6px calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));border-right:0;border-top:1px solid var(--line);z-index:40}
+#cpd .brand,#cpd .who{display:none}
+#cpd .nav{flex-direction:row;justify-content:space-around;width:100%}
+#cpd .nav button{flex-direction:column;gap:2px;font-size:.68rem;padding:.4rem .3rem}
+#cpd .main{padding-block:20px calc(90px + env(safe-area-inset-bottom,0px))}
+#cpd .mobilewho{display:flex!important}
+#cpd .week{grid-template-columns:minmax(0,1fr)}
+#cpd .day h3{position:static}
+#cpd h1{font-size:1.45rem}
+}
+#cpd .mobilewho{display:none;justify-content:space-between;align-items:center;gap:8px;font-size:.85rem}
+@media (prefers-reduced-motion:reduce){#cpd *{transition:none!important;animation:none!important}
+}
+
+#cpd,#cpd *{box-sizing:border-box}
+#cpd{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+body.sqs-edit-mode-active #cpd,body.sqs-edit-mode #cpd,.sqs-edit-mode-active #cpd{position:relative;inset:auto;z-index:auto;min-height:600px}
+@media (min-width:761px){#cpd .rail{position:sticky;top:0}}
+@media (max-width:760px){#cpd .nav button{flex:1;min-width:0;padding:.35rem .1rem!important;font-size:.62rem!important}#cpd .nav button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}}
+html.cpd-lock,html.cpd-lock body{overflow:hidden!important}
+#cpd h1,#cpd h2,#cpd h3{color:var(--ink);text-transform:none;line-height:1.2;padding:0}
+#cpd h1{font-size:1.75rem!important}#cpd h2{font-size:1.15rem!important}#cpd h3{font-size:1rem!important}
+#cpd p{margin:0;font-size:inherit;line-height:1.45}
+#cpd .rail h1,#cpd .rail h2,#cpd .rail b{color:#fff}
+#cpd button{text-transform:none;letter-spacing:normal;box-shadow:none}
+#cpd input,#cpd select,#cpd textarea{font-size:14px;margin:0}
+#cpd table{margin:0}
+#cpd a{color:inherit}
+#cpd .app{min-height:100vh}
+@media (min-width:761px){#cpd .rail{height:100vh}}
+#cpd svg text{letter-spacing:0}
+</style>
+
+<div id="cpd"><div id="root"><div class="login"><div class="box"><p class="muted">Loading studio desk…</p></div></div></div>
+<div id="modal"></div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>window.CP_FB=(function(){var cfg={apiKey:"AIzaSyCUV0twVEPR_7TI-_DVuN625KD-z7VD53A",authDomain:"core-pilates---system.firebaseapp.com",projectId:"core-pilates---system",storageBucket:"core-pilates---system.firebasestorage.app",messagingSenderId:"250362942816",appId:"1:250362942816:web:68c94bc6a9eb6ad1c6fa05"};firebase.initializeApp(cfg);return{cfg:cfg,auth:firebase.auth(),fs:firebase.firestore()}})();</script>
+<script>
+try{if(!document.body.classList.contains('sqs-edit-mode-active'))document.documentElement.classList.add('cpd-lock')}catch(e){}
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const L=n=>Math.round(+n||0).toLocaleString('en-US')+' L';
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+const parse=s=>{const[a,b,c]=String(s).split('-').map(Number);return new Date(a,(b||1)-1,c||1)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return ymd(d)};
+const monday=s=>{const d=parse(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d)};
+const fmtDay=s=>parse(s).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const fmtLong=s=>parse(s).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const daysBetween=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
+const ss={get(k){try{return sessionStorage.getItem(k)}catch{return null}},set(k,v){try{v==null?sessionStorage.removeItem(k):sessionStorage.setItem(k,v)}catch{}}};
+
+/* ---------- studio constants (edit prices here) ---------- */
+const PRODUCTS=[
+  {g:'Private session',k:'pr4',n:'Private · 4 sessions (1 month, 1×/week)',p:20000,c:4,days:30},
+  {g:'Private session',k:'pr8',n:'Private · 8 sessions (1 month, 2×/week)',p:38000,c:8,days:30},
+  {g:'Private session',k:'pr12',n:'Private · 12 sessions (1 month, 3×/week)',p:54000,c:12,days:30},
+  {g:'Private session',k:'pr36',n:'Private · 36 sessions (3 months, 3×/week)',p:154800,c:36,days:90},
+  {g:'Duet class',k:'du4',n:'Duet · 4 sessions (1 month, 1×/week)',p:16000,c:4,days:30},
+  {g:'Duet class',k:'du8',n:'Duet · 8 sessions (1 month, 2×/week)',p:30000,c:8,days:30},
+  {g:'Duet class',k:'du12',n:'Duet · 12 sessions (1 month, 3×/week)',p:42000,c:12,days:30},
+  {g:'Duet class',k:'du36',n:'Duet · 36 sessions (3 months, 3×/week)',p:118800,c:36,days:90},
+  {g:'Trio class',k:'tr8',n:'Trio · 8 sessions (1 month, 2×/week)',p:27000,c:8,days:37},
+  {g:'Trio class',k:'tr12',n:'Trio · 12 sessions (1 month, 3×/week)',p:36000,c:12,days:37},
+  {g:'Semi private (6 people)',k:'sp4',n:'Semi private · 4 sessions (1 month)',p:12000,c:4,days:30},
+  {g:'Semi private (6 people)',k:'sp8',n:'Semi private · 8 sessions (1 month)',p:22000,c:8,days:30},
+  {g:'Semi private (6 people)',k:'sp12',n:'Semi private · 12 sessions (1 month)',p:30000,c:12,days:30},
+  {g:'Yoga (group)',k:'yo1',n:'Yoga · 1 session',p:2500,c:1,days:30},
+  {g:'Yoga (group)',k:'yo4',n:'Yoga · 4 sessions',p:9000,c:4,days:30},
+  {g:'Yoga (group)',k:'yo8',n:'Yoga · 8 sessions',p:16000,c:8,days:60},
+  {g:'Mat Pilates (group)',k:'mp1',n:'Mat Pilates · 1 session',p:2500,c:1,days:30},
+  {g:'Mat Pilates (group)',k:'mp4',n:'Mat Pilates · 4 sessions',p:9000,c:4,days:30},
+  {g:'Mat Pilates (group)',k:'mp8',n:'Mat Pilates · 8 sessions',p:16000,c:8,days:60},
+  {g:'Pilates for Pregnancy (private)',k:'pg1',n:'Pilates for Pregnancy · 1 session',p:6000,c:1,days:30},
+  {g:'Pilates for Pregnancy (private)',k:'pg8',n:'Pilates for Pregnancy · 8 sessions',p:45000,c:8,days:60},
+  {g:'Pilates for Scoliosis (private)',k:'sc1',n:'Pilates for Scoliosis · 1 session',p:6000,c:1,days:30},
+  {g:'Pilates for Scoliosis (private)',k:'sc8',n:'Pilates for Scoliosis · 8 sessions',p:45000,c:8,days:60},
+  {g:'Other',k:'other',n:'Other / retail',p:0,c:0},
+];
+function shortPkg(s){return String(s||'').replace(/\s*\([^)]*\)/g,'').replace(/(\d+)\s*sessions?\b/gi,'$1').replace(/(\d+)\s+S\b/g,'$1')}
+PRODUCTS.forEach(x=>{x.d=x.n;x.n=shortPkg(x.n)});
+const PKG_TYPES=['Private','Duet','Trio','Four','Clinic','Semi private','Yoga','Mat Pilates','Pilates for Pregnancy','Pilates for Scoliosis','Single session'];
+const CLASS_TYPES=['Personal Training','Duo Training','Semi Pilates','Yoga','Mat Pilates','Pilates for Pregnancy','Pilates for Scoliosis','Assessment'];
+const TYPE_ALIAS={'Private':'Personal Training','Duo':'Duo Training','Reformer Group':'Semi Pilates','Small group PT':'Semi Pilates'};
+const typeName=t=>TYPE_ALIAS[t]||t||'Personal Training';
+const pkgH=(p,f)=>{const t=planName(p);return t?esc(t).replace(/(\d+)\s*$/,'<b>$1</b>'):esc(f)};
+const planName=t=>shortPkg(String(t||'').replace('-class','-session').replace('Private session','Single PT session'));
+const kindOf=t=>{t=typeName(t);return /duo/i.test(t)?'duo':/group|semi|yoga|mat pilates/i.test(t)?'grp':'pt'};
+const sessLabel=c=>{const k=kindOf(c.type),names=(c.booked||[]).map(b=>S.clients[b.c]?.name||'Client');
+  if(k==='grp')return `<b>${esc(typeName(c.type))}</b>`;
+  const tn=typeName(c.type),tag=k==='duo'?'DUO':/assess/i.test(tn)?'Assessment':/pregn/i.test(tn)?'Pregnancy':/scolio/i.test(tn)?'Scoliosis':'PT';
+  return `<b>${tag}</b>${names.length?' · '+esc(names.join(' & ')):''}`};
+const slotCls=c=>{const b=c.booked||[];if(b.length&&b.length>=c.cap&&b.every(x=>isDone(c,x)||x.burn))return b.every(x=>x.burn)?'burn':'ok';return kindOf(c.type)+(b.length?'':' open')};
+const roleName=r=>r==='Instructor'?'Trainer':r;
+const METHODS=['Cash','Card','Bank transfer'];
+const STAFF_ROLES=['Instructor','Reception','Manager'];
+const DEFAULT_PINS={owner:'1111',manager:'2222',reception:'3333'};
+const PERMS={
+  owner:{label:'Owner',pages:['dash','sched','team','groups','clients','pay','fin','data','log','staff'],revenue:1,payroll:1,editClasses:1,delClient:1,allPayments:1,delPayment:1,pins:1},
+  manager:{label:'Manager',pages:['dash','sched','team','groups','clients','pay','staff'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:1,delPayment:0,pins:0},
+  reception:{label:'Reception',pages:['dash','sched','team','groups','clients','pay'],revenue:1,payroll:0,editClasses:0,delClient:0,allPayments:0,payDates:1,delPayment:0,pins:0},
+  trainer:{label:'Trainer',pages:['team','sched','groups'],revenue:0,payroll:0,editClasses:0,delClient:0,allPayments:0,delPayment:0,pins:0},
+};
+const LOGO='<svg viewBox="0 0 100 100" fill="none" stroke="#D9967A" aria-hidden="true"><circle cx="47" cy="47" r="27" stroke-width="2.6"/><circle cx="54" cy="53" r="26" stroke-width="2.6"/><circle cx="51" cy="50" r="20" stroke-width="3"/><ellipse cx="49" cy="49" rx="17" ry="16" stroke-width="2.6"/><circle cx="50" cy="50" r="12" stroke-width="5.5"/></svg>';
+const ICONS={
+  groups:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><circle cx="15.5" cy="10" r="1.8"/><path d="M5.5 16.5c.5-1.8 1.6-2.7 3-2.7s2.5.9 3 2.7M12.5 16.5c.5-1.8 1.6-2.7 3-2.7s2.5.9 3 2.7"/></svg>',
+  log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
+  data:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.5 6"/></svg>',
+  fin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  team:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="3"/><circle cx="5" cy="10" r="2.3"/><circle cx="19" cy="10" r="2.3"/><path d="M6.5 20c.5-3.5 2.8-5.5 5.5-5.5s5 2 5.5 5.5"/><path d="M1.5 18.5c.4-2.4 1.8-3.8 3.5-3.8M22.5 18.5c-.4-2.4-1.8-3.8-3.5-3.8"/></svg>',
+  dash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  sched:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17.5 14.5c2 .3 3.5 1.9 4 4.5"/></svg>',
+  pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>',
+  staff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 21c.6-4 3.4-6.5 7-6.5s6.4 2.5 7 6.5"/><path d="M12 14.5v3"/></svg>',
+};
+const PAGE_NAMES={dash:'Dashboard',sched:'Schedule',team:'Team',groups:'Groups',clients:'Clients',pay:'Payments',fin:'Finances',data:'Data',log:'History',staff:'Staff'};
+
+/* ---------- state & store ---------- */
+const S={pub:{},groups:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
+const UI={role:null,page:'dash',week:monday(today()),clientFilter:'active',clientQ:'',payDay:today(),loginRole:'reception',loaded:false};
+let store=null,viewerIsOwner=false,modalRefresh=null;
+
+function memStore(){
+  const data={},subs={};
+  const emit=c=>(subs[c]||[]).forEach(f=>f({...data[c]}));
+  return{mode:'local',
+    sub(c,cb){(subs[c]??=[]).push(cb);data[c]??={};cb({...data[c]})},
+    async set(c,i,d){(data[c]??={})[i]=d;emit(c)},
+    async upd(c,i,d){data[c][i]={...data[c][i],...d};emit(c)},
+    async del(c,i){delete data[c][i];emit(c)}};
+}
+function dbStore(db){
+  return{mode:'db',
+    sub(c,cb){
+      const q=db.collection(c);
+      q.onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());cb(o)},
+        e=>toast('Live sync stopped ('+e.code+'). Reload the page to reconnect.'));
+    },
+    set:(c,i,d)=>db.collection(c).doc(i).set(d),
+    upd:(c,i,d)=>db.collection(c).doc(i).update(d),
+    del:(c,i)=>db.collection(c).doc(i).delete()};
+}
+async function save(fn,okMsg){
+  try{await fn();if(okMsg)toast(okMsg);return true}
+  catch(e){
+    const m=e&&e.code==='invalid_argument'?'You don’t have permission to change studio data. Ask the owner to share this page with you as Contributor.':
+      e&&e.code==='quota_exceeded'?'Storage is full. Delete old records to free space.':'Couldn’t save: '+(e?.message||e)+'. Try again.';
+    toast(m);return false}
+}
+
+/* ---------- derived ---------- */
+const P=()=>PERMS[UI.role]||PERMS.reception;
+const pins=()=>({...DEFAULT_PINS,...(S.settings.pins||{})});
+const staffName=id=>S.staff[id]?.name||'—';
+const clientName=id=>S.clients[id]?.name||'Walk-in';
+const classesOn=d=>Object.entries(S.classes).filter(([,c])=>c.date===d&&(UI.role!=='trainer'||c.instructor===UI.trainer)).sort((a,b)=>a[1].time.localeCompare(b[1].time));
+const isUnl=c=>c&&c.unlimitedUntil&&c.unlimitedUntil>=today();
+let _uc=null;
+function usage(){if(_uc)return _uc;const m=new Map(),idx={},now=Date.now();for(const [id,c] of Object.entries(S.clients))m.set(c,id);
+  for(const cl of Object.values(S.classes)){const end=new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000;
+    for(const b of cl.booked||[]){const c=S.clients[b.c];if(!c)continue;if(c.packageStart&&cl.date<c.packageStart)continue;if(b.burn||end<now)idx[b.c]=(idx[b.c]||0)+1}}
+  return _uc={m,idx}}
+const usedOf=id=>usage().idx[id]||0;
+const leftOf=c=>{const id=usage().m.get(c);return (+c.credits||0)-(id?usedOf(id):0)};
+const isDone=(cl,b)=>!b.burn&&new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000<Date.now();
+function leftCell(c){const n=leftOf(c);return `<span style="color:${n<=0?'var(--bad)':n<=2?'var(--warn)':'inherit'};font-weight:600">${n}</span>`}
+function clientFlags(c){const f=[];
+  if(c.expires&&c.expires<today())f.push({k:'expired',txt:'Package expired',cls:'bad'});
+  else if(c.expires&&daysBetween(today(),c.expires)<5)f.push({k:'exp',txt:'Expires soon',cls:'warn'});
+  if(c.plan&&leftOf(c)<=0)f.push({k:'low',txt:'No sessions left',cls:'bad'});
+  return f}
+function clientStatus(c){return clientFlags(c)[0]||{k:'ok',txt:'Active',cls:'ok'}}
+const isActC=c=>!!(c&&c.plan&&c.expires&&c.expires>=today());
+const flagPills=(c,noNum)=>{const f=clientFlags(c).filter(x=>!(noNum&&x.k==='low'));return f.length?f.map(x=>x.k==='low'?`<span class="leftnum" title="Sessions left">${leftOf(c)||0}</span>`:`<span class="pill ${x.cls}">${esc(x.txt)}</span>`).join(' '):(clientFlags(c).length?'':isActC(c)?'<span class="pill ok">Active</span>':'<span class="pill">Not active</span>')};
+function lastVisit(cid){
+  let best='';for(const c of Object.values(S.classes))for(const b of c.booked||[])if(b.c===cid&&isDone(c,b)&&c.date>best)best=c.date;return best;
+}
+function totalSessions(cid){const c=S.clients[cid];if(!c)return 0;let n=0;[c.plan,...(c.packages||[]).map(p=>p.plan)].forEach(pl=>{const i=pkgInfo(pl);if(i)n+=+i.n||0});return n}
+const payList=()=>Object.entries(S.payments).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+
+/* ---------- Firebase (live version) ---------- */
+const FB=window.CP_FB||null;
+const fbRole=email=>{email=String(email||'').toLowerCase();const m=/^t-(.+)@corepilates\.app$/.exec(email);if(m)return{role:'trainer',tid:m[1]};const r=/^(owner|manager|reception)@corepilates\.app$/.exec(email);return r?{role:r[1]}:null};
+function fbLoginsPanel(){
+  const rows=[['reception','Reception'],...trainersList().map(([id,s])=>['t-'+id,s.name+' (trainer)'])];
+  return `<section class="panel"><header><div><h2>Staff logins</h2><span class="muted">Create a login code for each person (at least 6 characters). They choose their role/name on the login screen and type this code.</span></div></header>
+  <div class="rows">${rows.map(([k,n])=>`<div class="row tlrow"><b>${esc(n)}</b><span class="muted num" style="font-size:.8rem">${esc(k)}@corepilates.app</span><div class="pinbox"><input id="lc_${esc(k)}" type="text" placeholder="New code" style="width:120px"><button type="button" class="btn sm primary" data-mklogin="${esc(k)}">Create login</button></div></div>`).join('')}</div>
+  <p class="muted" style="margin:10px 0 0;font-size:.8rem">To change someone’s code later: delete their user in Firebase → Authentication, then create it again here. Everyone can change their own code with “Change my code”.</p></section>`}
+async function fbMakeLogin(k){
+  const code=($('#lc_'+k)||{}).value?.trim()||'';if(code.length<6){toast('Code must be at least 6 characters.');return}
+  try{const sec=firebase.apps.find(a=>a.name==='mk')||firebase.initializeApp(FB.cfg,'mk');const cr=await sec.auth().createUserWithEmailAndPassword(k+'@corepilates.app',code);await sec.auth().signOut();toast('Login created for '+k);$('#lc_'+k).value=''}
+  catch(e){toast(/email-already-in-use/.test(e.code||'')?'This login already exists. Delete it in Firebase → Authentication to set a new code.':'Could not create: '+(e.message||e.code))}}
+function fbPickBackup(){return new Promise(ok=>{const i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=async()=>{const f=i.files[0];if(!f)return ok(null);try{ok(JSON.parse(await f.text()))}catch{toast('That file is not a backup file.');ok(null)}};i.click()})}
+function fbChangeCode(){openModal(`<header><h2>Change my code</h2><button class="x" data-close aria-label="Close">×</button></header>
+  <form class="form" id="codeForm"><div class="field wide"><label for="cc1">New code (at least 6 characters)</label><input id="cc1" type="password" autocomplete="new-password"></div><div class="field wide"><label for="cc2">Repeat new code</label><input id="cc2" type="password" autocomplete="new-password"></div>
+  <div class="field wide"><div class="actions"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save code</button></div></div></form>`)}
+async function fbStart(render){
+  let subs=false;
+  FB.fs.collection('settings').doc('public').onSnapshot(d=>{S.pub=d.exists?d.data():{};if(!UI.role)render()},()=>{});
+  FB.auth.onAuthStateChanged(u=>{
+    const r=u&&fbRole(u.email);
+    if(!r){UI.role=null;UI.trainer=null;render();return}
+    if(UI.lockTrainer&&!(r.role==='trainer'&&r.tid===UI.lockTrainer)){FB.auth.signOut();return}
+    UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':(UI.page||'dash');
+    if(!subs){subs=true;const cols=r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups'];
+      for(const c of cols)store.sub(c,o=>{S[c]=o;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(!UI.importing)render()})}
+    UI.loaded=true;render()});
+}
+let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id,name:s.name})),sig=JSON.stringify(t);if(sig===_pubSig||sig===JSON.stringify((S.pub||{}).trainers||[]))return;_pubSig=sig;FB.fs.collection('settings').doc('public').set({trainers:t}).catch(()=>{})}
+/* ---------- render ---------- */
+function render(){
+  _uc=null;
+  const ae=document.activeElement,fid=ae&&ae.id,sel=ae&&'selectionStart' in ae?[ae.selectionStart,ae.selectionEnd]:null;
+  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sMethod,#sDate').forEach(el=>{if('value' in el)keep[el.id]=el.value});
+  $('#root').innerHTML=UI.role?shell():login();
+  if(!UI.qsReset)for(const k in keep){const el=document.getElementById(k);if(el){el.value=keep[k];if(el.dataset.cpick)cpHint(el)}}UI.qsReset=false;
+  if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch{}}}
+  if(modalRefresh)modalRefresh();
+}
+function login(){
+  if(UI.lockTrainer){const st=S.staff[UI.lockTrainer];
+    return `<div class="login"><form class="box" id="loginForm">
+    <div class="loginlogo">${LOGO}</div><div><div class="eyebrow">Core Pilates Tirana \u00b7 Trainer</div><h1>${st?esc(st.name):'Trainer page'}</h1><p class="muted" style="margin:6px 0 0">${st?'Enter your PIN to open your page.':(UI.loaded?'This trainer link is not valid. Ask the studio for a new link.':'Loading\u2026')}</p></div>
+    ${st?`<div class="field"><label for="pin">PIN</label><input id="pin" class="pin" ${FB?'type="password" autocomplete="current-password"':'inputmode="numeric" autocomplete="off" maxlength="6"'} placeholder="\u2022\u2022\u2022\u2022"></div>
+    <div class="err" id="loginErr"></div><button class="btn primary" type="submit">Open my page</button>`:''}
+  </form></div>`}
+  const r=UI.loginRole;
+  return `<div class="login"><form class="box" id="loginForm">
+    <div class="loginlogo">${LOGO}</div><div><div class="eyebrow">Core Pilates Tirana</div><h1>Studio desk</h1><p class="muted" style="margin:6px 0 0">Staff only. Choose your role and enter your PIN.</p></div>
+    <div class="roles" role="group" aria-label="Role">
+      ${['owner','reception','trainer'].map(k=>`<button type="button" data-role="${k}" aria-pressed="${r===k}">${PERMS[k].label}<small>${k==='owner'?'Full access':k==='manager'?'No payroll':k==='reception'?'Front desk':'My page'}</small></button>`).join('')}
+    </div>
+    ${r==='trainer'?`<div class="field"><label for="loginTrainer">Trainer</label><select id="loginTrainer">${(FB&&!trainersList().length?(S.pub.trainers||[]).map(t=>[t.id,t]):trainersList()).map(([id,s])=>`<option value="${id}" ${id===UI.loginTrainer?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>`:''}
+    <div class="field"><label for="pin">PIN</label><input id="pin" class="pin" ${FB?'type="password" autocomplete="current-password"':'inputmode="numeric" autocomplete="off" maxlength="6"'} placeholder="••••"></div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn primary" type="submit">Enter</button>
+    ${!UI.loaded?'<p class="muted">Connecting…</p>':''}
+  </form></div>`;
+}
+function shell(){
+  const p=P(),page=p.pages.includes(UI.page)?UI.page:p.pages[0];UI.page=page;
+  const nav=p.pages.map(k=>`<button data-nav="${k}" ${k===page?'aria-current="page"':''}>${ICONS[k]}<span>${PAGE_NAMES[k]}</span></button>`).join('');
+  const body={dash:pDash,sched:pSched,team:pTeam,groups:pGroups,clients:pClients,pay:pPay,fin:pFin,data:pData,log:pLog,staff:pStaff}[page]();
+  return `<div class="app">
+    <aside class="rail"><div class="brand">${LOGO}<div><b>Core Pilates</b><span>Studio desk · Tirana</span></div></div>
+      <nav class="nav" aria-label="Pages">${nav}</nav>
+      <div class="who"><span class="pill acc">${p.label}${UI.role==='trainer'?' \u00b7 '+esc(staffName(UI.trainer)):''}</span>${FB?'<button class="btn sm" data-act="chgcode">Change my code</button>':''}<button class="btn sm" data-act="logout">${FB?'Log out':'Lock desk'}</button></div></aside>
+    <main class="main">
+      <div class="mobilewho"><b style="font-family:var(--display);display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:7px;background:var(--navy);display:grid;place-items:center">${LOGO.replace('<svg ','<svg width="22" height="22" ')}</span>Core Pilates</b><span style="display:flex;gap:8px;align-items:center"><span class="pill acc">${p.label}</span><button class="btn sm" data-act="logout">Lock</button></span></div>
+      ${store&&store.mode==='local'?'<div class="banner info"><span>Preview mode. Changes stay in this tab only. Open the published link while signed in to save studio data.</span></div>':''}
+      ${body}
+    </main></div>`;
+}
+
+/* --- Dashboard --- */
+function pkgSoldPanel(){
+  const lab=pl=>{const i=pkgInfo(pl);if(!i)return null;return i.label==='Group'||i.label==='Mat Pilates'||i.label==='Yoga'?'Group':i.label==='Duet'?'Duo':i.label};
+  const cnt={},ses={},rev={};
+  Object.values(S.clients).forEach(c=>[c.plan,...(c.packages||[]).map(p=>p.plan)].forEach(pl=>{const k=lab(pl);if(!k)return;const n=+(pkgInfo(pl).n)||0;if(n<=1)return;cnt[k]=(cnt[k]||0)+1;ses[k]=(ses[k]||0)+n}));
+  Object.values(S.payments).forEach(x=>{if(x.kind==='product'||x.unpaid)return;const k=lab(x.item);if(k)rev[k]=(rev[k]||0)+(+x.amount||0)});
+  const order=['Private','Duo','Trio','Group','Four','Clinic','Pregnancy','Scoliosis'];
+  const ks=order.filter(k=>cnt[k]).concat(Object.keys(cnt).filter(k=>!order.includes(k)));
+  if(!ks.length)return '';
+  const tot=ks.reduce((a,k)=>a+cnt[k],0),showRev=P().revenue;
+  return `<section class="panel"><header><h2>Packages sold · all time</h2><span class="muted">${tot} packages</span></header>
+  <div class="stats">${ks.map(k=>`<div class="stat"><span class="eyebrow">${esc(k)}</span><span class="v">${cnt[k]}</span><span class="muted" style="font-size:.78rem">${ses[k]} sessions${showRev&&rev[k]?' · '+L(rev[k]):''}</span></div>`).join('')}</div></section>`}
+function pDash(){
+  const p=P(),d=today(),cls=classesOn(d).filter(([,c])=>(c.booked||[]).length>0);
+  let cap=0,bk=0,inn=0;cls.forEach(([,c])=>{cap+=+c.cap||0;bk+=(c.booked||[]).length;inn+=(c.booked||[]).filter(b=>isDone(c,b)).length});
+  const pays=payList().map(x=>x[1]);
+  const revToday=pays.filter(x=>x.date===d).reduce((s,x)=>s+(+x.amount||0),0);
+  const mon=d.slice(0,7),revMonth=pays.filter(x=>(x.date||'').startsWith(mon)).reduce((s,x)=>s+(+x.amount||0),0);
+  const ago30=addDays(d,-30);const alerts=Object.entries(S.clients).map(([id,c])=>({id,c,s:clientStatus(c)})).filter(x=>x.s.k!=='ok'&&!(x.c.expires&&x.c.expires<ago30)&&!(!x.c.expires&&x.s.k==='low')).sort((a,b)=>(a.c.expires||'').localeCompare(b.c.expires||'')).reverse();
+  const isEmpty=!Object.keys(S.clients).length&&!Object.keys(S.classes).length;
+  const defaultPins=!FB&&UI.role==='owner'&&!S.settings.pins;
+  const hasDemo=[S.clients,S.classes,S.staff,S.payments].some(o=>Object.values(o).some(x=>x.demo));
+  return `<div class="pagehead"><div><div class="eyebrow">${esc(fmtLong(d))}</div><h1>Today at the studio</h1></div></div>
+  ${defaultPins?'<div class="banner"><span>Default PINs are active (1111 / 2222 / 3333). Change them before sharing this page.</span><button class="btn sm" data-nav="staff">Change PINs</button></div>':''}
+  ${isEmpty&&UI.role==='owner'?`<div class="banner info"><span>No data yet. Add staff, clients and classes, or load demo data to explore.</span><button class="btn sm" data-act="demo">Load demo data</button></div>`:''}
+  ${UI.role==='owner'&&!(S.settings.hist2026h||{}).done?`<div class="banner info"><span id="histMsg">First time here: import your studio data from the backup file (core-pilates-backup.json).</span><button class="btn sm primary" data-act="histimport">Choose backup file</button></div>`:''}
+  ${hasDemo&&UI.role==='owner'?`<div class="banner info"><span>Demo data is loaded. Remove it before real use.</span><button class="btn sm" data-act="cleardemo">Remove demo data</button></div>`:''}
+  <div class="stats">
+    <div class="stat"><span class="eyebrow">Sessions today</span><span class="v">${cls.length}</span></div>
+    <div class="stat"><span class="eyebrow">Clients booked</span><span class="v">${bk}</span></div>
+    
+    ${p.revenue?`<div class="stat"><span class="eyebrow">Sales today</span><span class="v">${L(revToday)}</span></div>
+    <div class="stat"><span class="eyebrow">Sales this month</span><span class="v">${L(revMonth)}</span></div>`:`<div class="stat"><span class="eyebrow">Clients needing attention</span><span class="v">${alerts.length}</span></div>`}
+  </div>
+  ${clientStats()}
+  ${p.revenue||p.payDates?revChart():revDay()}
+  ${quickSaleRow()}
+  <div class="grid2">
+    <section class="panel"><header><h2>Today’s sessions</h2><span class="muted">${cls.length?'Tap a session to open it':''}</span></header>
+      ${cls.length?`<div class="rows">${cls.map(([id,c])=>{const n=(c.booked||[]).length,pct=c.cap?Math.min(100,n/c.cap*100):0;
+        const past=c.time<=new Date().toTimeString().slice(0,5);return `<div class="row rowlink" data-class="${id}"><span class="t" style="color:${past?'var(--bad)':'var(--ok)'};font-weight:700" title="${past?'Started':'Coming up'}">${esc(c.time)}</span><div style="min-width:0">${sessLabel(c)} <span class="muted">· ${esc(staffName(c.instructor))}</span>
+        </div>
+        <span style="display:flex;gap:8px;align-items:center"><span class="num muted">${n}/${c.cap}</span></span></div>`}).join('')}</div>`
+        :`<div class="empty">No sessions scheduled today.${p.editClasses?' Add them on the Schedule page.':''}</div>`}
+    </section>
+    ${(()=>{const called=a=>a.c.calledOn===d;const listAll=[...alerts].sort((a,b)=>called(a)-called(b)),list=UI.callAll?listAll:listAll.slice(0,10);const nc=alerts.filter(called).length;
+    return `<section class="panel"><header><div><h2>Call list \u00b7 packages ending</h2><span class="muted">Tick each client after you call them. Resets every day.</span></div><span class="pill ${nc===alerts.length&&alerts.length?'ok':'warn'}">${nc}/${alerts.length} called today</span></header>
+      ${alerts.length?`<div class="rows">${list.map(a=>{const ok=called(a);return `<div class="row callrow ${ok?'done':''}" style="grid-template-columns:auto minmax(0,1fr) auto">
+        <label class="tick"><input type="checkbox" data-call="${a.id}" ${ok?'checked':''} aria-label="Called ${esc(a.c.name)}"><span></span></label>
+        <button class="btn sm" style="border:0;background:none;text-align:left;padding:0;min-width:0" data-client="${a.id}"><b>${esc(a.c.name)}</b><br><span class="muted">${pkgH(a.c.plan,'No package')}${expShort(a.c)}</span>${ok?`<br><span style="font-size:.75rem;color:var(--ok)">\u2713 Called ${a.c.calledAt?new Date(a.c.calledAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}${a.c.calledBy?' by '+esc(a.c.calledBy):''}</span>`:(a.c.calledOn?`<br><span class="muted" style="font-size:.75rem">Last called ${esc(fmtDay(a.c.calledOn))}</span>`:'')}</button>
+        <span style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">${flagPills(a.c,1)}</span></div>`}).join('')}</div>${listAll.length>10?`<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="callmore">${UI.callAll?'Show less':'See more ('+(listAll.length-10)+')'}</button></div>`:''}`
+      :'<div class="empty">No packages expired in the last 30 days.</div>'}
+    </section>`})()}
+  </div>
+  ${bdayPanel()}
+  ${notesPanel()}
+  ${expSection()}`;
+}
+
+/* --- Team --- */
+const APP_URL=location.origin+location.pathname;
+const trainerLink=id=>APP_URL+'#trainer-'+id;
+function linkBox(id){return `<div class="linkbox"><input id="lk_${id}" readonly value="${esc(trainerLink(id))}"><button type="button" class="btn sm" data-copylink="${id}">Copy link</button></div>`}
+const trainersList=()=>Object.entries(S.staff).filter(([,s])=>s.role==='Instructor').sort((a,b)=>a[1].name.localeCompare(b[1].name));
+function trainerStats(tid){
+  const t=today(),w0=monday(t),w1=addDays(w0,6),m=t.slice(0,7),ago=addDays(t,-30);
+  const mine=Object.entries(S.classes).filter(([,c])=>c.instructor===tid);
+  const cl={};
+  mine.forEach(([,c])=>(c.booked||[]).forEach(b=>{const r=cl[b.c]??={n:0,last:'',next:''};
+    const dn=isDone(c,b);if(dn){r.n++;if(c.date>r.last)r.last=c.date}
+    if(!dn&&!b.burn&&c.date>=t&&(!r.next||c.date+' '+c.time<r.next))r.next=c.date+' '+c.time}));
+  Object.entries(S.clients).forEach(([id,c])=>{if((c.trainers||[]).includes(tid)||(c.packages||[]).some(p=>(p.trainers||[]).includes(tid)))cl[id]??={n:0,last:'',next:''}});
+  const clients=Object.entries(cl).filter(([id])=>S.clients[id]).map(([id,r])=>({id,...r,active:isActC(S.clients[id])&&((S.clients[id].trainers||[]).includes(tid)||!!r.next)}));
+  return{mine,clients,week:mine.filter(([,c])=>c.date>=w0&&c.date<=w1&&(c.booked||[]).length).length,month:mine.filter(([,c])=>(c.date||'').startsWith(m)&&(c.booked||[]).length).length,active:clients.filter(c=>c.active).length};
+}
+function pTeam(){
+  const sel=UI.role==='trainer'?UI.trainer:UI.teamSel;
+  if(sel&&S.staff[sel])return trainerPage(sel);
+  const tr=trainersList();
+  return `<div class="pagehead"><div><div class="eyebrow">${tr.length} trainers</div><h1>Team</h1></div></div>
+  ${tr.length?`<div class="cards">${tr.map(([id,s])=>{const st=trainerStats(id);return `<button class="card" data-team="${id}">
+    <h3>${esc(s.name)}</h3>
+    <dl class="kv"><dt>Sessions this week</dt><dd class="num">${st.week}</dd><dt>Sessions this month</dt><dd class="num">${st.month}</dd><dt>Active clients</dt><dd class="num" style="color:var(--ok)">${st.active}</dd><dt>Inactive clients</dt><dd class="num" style="color:var(--bad)">${st.clients.length-st.active}</dd></dl></button>`}).join('')}</div>
+`
+  :'<div class="panel empty">No trainers yet. Add them on the Staff page as Trainer.</div>'}`;
+}
+function trainerPage(tid){
+  const s=S.staff[tid],st=trainerStats(tid),t=today(),isT=UI.role==='trainer';
+  const up=st.mine.filter(([,c])=>c.date>=t&&c.date<=addDays(t,7)).sort((a,b)=>(a[1].date+a[1].time).localeCompare(b[1].date+b[1].time));
+  const notes=Object.entries(S.notes||{}).filter(([,n])=>n.trainer===tid).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+  const f=UI.teamFilter||'active';
+  const cls=st.clients.filter(c=>f==='all'||(f==='active'?c.active:!c.active)).sort((a,b)=>(S.clients[a.id].name).localeCompare(S.clients[b.id].name));
+  const allC=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const mineIds=new Set(st.clients.map(c=>c.id));
+  const opts=`<option value="">Choose client\u2026</option>${allC.filter(([id])=>mineIds.has(id)).length?`<optgroup label="My clients">${allC.filter(([id])=>mineIds.has(id)).map(([id,c])=>`<option value="${id}">${esc(c.name)}</option>`).join('')}</optgroup>`:''}<optgroup label="All clients">${allC.filter(([id])=>!mineIds.has(id)).map(([id,c])=>`<option value="${id}">${esc(c.name)}</option>`).join('')}</optgroup>`;
+  const bt=UI.bookType||'Personal Training',bk=kindOf(bt);
+  return `<div class="pagehead"><div>${isT?(UI.lockTrainer?'<div class="eyebrow">Core Pilates \u00b7 My page</div>':'<div class="eyebrow">My page</div>'):`<button class="btn sm" data-act="teamback" style="margin-bottom:8px">\u2190 All trainers</button>`}<h1>${esc(s.name)}</h1></div></div>
+  <div class="stats">
+    <div class="stat"><span class="eyebrow">Sessions this week</span><span class="v">${st.week}</span></div>
+    <div class="stat"><span class="eyebrow">Sessions this month</span><span class="v">${st.month}</span></div>
+    <div class="stat"><span class="eyebrow">Active clients</span><span class="v">${st.active}</span></div>
+    <div class="stat"><span class="eyebrow">Inactive clients</span><span class="v">${st.clients.length-st.active}</span></div>
+  </div>
+  <div class="grid2">
+    <section class="panel"><header><h2>Book a session</h2><span class="muted">Shows on the Schedule right away</span></header>
+      <form class="form" id="bookForm" data-tid="${tid}" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+        <div class="field"><label for="bkType">Session type</label><select id="bkType">${CLASS_TYPES.map(x=>`<option ${x===bt?'selected':''}>${x}</option>`).join('')}</select></div>
+        <div class="field"><label for="bkDate">Date</label><input type="date" id="bkDate" value="${UI.bookDate||t}"></div>
+        <div class="field"><label for="bkTime">Time</label><input type="time" id="bkTime" value="${UI.bookTime||'09:00'}" step="900"></div>
+        ${bk==='grp'?'':`<div class="field"><label for="bkC1">Client</label><select id="bkC1">${opts}</select></div>`}
+        ${bk==='duo'?`<div class="field"><label for="bkC2">Second client</label><select id="bkC2">${opts}</select></div>`:''}
+        <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Book session</button></div>
+      </form>
+      <div class="eyebrow" style="margin:18px 0 6px">Next 7 days</div>
+      ${up.length?`<div class="rows">${up.map(([id,c])=>`<div class="row rowlink" data-class="${id}"><span class="t">${esc(c.time)}</span><div style="min-width:0">${sessLabel(c)}<br><span class="muted" style="font-size:.82rem">${esc(fmtDay(c.date))}</span></div><span class="slot ${slotCls(c)}" style="font-size:.72rem">${(c.booked||[]).length}/${c.cap}</span></div>`).join('')}</div>`:'<div class="empty">No sessions in the next 7 days.</div>'}
+    </section>
+    <section class="panel"><header><h2>Notes</h2></header>
+      <form id="noteForm" data-tid="${tid}" style="display:flex;flex-direction:column;gap:8px">
+        <div class="field"><label for="ntClient">About client (optional)</label><select id="ntClient"><option value="">General note</option>${allC.filter(([id])=>mineIds.has(id)).map(([id,c])=>`<option value="${id}">${esc(c.name)}</option>`).join('')}</select></div>
+        <div class="field"><label for="ntText">Note</label><textarea id="ntText" placeholder="e.g. Erinda: knee better, add lunges next week"></textarea></div>
+        <div style="display:flex;justify-content:flex-end"><button class="btn primary" type="submit">Save note</button></div>
+      </form>
+      <div class="rows" style="margin-top:10px">${notes.length?notes.map(([id,n])=>`<div style="padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="muted" style="font-size:.78rem">${n.ts?esc(new Date(n.ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' \u00b7 '+new Date(n.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})):''}${n.client&&S.clients[n.client]?' \u00b7 <b style="color:var(--ink)">'+esc(S.clients[n.client].name)+'</b>':''}</span>
+        <button class="btn sm danger" data-delnote="${id}" aria-label="Delete note">\u00d7</button></div>
+        <div style="white-space:pre-wrap">${esc(n.text)}</div></div>`).join(''):'<div class="empty">No notes yet.</div>'}</div>
+    </section>
+  </div>
+  <section class="panel"><header><h2>Clients</h2><div class="chips">${[['active','Active'],['inactive','Inactive'],['all','All']].map(([k,n])=>`<button class="chip" data-tf="${k}" aria-pressed="${f===k}">${n} <span class="num">${k==='all'?st.clients.length:k==='active'?st.active:st.clients.length-st.active}</span></button>`).join('')}</div></header>
+    ${cls.length?`<div class="tablewrap"><table><thead><tr><th>Name</th><th>Status</th><th>Package</th><th class="r">Sessions with ${esc(s.name)}</th><th class="r">Sessions left</th><th>Last session</th><th>Next session</th></tr></thead><tbody>
+    ${cls.map(c=>{const k=S.clients[c.id];return `<tr class="click" data-client="${c.id}"><td><b>${esc(k.name)}</b></td><td><span class="pill ${c.active?'ok':''}">${c.active?'Active':'Inactive'}</span></td><td>${pkgH(k.plan,'\u2014')}</td><td class="r num">${c.n}</td><td class="r num">${leftCell(k)}</td><td class="muted">${c.last?esc(fmtDay(c.last)):'\u2014'}</td><td>${c.next?esc(fmtDay(c.next.slice(0,10))+' '+c.next.slice(11)):'\u2014'}</td></tr>`}).join('')}
+    </tbody></table></div><p class="muted" style="margin:10px 0 0;font-size:.8rem">Active = package still running (not expired).</p>`:'<div class="empty">No clients in this list.</div>'}
+  </section>`;
+}
+
+/* --- Finances --- */
+const FIN_LINES=['Rent','Electricity & AirC.','Accountant Fee','Council Tax','Video & Marketing Service','Internet & Phone','Laundry & Studio Expenses','Insurance','VAT Payment','Others','Paychecks'];
+const AUTO_LINE='Laundry & Studio Expenses';
+const recExp=(yr,m)=>Object.values(S.expenses||{}).filter(e=>(e.date||'').startsWith(yr+'-'+pad(m))).reduce((s,e)=>s+(+e.amount||0),0);
+const FIN_FIRST=2019;
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const nfmt=v=>v==null||v===''?'':(+v).toLocaleString('en-US',{maximumFractionDigits:2});
+const pnum=v=>{v=String(v||'').replace(/[\s,]/g,'').replace(/L|lek/gi,'');if(v==='')return null;const n=Number(v);return isFinite(n)?n:NaN};
+function finDoc(yr){const d=S.finances['y'+yr]||{};let rows=(d.rows&&d.rows.length?d.rows:FIN_LINES.map(n=>({name:n,m:{}})));
+  if(!rows.some(r=>r.name===AUTO_LINE)){rows=rows.map(r=>r.name==='Laundry'?{...r,name:AUTO_LINE}:r);if(!rows.some(r=>r.name===AUTO_LINE)){const i=rows.findIndex(r=>r.name==='Insurance');rows.splice(i<0?rows.length:i,0,{name:AUTO_LINE,m:{}})}}
+  return{rows,sales:d.sales||{}}}
+const rowVal=(r,yr,m)=>(+r.m?.[m]||0)+(r.name===AUTO_LINE?recExp(yr,m):0);
+function finTotals(yr){const d=finDoc(yr),cost=[],sales=[];for(let m=1;m<=12;m++){cost.push(d.rows.reduce((s,r)=>s+rowVal(r,yr,m),0));sales.push(+d.sales[m]||0)}
+  const C=cost.reduce((a,b)=>a+b,0),Sa=sales.reduce((a,b)=>a+b,0);return{cost,sales,C,Sa,P:Sa-C}}
+async function finSave(yr,mut){const d=JSON.parse(JSON.stringify(finDoc(yr)));mut(d);await save(()=>store.set('finances','y'+yr,{rows:d.rows,sales:d.sales,year:yr}))}
+const pc=v=>v>0?'var(--ok)':v<0?'var(--bad)':'var(--muted)';
+function finMonth(yr,m,d,T){
+  const name=new Date(yr,m-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const c=T.cost[m-1],sa=T.sales[m-1],pr=sa-c;
+  const prevC=m>1?T.cost[m-2]:finTotals(yr-1).cost[11],prevS=m>1?T.sales[m-2]:finTotals(yr-1).sales[11];
+  const app=Object.values(S.payments).filter(x=>(x.date||'').startsWith(yr+'-'+pad(m))).reduce((s,x)=>s+(+x.amount||0),0);
+  const delta=(a,b)=>b?`<span class="pill ${a>=b?'ok':'warn'}" style="margin-left:6px">${a>=b?'+':''}${Math.round((a-b)/b*100)}%</span>`:'';
+  return `<div class="grid2">
+    <section class="panel"><header><h2>${esc(name)} \u00b7 costs</h2><span class="num" style="font-weight:600">${L(c)}</span></header>
+      <div class="rows">${d.rows.map((r,i)=>r.name===AUTO_LINE?`<div class="frow autorow"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><label for="fc_${i}_${m}">${esc(r.name)}</label><span class="muted" style="font-size:.76rem">Laundromat bill (type) + reception expenses <b class="num" style="color:var(--ink)">${nfmt(recExp(yr,m))||'0'}</b> = <b class="num" style="color:var(--ink)">${nfmt(rowVal(r,yr,m))||'0'}</b></span></div><input class="cell num" id="fc_${i}_${m}" data-fr="${i}" data-fm="${m}" inputmode="decimal" placeholder="Laundromat" value="${nfmt(r.m?.[m])}"></div>`:`<div class="frow"><label for="fc_${i}_${m}">${esc(r.name)}</label><input class="cell num" id="fc_${i}_${m}" data-fr="${i}" data-fm="${m}" inputmode="decimal" placeholder="0" value="${nfmt(r.m?.[m])}"></div>`).join('')}
+      <div class="frow total"><span>Total fixed cost</span><span class="num">${nfmt(c)||'0'}</span></div></div>
+    </section>
+    <section class="panel"><header><h2>${esc(name)} \u00b7 result</h2></header>
+      <div class="rows">
+        <div class="frow"><label for="fc_s_${m}"><b>Total sales</b></label><input class="cell num" id="fc_s_${m}" data-fr="s" data-fm="${m}" inputmode="decimal" placeholder="0" value="${nfmt(d.sales[m])}"></div>
+        <div class="frow"><span class="muted">Sales recorded in app</span><span class="num muted">${app?nfmt(app):'\u2014'}</span></div>
+        <div class="frow"><span>Total costs</span><span class="num">${nfmt(c)||'0'}</span></div>
+        <div class="frow total"><span>Profit</span><span class="num" style="color:${pc(pr)}">${sa||c?nfmt(pr):'\u2014'}</span></div>
+        <div class="frow"><span class="muted">Margin</span><span class="num">${sa?Math.round(pr/sa*100)+'%':'\u2014'}</span></div>
+        <div class="frow"><span class="muted">Sales vs last month</span><span class="num">${prevS?nfmt(prevS):'\u2014'}${delta(sa,prevS)}</span></div>
+        <div class="frow"><span class="muted">Costs vs last month</span><span class="num">${prevC?nfmt(prevC):'\u2014'}${prevC?`<span class="pill ${c<=prevC?'ok':'warn'}" style="margin-left:6px">${c>=prevC?'+':''}${Math.round((c-prevC)/prevC*100)}%</span>`:''}</span></div>
+      </div>
+    </section></div>`;
+}
+function finChart(selYr){
+  const cy=new Date().getFullYear(),YRS=[];for(let y2=FIN_FIRST;y2<=cy;y2++)YRS.push(y2);
+  const TT=YRS.map(finTotals);let T={sales:TT.map(o=>o.Sa),cost:TT.map(o=>o.C)},MONTHS=YRS.map(String),N=YRS.length,yearly=true;
+  if(UI.finChartMode==='months'||TT.filter(o=>o.Sa||o.C).length<2){const st=finTotals(selYr);T={sales:st.sales,cost:st.cost};MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];N=12;yearly=false}
+  const has=i=>T.sales[i]||T.cost[i];
+  const idx=[...Array(N).keys()].filter(has);
+  if(!idx.length)return '<section class="panel"><div class="empty">Enter costs and sales below to see the yearly chart.</div></section>';
+  const pr=T.sales.map((s,i)=>s-T.cost[i]);
+  const nice=v=>{if(v<=0)return 0;const q=10**Math.floor(Math.log10(v)),f=v/q;return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*q};
+  let hi=Math.max(0,...idx.map(i=>pr[i])),lo=Math.min(0,...idx.map(i=>pr[i]));
+  const stp=nice(((hi-lo)||1e6)/4)||250000;hi=Math.ceil(hi*1.12/stp)*stp||stp;lo=0;
+  const W=980,H=320,l=60,r=20,t=26,b=36,cw=(W-l-r)/N,y=v=>t+(H-t-b)*(hi-v)/(hi-lo),x=i=>l+cw*i+cw/2,y0=y(0);
+  const ticks=[];for(let v=lo;v<=hi+1e-6;v+=stp)ticks.push(v);
+  const fmtS=v=>(v<0?'-':'')+kfmt(Math.abs(v));
+  const grid=ticks.map(v=>`<line x1="${l}" x2="${W-r}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)" stroke-width="1" ${v===0?'':'stroke-dasharray="2 4"'}/><text x="${l-10}" y="${y(v)+4}" text-anchor="end" style="fill:var(--muted);font:11px var(--mono)">${fmtS(v)}</text>`).join('');
+  const P=idx.map(i=>[x(i),y(Math.max(0,pr[i]))]);
+  let d=`M${P[0][0]} ${P[0][1]}`;
+  for(let k=0;k<P.length-1;k++){const p0=P[k-1]||P[k],p1=P[k],p2=P[k+1],p3=P[k+2]||p2,tn=.18;
+    const c1=[p1[0]+(p2[0]-p0[0])*tn,Math.min(y0,p1[1]+(p2[1]-p0[1])*tn)],c2=[p2[0]-(p3[0]-p1[0])*tn,Math.min(y0,p2[1]-(p3[1]-p1[1])*tn)];
+    d+=` C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${p2[0]} ${p2[1]}`}
+  const area=`${d} L${P[P.length-1][0]} ${y0} L${P[0][0]} ${y0} Z`;
+  const id='fcy';
+  const dots=idx.map(i=>{const v=pr[i],c=v>=0?'var(--ok)':'var(--bad)';return `<g ${yearly?`data-fy="${YRS[i]}"`:`data-fmon="${i+1}"`} style="cursor:pointer">${yearly&&YRS[i]===selYr?`<line x1="${x(i)}" x2="${x(i)}" y1="${t}" y2="${H-b}" style="stroke:var(--brand)" stroke-width="1.5" stroke-dasharray="3 3"/>`:''}<circle cx="${x(i)}" cy="${y(Math.max(0,v))}" r="11" style="fill:${c};opacity:.12"/><circle cx="${x(i)}" cy="${y(Math.max(0,v))}" r="5.5" style="fill:var(--surface);stroke:${c}" stroke-width="3"><title>${MONTHS[i]} \u00b7 sales ${L(T.sales[i])} \u00b7 costs ${L(T.cost[i])} \u00b7 profit ${L(v)}</title></circle><text x="${x(i)}" y="${y(Math.max(0,v))-16}" text-anchor="middle" style="fill:${c};font:700 12px var(--mono)">${fmtS(v)}</text></g>`}).join('');
+  const labels=MONTHS.map((m,i)=>`<text x="${x(i)}" y="${H-10}" text-anchor="middle" style="fill:${yearly&&YRS[i]===selYr?'var(--brand)':has(i)?'var(--ink)':'var(--muted)'};font:${has(i)||(yearly&&YRS[i]===selYr)?700:400} 13px var(--mono)">${m}</text>`).join('');
+  const best=idx.reduce((a,i)=>pr[i]>pr[a]?i:a,idx[0]),worst=idx.reduce((a,i)=>pr[i]<pr[a]?i:a,idx[0]);
+  return `<section class="panel"><header><div><h2>${yearly?`Profit by year \u00b7 ${FIN_FIRST}\u2013${cy}`:`Profit by month \u00b7 ${selYr}`}</h2><span class="muted">Best ${MONTHS[best]} <b style="color:var(--ok)">${L(pr[best])}</b> \u00b7 weakest ${MONTHS[worst]} <b style="color:${pr[worst]<0?'var(--bad)':'var(--ink)'}">${L(pr[worst])}</b></span></div><div class="chips"><button class="chip" data-fcm="months" aria-pressed="${!yearly}">${selYr} by month</button><button class="chip" data-fcm="years" aria-pressed="${yearly}">All years</button></div></header>
+    <div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:700px;height:auto;display:block" role="img" aria-label="Profit by year">
+    <defs>
+      <linearGradient id="${id}g" x1="0" y1="${t}" x2="0" y2="${y0}" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--ok);stop-opacity:.42"/><stop offset="1" style="stop-color:var(--ok);stop-opacity:.03"/></linearGradient>
+      <linearGradient id="${id}r" x1="0" y1="${y0}" x2="0" y2="${H-b}" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--bad);stop-opacity:.03"/><stop offset="1" style="stop-color:var(--bad);stop-opacity:.42"/></linearGradient>
+      <clipPath id="${id}a"><rect x="0" y="0" width="${W}" height="${y0}"/></clipPath>
+      <clipPath id="${id}b"><rect x="0" y="${y0}" width="${W}" height="${H}"/></clipPath>
+    </defs>
+    ${grid}
+    <path d="${area}" fill="url(#${id}g)" clip-path="url(#${id}a)"/>
+    <path d="${area}" fill="url(#${id}r)" clip-path="url(#${id}b)"/>
+    <path d="${d}" fill="none" style="stroke:var(--ok)" stroke-width="3.5" stroke-linecap="round" clip-path="url(#${id}a)"/>
+    <path d="${d}" fill="none" style="stroke:var(--bad)" stroke-width="3.5" stroke-linecap="round" clip-path="url(#${id}b)"/>
+    <line x1="${l}" x2="${W-r}" y1="${y0}" y2="${y0}" style="stroke:var(--muted)" stroke-width="1.2"/>
+    ${dots}${labels}</svg></div></section>`;
+}
+function pFin(){
+  const cy=new Date().getFullYear(),yr=UI.finYear||cy,d=finDoc(yr),T=finTotals(yr);
+  const fm=UI.finMonth==null?(yr===cy?new Date().getMonth()+1:1):UI.finMonth;
+  const years=[];for(let y=cy;y>=FIN_FIRST;y--)years.push(y);
+  const appSales=[...Array(12)].map((_,i)=>{const k=yr+'-'+pad(i+1);return Object.values(S.payments).filter(x=>(x.date||'').startsWith(k)).reduce((s,x)=>s+(+x.amount||0),0)});
+  const cell=(row,m,v)=>`<td class="r"><input class="cell num" id="fc_${row}_${m}" data-fr="${row}" data-fm="${m}" inputmode="decimal" value="${nfmt(v)}" aria-label="${row==='s'?'Sales':esc(d.rows[row].name)} ${MONTHS[m-1]}"></td>`;
+  return `<div class="pagehead"><div><div class="eyebrow">Owner only</div><h1>Finances</h1></div>${fm?`<button class="btn primary" data-act="finexcel">Export ${MONTHS[fm-1]} ${yr} to Excel</button>`:''}</div>
+  <div class="chips">${years.map(y=>{const t=finTotals(y);return `<button class="chip" data-fy="${y}" aria-pressed="${y===yr}">${y}${t.Sa||t.C?` <span class="num" style="opacity:.75">${kfmt(t.P)}</span>`:''}</button>`}).join('')}</div>
+  ${finChart(yr)}
+  <div class="stats">
+    <div class="stat"><span class="eyebrow">Total sales ${yr}</span><span class="v">${L(T.Sa)}</span></div>
+    <div class="stat"><span class="eyebrow">Total costs ${yr}</span><span class="v">${L(T.C)}</span></div>
+    <div class="stat"><span class="eyebrow">Profit ${yr}</span><span class="v" style="color:${pc(T.P)}">${L(T.P)}</span></div>
+    <div class="stat"><span class="eyebrow">Margin</span><span class="v">${T.Sa?Math.round(T.P/T.Sa*100)+'%':'\u2014'}</span></div>
+  </div>
+  <div class="months">${MONTHS.map((n,i)=>{const v=T.sales[i]-T.cost[i],has=T.sales[i]||T.cost[i];return `<button class="mon ${fm===i+1?'on':''} ${yr===cy&&i===new Date().getMonth()?'cur':''}" data-fmon="${i+1}"><span>${n}</span><b class="num" style="${has&&fm!==i+1?'color:'+pc(v):''}">${has?kfmt(v):'\u2014'}</b></button>`}).join('')}</div>
+  <div class="chips"><button class="chip" data-fmon="0" aria-pressed="${fm===0}">Year overview (all months)</button></div>
+  ${fm?finMonth(yr,fm,d,T):`<section class="panel" style="padding:0"><div class="tablewrap"><table class="fin">
+    <thead><tr><th class="fname">${yr}</th>${MONTHS.map(m=>`<th class="r">${m}</th>`).join('')}<th class="r">Year</th></tr></thead>
+    <tbody>
+      <tr class="sec"><th class="fname" colspan="14">Fixed costs</th></tr>
+      ${d.rows.map((r,i)=>{const auto=r.name===AUTO_LINE,tot=[...Array(12)].reduce((a,_,k)=>a+rowVal(r,yr,k+1),0);return auto?`<tr class="autorow"><th class="fname">${esc(r.name)}<br><span class="muted" style="font-size:.72rem;font-weight:400">laundromat (type) + reception</span></th>${[...Array(12)].map((_,k)=>{const e=recExp(yr,k+1);return `<td class="r"><input class="cell num" id="fc_${i}_${k+1}" data-fr="${i}" data-fm="${k+1}" inputmode="decimal" value="${nfmt(r.m?.[k+1])}" aria-label="Laundromat ${MONTHS[k]}">${e?`<div class="muted num" style="font-size:.7rem;padding-right:6px">+${nfmt(e)}</div>`:''}</td>`}).join('')}<td class="r num tot">${nfmt(tot)||'\u2014'}</td></tr>`:`<tr><th class="fname">${esc(r.name)}${FIN_LINES.includes(r.name)?'':` <button class="btn sm danger" data-finrm="${i}" aria-label="Remove line" style="padding:0 .4rem">\u00d7</button>`}</th>${[...Array(12)].map((_,m)=>cell(i,m+1,r.m?.[m+1])).join('')}<td class="r num tot">${nfmt(tot)||'\u2014'}</td></tr>`}).join('')}
+      <tr class="sum"><th class="fname">Total fixed cost</th>${T.cost.map(v=>`<td class="r num">${nfmt(v)||'0'}</td>`).join('')}<td class="r num">${nfmt(T.C)||'0'}</td></tr>
+      <tr class="sales"><th class="fname">Total sales</th>${[...Array(12)].map((_,m)=>cell('s',m+1,d.sales[m+1])).join('')}<td class="r num tot">${nfmt(T.Sa)||'0'}</td></tr>
+      <tr class="sum"><th class="fname">Profit</th>${T.cost.map((c,i)=>{const v=T.sales[i]-c;return `<td class="r num" style="color:${pc(v)}">${T.sales[i]||c?nfmt(v):''}</td>`}).join('')}<td class="r num" style="color:${pc(T.P)}">${nfmt(T.P)}</td></tr>
+      <tr class="ref"><th class="fname">Sales recorded in app</th>${appSales.map(v=>`<td class="r num">${v?nfmt(v):''}</td>`).join('')}<td class="r num">${nfmt(appSales.reduce((a,b)=>a+b,0))||''}</td></tr>
+    </tbody></table></div></section>`}
+  <form class="toolbar" id="finAdd"><input id="finNew" placeholder="New cost line, e.g. Equipment" style="max-width:280px"><button class="btn" type="submit">Add cost line</button><span class="muted" style="font-size:.82rem">Type an amount in any cell and press Enter or Tab. It saves automatically.</span></form>`;
+}
+
+/* --- Trainer notes on dashboard --- */
+function notesPanel(){
+  const f=UI.noteFilter||'';
+  const all=Object.entries(S.notes||{}).filter(([,n])=>!f||n.trainer===f).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+  const list=all.slice(0,UI.noteMore?60:8);
+  const when=ts=>{if(!ts)return '';const d=new Date(ts),k=ymd(d);return (k===today()?'Today':k===addDays(today(),-1)?'Yesterday':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}))+' \u00b7 '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})};
+  return `<section class="panel"><header><div><h2>Trainer notes</h2><span class="muted">Latest notes from the trainers</span></div>
+    <select id="noteFilter" style="width:auto"><option value="">All trainers</option>${trainersList().map(([id,s])=>`<option value="${id}" ${id===f?'selected':''}>${esc(s.name)}</option>`).join('')}</select></header>
+    ${list.length?`<div class="notegrid">${list.map(([,n])=>`<div class="note"><div class="muted" style="font-size:.78rem;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span><b style="color:var(--accent)">${esc(staffName(n.trainer))}</b>${n.client&&S.clients[n.client]?' \u2192 <b style="color:var(--ink)">'+esc(S.clients[n.client].name)+'</b>':''}</span><span>${esc(when(n.ts))}</span></div><div style="white-space:pre-wrap">${esc(n.text)}</div></div>`).join('')}</div>
+    ${all.length>list.length?'<div style="margin-top:10px"><button class="btn sm" data-act="notemore">Show more</button></div>':''}`:'<div class="empty">No trainer notes yet. Trainers add them on their Team page.</div>'}
+  </section>`;
+}
+
+/* --- Studio expenses --- */
+const NATIONALITIES=['Albania','Kosovo','Italy','Turkey','Greece','Germany','United Kingdom','United States','France','Spain','Netherlands','North Macedonia','Montenegro','Serbia','Romania','Poland','Ukraine','Russia','Switzerland','Austria','Canada','Lithuania','Kazakhstan','Thailand','Other'];
+const NAT_FIX={Albanian:'Albania',Kosovar:'Kosovo',Italian:'Italy',Turkish:'Turkey',Greek:'Greece',German:'Germany',British:'United Kingdom',American:'United States',French:'France',Spanish:'Spain',Dutch:'Netherlands','North Macedonian':'North Macedonia',Montenegrin:'Montenegro',Serbian:'Serbia',Romanian:'Romania',Polish:'Poland',Ukrainian:'Ukraine',Russian:'Russia',Swiss:'Switzerland',Austrian:'Austria',Canadian:'Canada'};
+const natName=v=>NAT_FIX[v]||v||'';
+const SOURCES=['Instagram','Facebook','TikTok','Google search','Google Maps','Website','Friend / referral','Walk-in','Trainer referral','Event','Other'];
+const EXP_CATS=['Cleaning','Water & coffee','Office supplies','Towels & laundry','Small repairs','Transport','Other'];
+function expSection(){
+  const cur=today().slice(0,7),sel=UI.expMonth||cur;
+  const rows=Object.entries(S.expenses||{}).filter(([,e])=>(e.date||'').startsWith(sel)).sort((a,b)=>(b[1].date+(b[1].ts||0)).localeCompare(a[1].date+(a[1].ts||0)));
+  const tot=rows.reduce((s,[,e])=>s+(+e.amount||0),0),canDel=UI.role!=='reception';
+  const name=new Date(+sel.slice(0,4),+sel.slice(5)-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  return `<section class="panel"><header><div><h2>Studio expenses</h2><span class="muted">${esc(name)}</span></div>
+    <div class="toolbar"><button class="btn sm" data-act="em-1" aria-label="Previous month">\u2190</button><button class="btn sm" data-act="em1" aria-label="Next month" ${sel>=cur?'disabled':''}>\u2192</button><span class="num" style="font-size:1.15rem;font-weight:700">${L(tot)}</span></div></header>
+    ${sel===cur?`<form id="expForm" class="expadd"><select id="exCat" aria-label="Category">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id="exNote" placeholder="Note (optional)" aria-label="Note"><input id="exAmt" type="number" min="0" step="50" placeholder="Lek" aria-label="Amount"><input type="hidden" id="exDate" value="${today()}"><button class="btn primary" type="submit">Add</button></form>`:''}
+    ${rows.length?`<div class="rows">${rows.map(([id,e])=>`<div class="exrow"><span class="muted num">${esc(parse(e.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}))}</span><span><b>${esc(e.cat)}</b>${e.note?` <span class="muted">\u00b7 ${esc(e.note)}</span>`:''}</span><span class="num">${L(e.amount)}</span>${canDel?`<button class="xbtn" data-delexp="${id}" aria-label="Delete">\u00d7</button>`:''}</div>`).join('')}</div>`:'<div class="empty" style="padding:14px">No expenses this month.</div>'}
+  </section>`;
+}
+const kfmt=v=>{if(v<0)return '-'+kfmt(-v);return v>=1e6?(v/1e6).toFixed(1).replace(/\.0$/,'')+'M':v>=1e3?Math.round(v/1e3)+'k':String(Math.round(v))};
+
+/* --- Monthly revenue chart --- */
+function chartToggle(){const m=UI.chartMode||'month';return `<div class="chips"><button class="chip" data-cm="day" aria-pressed="${m==='day'}">Day</button><button class="chip" data-cm="month" aria-pressed="${m==='month'}">Month</button>${P().revenue?`<button class="chip" data-cm="six" aria-pressed="${m==='six'}">Last 6 months</button>`:''}</div>`}
+function revChart(){let m=UI.chartMode||'month';if(m==='six'&&!P().revenue)m=UI.chartMode='month';return m==='day'?revDay():m==='month'?revDaily():revSix()}
+function revDay(){
+  const t=today(),d=P().allPayments||P().payDates?(UI.dashPayDay||t):t,pays=payList().filter(([,x])=>x.date===d);
+  const tot=pays.reduce((a,[,x])=>a+(+x.amount||0),0),by={};pays.forEach(([,x])=>by[x.method]=(by[x.method]||0)+(+x.amount||0));
+  const lbl=d===t?'Today':d===addDays(t,-1)?'Yesterday':fmtLong(d);
+  const hrs=[];for(let h=7;h<=21;h++)hrs.push(h);
+  const hv=hrs.map(h=>pays.filter(([,x])=>x.ts&&new Date(x.ts).getHours()===h).reduce((a,[,x])=>a+(+x.amount||0),0));
+  const off=pays.filter(([,x])=>!x.ts||new Date(x.ts).getHours()<7||new Date(x.ts).getHours()>21).reduce((a,[,x])=>a+(+x.amount||0),0);
+  const max=Math.max(...hv,1),q=10**Math.floor(Math.log10(max)),f=max/q,nice=(f<=1?1:f<=2?2:f<=5?5:10)*q;
+  const W=980,H=220,l=52,r=8,tp=24,b=28,cw=(W-l-r)/hrs.length,bw=Math.min(40,cw*.6),y=v=>tp+(H-tp-b)*(1-v/nice);
+  const grid=[0,.5,1].map(fr=>{const v=fr*nice,yy=y(v);return `<line x1="${l}" x2="${W-r}" y1="${yy}" y2="${yy}" style="stroke:var(--line)"/><text x="${l-8}" y="${yy+4}" text-anchor="end" style="fill:var(--muted);font:11px var(--mono)">${kfmt(v)}</text>`}).join('');
+  const bars=hrs.map((h,i)=>{const v=hv[i],x=l+i*cw+(cw-bw)/2,yy=y(v);return `${v?`<rect x="${x}" y="${yy}" width="${bw}" height="${H-b-yy}" rx="3" style="fill:var(--brand)"><title>${pad(h)}:00 \u00b7 ${L(v)}</title></rect><text x="${x+bw/2}" y="${yy-6}" text-anchor="middle" style="fill:var(--ink);font:600 10.5px var(--mono)">${kfmt(v)}</text>`:''}<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" style="fill:var(--muted);font:11px var(--mono)">${pad(h)}</text>`}).join('');
+  return `<section class="panel"><header><div><h2>Payments \u00b7 ${esc(lbl)}</h2><span class="muted">${pays.length} sale${pays.length===1?'':'s'} \u00b7 <b class="num" style="color:var(--ink)">${L(tot)}</b>${Object.keys(by).length?' \u00b7 '+Object.entries(by).map(([m,v])=>esc(m)+' '+kfmt(v)).join(' \u00b7 '):''}</span></div>
+    <div class="toolbar">${P().allPayments||P().payDates?`<button class="btn sm" data-act="dp-1" aria-label="Previous day">\u2190</button><button class="btn sm" data-act="dp0" ${d===t?'disabled':''}>Today</button><button class="btn sm" data-act="dp1" aria-label="Next day" ${d>=t?'disabled':''}>\u2192</button>`:''}${P().revenue||P().payDates?chartToggle():''}</div></header>
+    ${pays.length?`<div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:620px;height:auto;display:block" role="img" aria-label="Payments by hour">${grid}${bars}</svg></div>${off?`<p class="muted" style="font-size:.78rem;margin:4px 0 0">${L(off)} recorded outside 07\u201321h</p>`:''}
+    <div class="rows" style="margin-top:8px">${pays.map(([,x])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr) auto"><span class="t" style="font-size:.82rem">${x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}</span><div style="min-width:0"><b>${x.kind==='product'?'Product':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</b> <span class="muted" style="font-size:.82rem">\u00b7 ${esc(planName(x.item)||x.item)} \u00b7 ${esc(x.method)}</span></div><span class="num" style="font-weight:600">${L(x.amount)}</span></div>`).join('')}</div>`:'<div class="empty">No payments on this day yet.</div>'}
+  </section>`;
+}
+function revDaily(){
+  const mk=UI.chartMonth||today().slice(0,7),[yy,mm]=mk.split('-').map(Number),nd=new Date(yy,mm,0).getDate(),td=today();
+  const pays=Object.values(S.payments).filter(x=>(x.date||'').startsWith(mk));
+  const ds=[...Array(nd)].map((_,i)=>{const k=mk+'-'+pad(i+1);return{k,d:i+1,v:pays.filter(x=>x.date===k).reduce((s,x)=>s+(+x.amount||0),0)}});
+  const max=Math.max(...ds.map(d=>d.v));
+  const nice=max<=0?10000:(()=>{const q=10**Math.floor(Math.log10(max)),f=max/q;return(f<=1?1:f<=2?2:f<=5?5:10)*q})();
+  const W=980,H=280,l=52,r=8,t=26,b=40,cw=(W-l-r)/nd,bw=Math.max(3,cw*.7),y=v=>t+(H-t-b)*(1-v/nice);
+  const kfmt=v=>v>=1e6?(v/1e6).toFixed(v%1e6?1:0)+'M':v>=1e3?Math.round(v/1e3)+'k':String(v);
+  const grid=[0,.25,.5,.75,1].map(f=>{const v=f*nice,yv=y(v);/*daily*/return `<line x1="${l}" x2="${W-r}" y1="${yv}" y2="${yv}" style="stroke:var(--line)" stroke-width="1"/><text x="${l-8}" y="${yv+4}" text-anchor="end" style="fill:var(--muted);font:11px var(--mono)">${kfmt(v)}</text>`}).join('');
+  const bars=ds.map((d,i)=>{const x=l+i*cw+(cw-bw)/2,cx=x+bw/2,yv=y(d.v),h=Math.max(0,H-b-yv),isT=d.k===td,wd=parse(d.k).toLocaleDateString('en-GB',{weekday:'short'}).slice(0,2),sun=parse(d.k).getDay()===0;
+    return `${d.v?`<rect x="${x}" y="${yv}" width="${bw}" height="${h}" rx="2" style="fill:var(--brand);opacity:${isT?1:.6}"><title>${fmtDay(d.k)}: ${L(d.v)}</title></rect><text x="${cx}" y="${yv-6}" text-anchor="middle" style="fill:var(--ink);font:500 10px var(--mono)">${kfmt(d.v)}</text>`:''}<text x="${cx}" y="${H-22}" text-anchor="middle" style="fill:${isT?'var(--ink)':'var(--muted)'};font:${isT?700:500} 11px var(--mono)">${d.d}</text><text x="${cx}" y="${H-8}" text-anchor="middle" style="fill:${sun?'var(--bad)':'var(--muted)'};font:400 9px var(--body)">${wd}</text>`}).join('');
+  const total=ds.reduce((s,d)=>s+d.v,0),open=ds.filter(d=>d.v>0),best=open.reduce((a,d)=>d.v>(a?.v||0)?d:a,null);
+  const name=new Date(yy,mm-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  return `<section class="panel"><header><div><h2>Daily sales · ${esc(name)}</h2></div>
+    <div class="toolbar"><button class="btn sm" data-act="cm-1" aria-label="Previous month">←</button><button class="btn sm" data-act="cm1" aria-label="Next month" ${mk>=td.slice(0,7)?'disabled':''}>→</button>${chartToggle()}</div></header>
+    <div class="months" style="margin-bottom:12px">${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((n,i)=>{const k=yy+'-'+pad(i+1),v=Object.values(S.payments).filter(x=>(x.date||'').startsWith(k)).reduce((a,x)=>a+(+x.amount||0),0);return `<button class="mon ${k===mk?'on':''} ${k===td.slice(0,7)?'cur':''}" data-chm="${k}" ${k>td.slice(0,7)?'disabled':''}><span>${n}</span><b class="num">${v?kfmt(v):'\u2014'}</b></button>`}).join('')}</div>
+    <p class="muted" style="margin:-4px 0 10px"><b class="num" style="color:var(--ink)">${L(total)}</b> total in ${esc(name)}</p>
+    <div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:820px;height:auto;display:block" role="img" aria-label="Daily sales for ${esc(name)}">${grid}${bars}</svg></div></section>`;
+}
+function revSix(){
+  const now=new Date(),ms=[];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);ms.push({k:ymd(d).slice(0,7),n:d.toLocaleDateString('en-GB',{month:'short'})})}
+  const pays=Object.values(S.payments);
+  ms.forEach(m=>m.v=pays.filter(x=>(x.date||'').startsWith(m.k)).reduce((s,x)=>s+(+x.amount||0),0));
+  const max=Math.max(...ms.map(m=>m.v));
+  const nice=max<=0?10000:(()=>{const q=10**Math.floor(Math.log10(max)),f=max/q;return(f<=1?1:f<=2?2:f<=5?5:10)*q})();
+  const W=600,H=230,l=52,r=8,t=22,b=28,cw=(W-l-r)/ms.length,bw=Math.min(56,cw*.56),y=v=>t+(H-t-b)*(1-v/nice);
+  const kfmt=v=>v>=1e6?(v/1e6).toFixed(v%1e6?1:0)+'M':v>=1e3?Math.round(v/1e3)+'k':String(v);
+  const grid=[0,.25,.5,.75,1].map(f=>{const v=f*nice,yy=y(v);return `<line x1="${l}" x2="${W-r}" y1="${yy}" y2="${yy}" style="stroke:var(--line)" stroke-width="1"/><text x="${l-8}" y="${yy+4}" text-anchor="end" style="fill:var(--muted);font:11px var(--mono)">${kfmt(v)}</text>`}).join('');
+  const bars=ms.map((m,i)=>{const x=l+i*cw+(cw-bw)/2,yy=y(m.v),h=Math.max(0,H-b-yy),cur=i===ms.length-1;
+    return `<rect x="${x}" y="${yy}" width="${bw}" height="${h}" rx="3" style="fill:var(--brand);opacity:${cur?1:.5}"><title>${m.n}: ${L(m.v)}</title></rect>
+    ${m.v?`<text x="${x+bw/2}" y="${yy-6}" text-anchor="middle" style="fill:var(--ink);font:500 11px var(--mono)">${kfmt(m.v)}</text>`:''}
+    <text x="${x+bw/2}" y="${H-8}" text-anchor="middle" style="fill:${cur?'var(--ink)':'var(--muted)'};font:${cur?600:400} 12px var(--body)">${m.n}</text>`}).join('');
+  const total=ms.reduce((s,m)=>s+m.v,0),cur=ms[5].v,prev=ms[4].v;
+  const chg=prev?Math.round((cur-prev)/prev*100):null;
+  return `<section class="panel"><header><div><h2>Monthly sales</h2><span class="muted">Last 6 months · ${L(total)} total</span></div>
+    <div class="toolbar">${chg!==null?`<span class="pill ${chg>=0?'ok':'warn'}">${chg>=0?'+':''}${chg}% vs ${ms[4].n} so far</span>`:''}${chartToggle()}</div></header>
+    <div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:420px;height:auto;display:block" role="img" aria-label="Monthly sales, last 6 months">${grid}${bars}</svg></div></section>`;
+}
+
+/* --- Schedule --- */
+function pSched(){
+  const p=P(),w=UI.week,days=[...Array(7)].map((_,i)=>addDays(w,i)),t=today(),v=UI.schedView||'line';
+  const tabs=`<div class="chips"><button class="chip" data-sv="line" aria-pressed="${v==='line'}">Day</button><button class="chip" data-sv="trainer" aria-pressed="${v==='trainer'}">Week by trainer</button><button class="chip" data-sv="day" aria-pressed="${v==='day'}">Week by day</button></div>`;
+  if(v==='line'){const d=UI.schedDay||t;
+    return `<div class="pagehead"><div><div class="eyebrow">${d===t?'Today':d===addDays(t,1)?'Tomorrow':d===addDays(t,-1)?'Yesterday':'Schedule'}</div><h1>${esc(fmtLong(d))}</h1><div class="muted" style="margin-top:4px">${(()=>{const cs=Object.values(S.classes).filter(x=>x.date===d&&(x.booked||[]).length);const cl=cs.reduce((n,x)=>n+(x.booked||[]).length,0);return cs.length+' session'+(cs.length===1?'':'s')+' \u00b7 '+cl+' client'+(cl===1?'':'s')})()}</div></div>
+    <div class="toolbar"><button class="btn" data-act="sd-1" aria-label="Previous day">\u2190 Prev day</button><button class="btn" data-act="sd0" ${d===t?'disabled':''}>Today</button><input type="date" id="schedDate" value="${d}" style="width:auto" aria-label="Pick a day"><button class="btn primary" data-act="sd1" aria-label="Next day">Next day \u2192</button>${tabs}
+    ${p.editClasses?'<button class="btn" data-act="addclass">Add session</button>':''}</div></div>${dayLine(d)}`}
+  return `<div class="pagehead"><div><div class="eyebrow">Week of ${esc(fmtDay(w))}</div><h1>Schedule</h1></div>
+    <div class="toolbar"><button class="btn" data-act="wk-1" aria-label="Previous week">←</button><button class="btn" data-act="wk0">This week</button><button class="btn" data-act="wk1" aria-label="Next week">→</button>
+    ${tabs}
+    ${p.editClasses?'<button class="btn primary" data-act="addclass">Add session</button>':''}</div></div>
+  ${v==='trainer'?trainerGrid(days):`<div class="week">${days.map(d=>{const cl=classesOn(d);return `<div class="day ${d===t?'today':''}"><h3>${esc(fmtDay(d))}</h3>
+    ${cl.map(([id,c])=>{const n=(c.booked||[]).length;return `<button class="cls ${slotCls(c)}" data-class="${id}"><span class="t">${esc(c.time)} · ${c.dur||50}m</span><b>${esc(typeName(c.type))}</b><small>${esc(staffName(c.instructor))}</small>
+      <span class="pill ${n>=c.cap?'warn':''}" style="align-self:flex-start;margin-top:4px">${n}/${c.cap} booked</span></button>`}).join('')||'<span class="muted" style="font-size:.8rem;padding:4px">—</span>'}
+  </div>`}).join('')}</div>`}`;
+}
+const TL0=7*60,TL1=21*60;
+const toMin=t=>{const[a,b]=String(t||'0:0').split(':').map(Number);return a*60+(b||0)};
+function dayLine(d){
+  const me=UI.role==='trainer'?UI.trainer:null,t=today();
+  const tr=Object.entries(S.staff).filter(([id,s])=>s.role==='Instructor'&&(!me||id===me)).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const all=Object.entries(S.classes).filter(([,c])=>c.date===d&&(!me||c.instructor===me));
+  const rows=[...tr.map(([id,s])=>({id,name:s.name})),...(!me&&all.some(([,c])=>!S.staff[c.instructor])?[{id:'',name:'Unassigned'}]:[])];
+  if(!rows.length)return '<div class="panel empty">No trainers yet. Add them on the Staff page as Trainer.</div>';
+  const span=TL1-TL0,pct=m=>Math.max(0,Math.min(100,(m-TL0)/span*100));
+  const hours=[];for(let h=TL0/60;h<=TL1/60;h++)hours.push(h);
+  const now=new Date(),nowM=now.getHours()*60+now.getMinutes();
+  const nowLine=d===t&&nowM>=TL0&&nowM<=TL1?`<div class="tlnow" style="left:${pct(nowM)}%"></div>`:'';
+  let total=0;const PX=64,H=(TL1-TL0)/60*PX,py=m=>(Math.max(TL0,Math.min(TL1,m))-TL0)/60*PX;
+  const cols=rows.map(r=>{
+    const cs=all.filter(([,c])=>r.id?c.instructor===r.id:!S.staff[c.instructor]).sort((a,b)=>a[1].time.localeCompare(b[1].time));
+    const booked=cs.filter(([,c])=>(c.booked||[]).length).length;total+=booked;
+    const blocks=cs.map(([id,c])=>{const st=toMin(c.time),du=+c.dur||50,k=kindOf(c.type),names=(c.booked||[]).map(b=>(S.clients[b.c]?.name||'Client').split(' ')[0]);
+      const lab=k==='grp'?`${esc(typeName(c.type))} ${(c.booked||[]).length}/${c.cap}`:(k==='duo'?'DUO':(/pregn/i.test(typeName(c.type))?'Pregnancy':/scolio/i.test(typeName(c.type))?'Scoliosis':'PT'))+(names.length?' \u00b7 '+esc(names.join(' & ')):'');
+      const sameH=cs.filter(([,o])=>Math.floor(toMin(o.time)/60)===Math.floor(st/60)),ix=sameH.findIndex(([oid])=>oid===id),nH=sameH.length;
+      const full=(c.booked||[]).map(b=>S.clients[b.c]?.name||'Client').join(', ');
+      return `<button class="vblk slot ${slotCls(c)}" data-class="${id}" style="top:${py(Math.floor(st/60)*60)+4}px;height:${PX-8}px;left:calc(${ix/nH*100}% + 4px);width:calc(${100/nH}% - 8px);right:auto" title="${esc(c.time)} \u00b7 ${esc(typeName(c.type))}${full?' \u00b7 '+esc(full):''}"><b>${esc(c.time)}</b><span>${k==='grp'?lab:(lab.split(' \u00b7 ')[0])+(names.length?' \u00b7 '+esc(names[0])+(names.length>1?' +'+(names.length-1):''):'')}</span></button>`}).join('');
+    const nowLine=d===t&&nowM>=TL0&&nowM<=TL1?`<div class="vnow" style="top:${py(nowM)}px"></div>`:'';
+    return {head:`<div class="vhead"><b>${esc(r.name)}</b><span class="muted">${booked} session${booked===1?'':'s'}</span></div>`,col:`<div class="vtrack tltrack ${P().editClasses?'canadd':''}" data-tadd="${r.id}" data-vert="1" style="height:${H}px">${blocks}${nowLine}</div>`}});
+  return `<div class="legend"><span><i class="slot pt">PT</i> Personal</span><span><i class="slot duo">DUO</i> Duo</span><span><i class="slot grp">Group</i> Semi / Yoga / Mat</span><span><i class="slot ok">\u2713</i> Done</span><span><i class="slot burn">\ud83d\udd25</i> Burned</span><span><i class="slot pt open">Open</i> No one booked</span>${P().editClasses?'<span>\u00b7 Tap an empty spot to add a session</span>':''}</div>
+  <div class="panel" style="padding:0"><div class="tablewrap"><div class="vgrid" style="grid-template-columns:64px repeat(${rows.length},minmax(130px,1fr))">
+    <div class="vhead vcorner"><span class="muted">${total} booked</span></div>${cols.map(c=>c.head).join('')}
+    <div class="vhours" style="height:${H}px">${hours.map(h=>`<span style="top:${(h*60-TL0)/60*PX}px">${pad(h)}:00</span>`).join('')}</div>${cols.map(c=>c.col).join('')}
+  </div></div></div>`;
+}
+function trainerGrid(days){
+  const t=today();
+  const me=UI.role==='trainer'?UI.trainer:null;
+  const tr=Object.entries(S.staff).filter(([id,s])=>s.role==='Instructor'&&(!me||id===me)).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const wk=Object.entries(S.classes).filter(([,c])=>c.date>=days[0]&&c.date<=days[6]&&(!me||c.instructor===me));
+  const rows=[...tr.map(([id,s])=>({id,name:s.name})),...(!me&&wk.some(([,c])=>!S.staff[c.instructor])?[{id:'',name:'Unassigned'}]:[])];
+  if(!rows.length)return '<div class="panel empty">No trainers yet. Add them on the Staff page as Trainer.</div>';
+  const cell=(rid,d)=>wk.filter(([,c])=>c.date===d&&(rid?c.instructor===rid:!S.staff[c.instructor])).sort((a,b)=>a[1].time.localeCompare(b[1].time));
+  const dayTot=days.map(()=>0);let all=0;
+  const body=rows.map(r=>{let n=0;const tds=days.map((d,i)=>{const cs=cell(r.id,d);n+=cs.length;dayTot[i]+=cs.length;
+      return `<td class="${d===t?'tcol':''}"><div class="slots">${cs.map(([id,c])=>{const b=(c.booked||[]).length;return `<button class="slot ${slotCls(c)}" data-class="${id}" title="${esc(typeName(c.type))} · ${b}/${c.cap} booked">${esc(c.time)}</button>`}).join('')}</div></td>`}).join('');
+    all+=n;return `<tr><th scope="row" class="tname">${esc(r.name)}</th>${tds}<td class="r num"><b>${n}</b></td></tr>`}).join('');
+  return `<div class="legend"><span><i class="slot pt">09:00</i> Personal</span><span><i class="slot duo">09:00</i> Duo</span><span><i class="slot grp">09:00</i> Group</span><span><i class="slot ok">09:00</i> All confirmed</span><span><i class="slot pt open">09:00</i> No one booked</span><span>· Tap a time to book or check in</span></div>
+  <div class="panel" style="padding:0"><div class="tablewrap"><table class="tgrid"><thead><tr><th>Trainer</th>${days.map(d=>`<th class="${d===t?'tcol':''}">${esc(fmtDay(d))}</th>`).join('')}<th class="r">Sessions</th></tr></thead>
+  <tbody>${body}</tbody><tfoot><tr><th scope="row" class="tname">Total</th>${dayTot.map((n,i)=>`<td class="num ${days[i]===t?'tcol':''}">${n}</td>`).join('')}<td class="r num"><b>${all}</b></td></tr></tfoot></table></div></div>`;
+}
+
+/* --- Clients --- */
+function expCell(c){const e=isUnl(c)?c.unlimitedUntil:c.expires;if(!e)return '<span class="muted">—</span>';
+  const d=daysBetween(today(),e),dt=parse(e).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  if(d<0)return `<span style="color:var(--bad);font-weight:600">Expired ${esc(dt)}</span><br><span class="muted" style="font-size:.76rem">${-d} day${d===-1?'':'s'} ago</span>`;
+  if(d===0)return `<span style="color:var(--bad);font-weight:600">Expires today</span>`;
+  return `<span style="${d<5?'color:var(--warn);font-weight:600':''}">${esc(dt)}</span><br><span class="muted" style="font-size:.76rem">in ${d} day${d===1?'':'s'}</span>`}
+function sNum(c){const n=leftOf(c);return ` <span class="snum ${n<=0?'zero':''}" title="Sessions left">${n}</span>`}
+function expShort(c){const e=c.expires;if(!e)return sNum(c);const d=daysBetween(today(),e),dt=parse(e).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  return ' \u00b7 '+(d<0?`<b style="color:var(--bad)">Expired ${esc(dt)}</b>`:d===0?'<b style="color:var(--bad)">Expires today</b>':`<b style="color:${d<5?'var(--warn)':'var(--ink)'}">Expires ${esc(dt)}</b>`)+sNum(c)}
+function quickSaleRow(){
+  const p=P(),t=today(),d=p.allPayments?(UI.dashPayDay||t):t;
+  const pays=payList().filter(([,x])=>x.date===d);
+  const tot=pays.reduce((a,[,x])=>a+(+x.amount||0),0),by={};pays.forEach(([,x])=>by[x.method]=(by[x.method]||0)+(+x.amount||0));
+  const cs=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const groups=[...new Set(PRODUCTS.map(x=>x.g))];
+  const lbl=d===t?'Today':d===addDays(t,-1)?'Yesterday':fmtDay(d);
+  return `<div>
+  <section class="panel"><header><div><h2>Quick sale</h2><span class="muted">Saves to Payments and updates the client\u2019s package</span></div></header>
+    <form class="form" id="qsForm" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+      ${clientPicker('qsClient')}
+      <div class="field"><label for="qsProd">Package</label><select id="qsProd">${groups.map(g=>`<optgroup label="${esc(g)}">${PRODUCTS.filter(x=>x.g===g).map(x=>`<option value="${x.k}">${esc(x.n)}${x.p?' \u00b7 '+L(x.p):''}</option>`).join('')}</optgroup>`).join('')}</select></div>
+      <div class="field"><label for="qsAmt">Amount (Lek)</label><input id="qsAmt" type="number" min="0" step="100" value="${PRODUCTS[0].p}"></div>
+      <div class="field"><label for="qsMethod">Paid by</label><select id="qsMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
+      <div class="field"><label for="qsDate">Date</label><input type="date" id="qsDate" value="${today()}"></div>
+      <div class="field"><button class="btn primary" type="submit">Record sale</button></div>
+    </form></section>
+</div>`;
+}
+function clientPicker(id){
+  return `<div class="field" style="position:relative"><label for="${id}">Client</label><input id="${id}" list="clientNames_${id}" autocomplete="off" placeholder="Type client name\u2026" data-cpick="1"><datalist id="clientNames_${id}">${Object.values(S.clients).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist><span class="cphint" id="${id}_hint"></span></div>`}
+const findClient=n=>{n=String(n||'').trim().toLowerCase();if(!n)return null;const e=Object.entries(S.clients).find(([,c])=>c.name.trim().toLowerCase()===n);return e?e[0]:null};
+async function ensureClient(name){name=String(name||'').trim().replace(/\s+/g,' ');if(!name)return null;const ex=findClient(name);if(ex)return ex;
+  const id=uid();const ok=await save(()=>store.set('clients',id,{name,phone:'',email:'',notes:'',credits:0,plan:'',joined:today()}));if(!ok)return null;toast('New client added: '+name);return id}
+function cpHint(el){const h=document.getElementById(el.id+'_hint');if(!h)return;const v=el.value.trim();
+  if(!v){h.textContent='';h.className='cphint';return}
+  if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+leftOf(c)+' left';h.className='cphint ok'}
+  else{h.textContent='+ New client will be added';h.className='cphint new'}}
+function ageOf(b){const d=parse(b),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))a--;return a}
+function bdayPanel(){
+  const t=today(),list=[];
+  const add=(id,o,kind)=>{if(!o.birthday)return;const md=o.birthday.slice(5);let nx=t.slice(0,4)+'-'+md;if(nx<t)nx=(+t.slice(0,4)+1)+'-'+md;const d=daysBetween(t,nx);if(d===0)list.push({id,name:o.name,kind,d,age:ageOf(o.birthday)+(d===0?0:1),date:nx})};
+  Object.entries(S.clients).forEach(([id,c])=>add(id,c,'client'));Object.entries(S.staff).forEach(([id,s])=>add(id,s,'staff'));
+  list.sort((a,b)=>a.d-b.d||a.name.localeCompare(b.name));
+  const tod=list.filter(x=>x.d===0),soon=list.filter(x=>x.d>0);
+  return `<section class="panel bday"><header><h2>\ud83c\udf82 Birthdays</h2><span class="muted">${tod.length?tod.length+' today':'None today'}</span></header>
+    ${list.length?`<div class="bdays">${list.map(x=>`<button class="bd ${x.d===0?'today':''}" ${x.kind==='client'?`data-client="${x.id}"`:`data-staff="${x.id}"`}><b>${esc(x.name)}</b><span>Turns ${x.age}${x.kind==='staff'?' \u00b7 team':''}</span></button>`).join('')}</div>`:'<div class="muted" style="font-size:.88rem">No birthdays today.</div>'}
+  </section>`;
+}
+const healthText=c=>{const f=c.form||{};return [f.medical,(f.pain||[]).length?'Pain: '+f.pain.join(', '):'',f.pastConditions].filter(Boolean).join(' \u00b7 ')};
+const healthFlag=c=>{const f=c.form||{};return !!(f.medical||(f.pain||[]).length||f.pastConditions)};
+function regForm(c){const f=c.form;if(!f)return '';
+  const DN={Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
+  const row=(k,v)=>v?`<div class="rfrow"><dt>${k}</dt><dd>${v}</dd></div>`:'';
+  const av=Object.entries(f.availability||{}).map(([d,t])=>`<span class="pill">${DN[d]||d} ${esc(t)}</span>`).join(' ');
+  const health=healthFlag(c);
+  return `<section class="regform"><div class="eyebrow" style="margin-bottom:8px">Registration form${f.submitted?' \u00b7 '+esc(f.submitted.slice(0,10)):''}</div>
+    ${health?`<div class="hbox"><b>\u26a0 Health</b>${f.medical?`<div>Medical: <b>${esc(f.medical)}</b></div>`:''}${f.pastConditions?`<div>Past conditions: ${esc(f.pastConditions)}</div>`:''}${(f.pain||[]).length?`<div>Pain: ${f.pain.map(x=>`<span class="pill bad">${esc(x)}</span>`).join(' ')}</div>`:''}${f.doctorNote&&!/^(no|jo|n\/a)$/i.test(f.doctorNote)?`<div>Doctor note: ${esc(f.doctorNote)}</div>`:''}</div>`:'<div class="pill ok" style="margin-bottom:8px">No medical conditions reported</div>'}
+    <dl class="rf">${row('Email',esc(c.email||''))}${row('Emergency contact',esc(c.emergency||''))}${row('Languages',esc(f.languages))}${row('Interested in',esc(f.services))}${row('Prefers',esc(f.sessionPref))}${row('Goals',esc(f.goals))}${row('Available',av)}${row('Consent',esc(f.consent))}</dl>
+  </section>`}
+function pkgInfo(plan){const t=String(plan||'');if(!t)return null;const n=(t.match(/(\d+)/)||[])[1]||'';
+  const k=/duet|duo|trio|four/i.test(t)?'duo':/semi|group|yoga|mat/i.test(t)?'grp':'pt';
+  const label=k==='duo'?(/trio/i.test(t)?'Trio':/four/i.test(t)?'Four':'Duet'):k==='grp'?(/yoga/i.test(t)?'Yoga':/mat/i.test(t)?'Mat Pilates':'Group'):(/pregn/i.test(t)?'Pregnancy':/scolio/i.test(t)?'Scoliosis':/clinic/i.test(t)?'Clinic':'Private');
+  return{k,label,n}}
+function pkgCells(plan){const i=pkgInfo(plan);if(!i)return '<td><span class="muted">\u2014</span></td><td class="r muted">\u2014</td>';
+  return `<td><span class="slot ${i.k}" style="cursor:default;font-family:var(--body);font-size:.78rem;font-weight:600">${i.label}</span></td><td class="r num"><b>${i.n}</b></td>`}
+function clientStats(){
+  const all=Object.entries(S.clients),t=today(),ago=addDays(t,-30),m=t.slice(0,7);
+  const seen={};Object.values(S.classes).forEach(c=>(c.booked||[]).forEach(b=>{if(c.date>=ago)seen[b.c]=1}));
+  const isAct=([id,c])=>isActC(c);
+  const act=all.filter(isAct).length,newM=all.filter(([,c])=>(c.joined||'').startsWith(m)).length;
+  return `<div class="stats">
+    <div class="stat"><span class="eyebrow">Active clients</span><span class="v" style="color:var(--ok)">${act}</span><span class="muted" style="font-size:.78rem">Package still running</span></div>
+    <div class="stat"><span class="eyebrow">Total clients ever</span><span class="v">${all.length}</span><span class="muted" style="font-size:.78rem">Everyone since the studio opened</span></div>
+    <div class="stat"><span class="eyebrow">Inactive</span><span class="v" style="color:var(--bad)">${all.length-act}</span><span class="muted" style="font-size:.78rem">Worth a call to bring back</span></div>
+    <div class="stat"><span class="eyebrow">New this month</span><span class="v">${newM}</span><span class="muted" style="font-size:.78rem">Joined in ${new Date().toLocaleDateString('en-GB',{month:'long'})}</span></div>
+    <div class="stat"><span class="eyebrow">Renewed this month</span><span class="v" style="color:var(--ok)">${all.filter(([,c])=>(c.packageStart||'').startsWith(m)&&(c.packages||[]).length>0).length}</span><span class="muted" style="font-size:.78rem">Bought another package in ${new Date().toLocaleDateString('en-GB',{month:'long'})}</span></div>
+  </div>`;
+}
+function pClients(){
+  const q=UI.clientQ.trim().toLowerCase(),f=UI.clientFilter;
+  let list=Object.entries(S.clients).map(([id,c])=>({id,c,s:clientStatus(c)}));
+  if(q)list=list.filter(x=>(x.c.name+' '+(x.c.phone||'')+' '+(x.c.email||'')+' '+((x.c.form||{}).medical||'')+' '+natName(x.c.nationality)+' '+(x.c.source||'')).toLowerCase().includes(q));
+  if(f==='active')list=list.filter(x=>isActC(x.c));else if(f!=='all')list=list.filter(x=>clientFlags(x.c).some(g=>g.k===f));
+  list.sort((a,b)=>a.c.name.localeCompare(b.c.name));
+  const chips=[['active','Active ('+Object.values(S.clients).filter(isActC).length+')'],['all','All'],['exp','Expires soon'],['expired','Expired']];
+  return `<div class="pagehead"><div><div class="eyebrow">${Object.keys(S.clients).length} clients</div><h1>Clients</h1></div>
+    <button class="btn primary" data-act="addclient">New client</button></div>
+  ${clientStats()}
+  <div class="panel">
+    <header><div class="toolbar" style="flex:1"><input id="clientQ" placeholder="Search name, country, source\u2026" value="${esc(UI.clientQ)}" style="max-width:320px"></div>
+      <div class="chips">${chips.map(([k,n])=>`<button class="chip" data-cf="${k}" aria-pressed="${f===k}">${n}</button>`).join('')}</div></header>
+    ${list.length?`<div class="tablewrap"><table><thead><tr><th>Name</th><th>Trainer</th><th>Country</th><th>Found us via</th><th>Session type</th><th class="r">Sessions</th><th class="r">Total sessions</th><th class="r">Sessions left</th><th>Status</th><th>Package start</th><th>Package expires</th></tr></thead><tbody>
+    ${list.map(x=>{const lv=lastVisit(x.id);return `<tr class="click" data-client="${x.id}"><td><b>${esc(x.c.name)}</b>${(x.c.packages||[]).length?` <span class="pill" title="Packages bought">${x.c.packages.length+1} pkgs</span>`:''}${x.c.demo?' <span class="pill">demo</span>':''}${healthFlag(x.c)?` <span title="${esc(healthText(x.c))}" style="color:var(--bad);font-weight:700">\u26a0</span>`:''}</td><td>${(x.c.trainers||[]).map(t=>esc(staffName(t))).join(', ')||'<span class="muted">\u2014</span>'}</td><td>${esc(natName(x.c.nationality)||'\u2014')}</td><td>${x.c.source?`<span class="pill acc">${esc(x.c.source)}</span>`:'<span class="muted">\u2014</span>'}</td>${pkgCells(x.c.plan)}
+      <td class="r num">${totalSessions(x.id)}</td><td class="r num">${leftCell(x.c)}</td><td><span style="display:inline-flex;gap:4px;flex-wrap:wrap">${flagPills(x.c,1)}</span></td><td style="white-space:nowrap">${x.c.packageStart?esc(parse(x.c.packageStart).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})):'<span class="muted">—</span>'}</td><td>${expCell(x.c)}</td></tr>`}).join('')}
+    </tbody></table></div>`:`<div class="empty">${Object.keys(S.clients).length?'No clients match this filter.':'No clients yet. Add your first client to start booking.'}</div>`}
+  </div>
+  ${(()=>{const cnt={},nat={};Object.values(S.clients).forEach(c=>{if(c.source)cnt[c.source]=(cnt[c.source]||0)+1;if(c.nationality){const k=natName(c.nationality);nat[k]=(nat[k]||0)+1}});
+    const top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]);const tot=Object.values(cnt).reduce((a,b)=>a+b,0);
+    if(!tot&&!Object.keys(nat).length)return '';
+    return `<div class="grid2"><section class="panel"><header><h2>How clients found us</h2></header>${top(cnt).map(([k,v])=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;font-size:.88rem;margin-bottom:8px"><span>${esc(k)}</span><span class="num">${v} \u00b7 ${Math.round(v/tot*100)}%</span><div class="fill" style="grid-column:1/-1;max-width:none;margin:0"><i style="width:${v/top(cnt)[0][1]*100}%;background:var(--brand)"></i></div></div>`).join('')}</section>
+    <section class="panel"><header><h2>Countries</h2></header><div class="rows">${top(nat).map(([k,v])=>`<div style="display:flex;align-items:baseline;gap:12px;padding:7px 0;border-top:1px solid var(--line)"><b class="num" style="min-width:2.5ch;text-align:right;font-size:1.05rem">${v}</b><span style="color:var(--muted)">—</span><span>${esc(k)}</span></div>`).join('')}</div></section></div>`})()}`;
+}
+
+/* --- Payments --- */
+function pPay(){
+  const p=P();if(!p.allPayments&&!p.payDates)UI.payDay=today();if(p.payDates&&!p.allPayments){UI.payMode='day';if(UI.payDay<'2026-01-01')UI.payDay='2026-01-01';if(UI.payDay>today())UI.payDay=today()}
+  const d=UI.payDay,pm=p.allPayments?(UI.payMode||'day'):'day',pre=pm==='year'?d.slice(0,4):pm==='month'?d.slice(0,7):d,day=payList().filter(([,x])=>(x.date||'').startsWith(pre));
+  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const title=pm==='year'?d.slice(0,4):pm==='month'?parse(d).toLocaleDateString('en-GB',{month:'long',year:'numeric'}):fmtLong(d);
+  const by={};METHODS.forEach(m=>by[m]=0);let tot=0;day.forEach(([,x])=>{by[x.method]=(by[x.method]||0)+(+x.amount||0);tot+=+x.amount||0});
+  const clientsSorted=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  return `<div class="pagehead"><div><div class="eyebrow">${esc(title)}</div><h1>Payments</h1></div>
+    ${p.allPayments?`<div class="toolbar"><div class="chips">${[['day','Day'],['month','Month'],['year','Year']].map(([k,n])=>`<button class="chip" data-pm="${k}" aria-pressed="${pm===k}">${n}</button>`).join('')}</div><button class="btn" data-act="pd-1" aria-label="Previous">←</button>${pm==='day'?`<input type="date" id="payDay" value="${d}" style="width:auto">`:`<b style="min-width:120px;text-align:center">${esc(title)}</b>`}<button class="btn" data-act="pd1" aria-label="Next">→</button></div>`:p.payDates?`<div class="toolbar"><button class="btn" data-act="pd-1" aria-label="Previous day" ${d<='2026-01-01'?'disabled':''}>←</button><input type="date" id="payDay" value="${d}" min="2026-01-01" max="${today()}" style="width:auto"><button class="btn" data-act="pd1" aria-label="Next day" ${d>=today()?'disabled':''}>→</button>${d!==today()?'<button class="btn" data-act="pdtoday">Today</button>':''}</div>`:''}</div>
+  <section class="panel"><header><h2>Record a sale</h2><span class="muted">Packs update the client’s package automatically</span></header>
+    <form class="form" id="saleForm">
+      ${clientPicker('sClient')}
+      <div class="field"><label for="sProd">Item</label><select id="sProd">${[...new Set(PRODUCTS.map(x=>x.g))].map(g=>`<optgroup label="${esc(g)}">${PRODUCTS.filter(x=>x.g===g).map(x=>`<option value="${x.k}">${esc(x.d)}${x.p?' · '+L(x.p):''}</option>`).join('')}</optgroup>`).join('')}</select></div>
+      <div class="field"><label for="sAmt">Amount (Lek)</label><input id="sAmt" type="number" min="0" step="100" value="${PRODUCTS[0].p}"></div>
+      <div class="field"><label for="sMethod">Paid by</label><select id="sMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
+      <div class="field"><label for="sDate">Date</label><input type="date" id="sDate" value="${UI.payDay||today()}"></div>
+      <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record sale</button></div>
+    </form></section>
+  <div class="stats">
+    <div class="stat"><span class="eyebrow">Total ${pm==='year'?'this year':pm==='month'?'this month':d===today()?'today':'this day'}</span><span class="v">${L(tot)}</span></div>
+    ${(()=>{let pk=0,pr=0;day.forEach(([,x])=>{if(x.kind==='product')pr+=+x.amount||0;else pk+=+x.amount||0});return `<div class="stat"><span class="eyebrow">Packages</span><span class="v">${L(pk)}</span></div><div class="stat"><span class="eyebrow">Products</span><span class="v">${L(pr)}</span></div>`})()}
+    ${METHODS.map(m=>`<div class="stat"><span class="eyebrow">${m}</span><span class="v">${L(by[m])}</span></div>`).join('')}
+  </div>
+  ${pm==='year'?(()=>{const m=Array(12).fill(0);day.forEach(([,x])=>{m[+x.date.slice(5,7)-1]+=+x.amount||0});const mx=Math.max(...m,1);
+    return `<section class="panel"><header><h2>By month</h2></header><div class="rows">${m.map((v,i)=>`<button class="frow" style="border:0;border-top:1px solid var(--line);background:none;width:100%;text-align:left;cursor:pointer" data-pmonth="${d.slice(0,4)}-${pad(i+1)}"><span style="width:40px">${MN[i]}</span><span class="fill" style="flex:1;max-width:none;margin:0"><i style="width:${v/mx*100}%;background:var(--brand)"></i></span><b class="num" style="min-width:110px;text-align:right">${L(v)}</b></button>`).join('')}</div></section>`})():''}
+  <section class="panel"><header><h2>Sales log</h2><span class="muted">${day.length} sale${day.length===1?'':'s'}</span></header>
+    ${day.length?`<div class="tablewrap"><table><thead><tr><th>${pm==='day'?'Time':'Date'}</th><th>Client</th><th>Item</th><th>Method</th><th class="r">Amount</th>${p.delPayment?'<th></th>':''}</tr></thead><tbody>
+    ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(x.method)}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
+      ${p.delPayment?`<td class="r"><button class="btn sm danger" data-delpay="${id}">Delete</button></td>`:''}</tr>`).join('')}
+    </tbody></table></div>`:`<div class="empty">No sales recorded for this ${pm}.</div>`}
+  </section>`;
+}
+
+/* ---------- Excel export (owner) ---------- */
+function loadXLSX(){return window.XLSX?Promise.resolve(window.XLSX):new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=()=>ok(window.XLSX);sc.onerror=()=>no(new Error('Could not load the Excel tool. Check your internet and try again.'));document.head.appendChild(sc)})}
+const BK_COLS=['clients','payments','classes','staff','expenses','notes','finances','groups','settings'];
+async function downloadBackup(){
+  const rows=[];for(const c of BK_COLS)for(const[id,d]of Object.entries(S[c]||{}))if(!(c==='settings'&&id==='public'))rows.push([c,id,d]);
+  const fname='core-pilates-backup-'+today()+'.json',txt=JSON.stringify(rows);
+  let dl=null;try{if(window.claude?.use)dl=await window.claude.use('downloads')}catch{}
+  if(dl){try{await dl.save({filename:fname,data:txt});toast('Backup saved: '+fname)}catch(e){if(e&&e.code!=='declined')toast('Could not save: '+(e.message||e.code))}return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download=fname;document.body.appendChild(a);a.click();a.remove();toast('Backup saved: '+fname)}
+async function restoreBackup(){
+  const rows=await fbPickBackup();if(!rows||!Array.isArray(rows)||!rows.length){if(rows)toast('That file is empty.');return}
+  const cols=[...new Set(rows.map(r=>r[0]))].filter(c=>BK_COLS.includes(c));if(!cols.length){toast('That file is not a backup file.');return}
+  UI.importing=1;toast('Restoring '+rows.length+' records…');
+  try{const keep=new Set(rows.map(r=>r[0]+'/'+r[1])),dels=[];for(const c of cols)for(const id of Object.keys(S[c]||{}))if(!keep.has(c+'/'+id)&&!(c==='settings'&&/^(public|pins)$/.test(id)))dels.push([c,id]);
+    for(let i=0;i<dels.length;i+=25)await Promise.all(dels.slice(i,i+25).map(([c,id])=>store.del(c,id)));
+    const put=rows.filter(r=>cols.includes(r[0]));for(let i=0;i<put.length;i+=25)await Promise.all(put.slice(i,i+25).map(([c,id,d])=>store.set(c,id,d)));
+    UI.importing=0;render();toast('Restored '+put.length+' records')}catch(e){UI.importing=0;render();toast('Restore stopped: '+(e.message||e)+'. Try again.')}}
+async function exportExcel(){
+  if(UI.role!=='owner')return;
+  const per=($('#exPer')||{}).value||'month',t=today(),pre=per==='month'?t.slice(0,7):per==='year'?t.slice(0,4):'';
+  const label=per==='month'?parse(t).toLocaleDateString('en-GB',{month:'long',year:'numeric'}):per==='year'?t.slice(0,4):'All time';
+  let X;try{X=await loadXLSX()}catch(e){toast(e.message);return}
+  const inP=d=>!pre||(d||'').startsWith(pre);
+  const pays=Object.values(S.payments).filter(x=>inP(x.date)).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  const exps=Object.values(S.expenses).filter(x=>inP(x.date)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const cname=x=>x.kind==='product'?'Product':(x.client&&S.clients[x.client]?S.clients[x.client].name:(x.name||'Walk-in'));
+  const P=pays.map(x=>({Date:x.date,Client:cname(x),Item:x.item,Type:x.kind==='product'?'Product':'Package',Method:x.unpaid?'Unpaid':x.method,'Amount (L)':x.unpaid?0:+x.amount||0,'Unpaid (L)':x.unpaid?+x.owed||0:'',By:x.by||''}));
+  const E=exps.map(x=>({Date:x.date,Item:x.note||'',Category:x.cat||'','Amount (L)':+x.amount||0,By:x.by||''}));
+  const C=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,c])=>{const i=pkgInfo(c.plan);return{Name:c.name,Status:isActC(c)?'Active':'Inactive',Phone:c.phone||'',Email:c.email||'',Country:natName(c.nationality)||'',Birthday:c.birthday||'',Package:i?i.label:'',Sessions:i?(+i.n||''):'','Sessions left':c.plan?leftOf(c):'','Package start':c.packageStart||'','Package expires':c.expires||'',Trainers:(c.trainers||[]).map(staffName).join(', '),'Total sessions':totalSessions(id),'Packages bought':(c.plan?1:0)+(c.packages||[]).length,Burned:burnedOf(id),Joined:c.joined||''}});
+  const amt=rows=>rows.reduce((t,r)=>t+(+r['Amount (L)']||0),0),tot=amt(P),ex=amt(E);
+  const by=f=>amt(P.filter(f));
+  const Sm=[['Period',label],['Total sales (L)',tot],['Packages (L)',by(r=>r.Type==='Package')],['Products (L)',by(r=>r.Type==='Product')],['Cash (L)',by(r=>r.Method==='Cash')],['Card (L)',by(r=>r.Method==='Card')],['Bank transfer (L)',by(r=>r.Method==='Bank transfer')],['Unpaid (L)',P.reduce((t,r)=>t+(+r['Unpaid (L)']||0),0)],['Studio expenses (L)',ex],['Sales minus expenses (L)',tot-ex],['Clients (all)',C.length],['Active clients',C.filter(c=>c.Status==='Active').length],['Exported',new Date().toLocaleString('en-GB')]].map(([Item,Value])=>({Item,Value}));
+  const wb=X.utils.book_new();
+  const add=(rows,name,widths)=>{const ws=X.utils.json_to_sheet(rows.length?rows:[{Note:'No records'}]);if(widths)ws['!cols']=widths.map(w=>({wch:w}));X.utils.book_append_sheet(wb,ws,name)};
+  add(Sm,'Summary',[26,22]);add(P,'Payments',[11,26,24,10,10,12,11,10]);add(E,'Expenses',[11,34,18,12,10]);add(C,'Clients',[24,9,15,26,14,11,12,9,12,13,14,20,13,14,8,11]);
+  const buf=X.write(wb,{bookType:'xlsx',type:'array'});
+  const fname='Core-Pilates-'+(per==='all'?'all-time':pre)+'.xlsx';
+  await saveXlsx(buf,fname);
+}
+async function saveXlsx(buf,fname){
+  let dl=null;try{if(window.claude?.use)dl=await window.claude.use('downloads')}catch{}
+  if(dl){try{await dl.save({filename:fname,data:new Uint8Array(buf)});toast('Excel saved: '+fname)}catch(e){if(e&&e.code!=='declined')toast('Could not save: '+(e.message||e.code))}return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=fname;document.body.appendChild(a);a.click();a.remove();
+}
+async function exportFinances(){
+  if(UI.role!=='owner')return;
+  let X;try{X=await loadXLSX()}catch(e){toast(e.message);return}
+  const cy=new Date().getFullYear(),yr=UI.finYear||cy,fm=UI.finMonth==null?(yr===cy?new Date().getMonth()+1:1):UI.finMonth;
+  if(!fm){toast('Pick a month first');return}
+  const d=finDoc(yr),T=finTotals(yr),mk=yr+'-'+pad(fm),mn=MONTHS[fm-1]+' '+yr,wb=X.utils.book_new();
+  const lines=d.rows.map(r=>({Line:r.name,'Amount (L)':rowVal(r,yr,fm)||0}));
+  const app=Object.values(S.payments).filter(x=>(x.date||'').startsWith(mk)).reduce((t,x)=>t+(+x.amount||0),0);
+  lines.push({Line:''},{Line:'Total fixed cost','Amount (L)':T.cost[fm-1]},{Line:'Total sales','Amount (L)':T.sales[fm-1]},{Line:'Profit','Amount (L)':T.sales[fm-1]-T.cost[fm-1]},{Line:'Sales recorded in app','Amount (L)':app});
+  let ws=X.utils.json_to_sheet(lines);ws['!cols']=[{wch:30},{wch:16}];X.utils.book_append_sheet(wb,ws,MONTHS[fm-1]);
+  const ex=Object.values(S.expenses).filter(x=>(x.date||'').startsWith(mk)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(x=>({Date:x.date,Item:x.note||'',Category:x.cat||'','Amount (L)':+x.amount||0,By:x.by||''}));
+  ws=X.utils.json_to_sheet(ex.length?ex:[{Note:'No studio expenses'}]);ws['!cols']=[{wch:11},{wch:34},{wch:18},{wch:12},{wch:10}];X.utils.book_append_sheet(wb,ws,'Studio expenses');
+  await saveXlsx(X.write(wb,{bookType:'xlsx',type:'array'}),'Core-Pilates-Finances-'+mk+'.xlsx');
+}
+/* --- Data (owner only) --- */
+function pData(){
+  if(UI.role!=='owner')return '<div class="panel empty">Owner only.</div>';
+  const yr=UI.dataYear||today().slice(0,4),rate=+(S.settings.fx||{}).cad||57.7;
+  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const pays=Object.values(S.payments).filter(x=>(x.date||'').startsWith(yr));
+  const paid=pays.filter(x=>!x.unpaid),unpaid=pays.filter(x=>x.unpaid).reduce((a,x)=>a+(+x.owed||0),0);
+  const sum=a=>a.reduce((t,x)=>t+(+x.amount||0),0);
+  const tot=sum(paid),pk=sum(paid.filter(x=>x.kind!=='product')),pr=tot-pk,cash=sum(paid.filter(x=>x.method==='Cash')),card=sum(paid.filter(x=>x.method==='Card'));
+  const exps=Object.values(S.expenses).filter(x=>(x.date||'').startsWith(yr)),ex=exps.reduce((a,x)=>a+(+x.amount||0),0);
+  const cad=v=>'';
+  const mRev=Array(12).fill(0),mExp=Array(12).fill(0),mNew=Array(12).fill(0),mRen=Array(12).fill(0);
+  paid.forEach(x=>mRev[+x.date.slice(5,7)-1]+=+x.amount||0);exps.forEach(x=>mExp[+x.date.slice(5,7)-1]+=+x.amount||0);
+  const cl=Object.entries(S.clients);
+  cl.forEach(([,c])=>{const all=[{start:c.packageStart},...(c.packages||[])].filter(p=>(p.start||'').startsWith(yr)).map(p=>p.start).sort();
+    if((c.joined||'').startsWith(yr))mNew[+c.joined.slice(5,7)-1]++;
+    [{start:c.packageStart,plan:c.plan},...(c.packages||[])].filter(p=>p.start&&p.start.startsWith(yr)&&p.start!==c.joined&&(+(pkgInfo(p.plan)||{}).n||0)>1).forEach(p=>mRen[+p.start.slice(5,7)-1]++)});
+  const months=mRev.map((v,i)=>({i,v})).filter(m=>m.v),best=months.reduce((a,b)=>b.v>a.v?b:a,{v:0,i:0}),avg=months.length?tot/months.length:0;
+  const act=cl.filter(([,c])=>isActC(c)).length,multi=cl.filter(([,c])=>(c.packages||[]).length>0).length;
+  const spend={};Object.values(S.payments).forEach(x=>{if(x.client&&!x.unpaid)spend[x.client]=(spend[x.client]||0)+(+x.amount||0)});
+  const top=Object.entries(spend).filter(([id])=>S.clients[id]).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const lab=pl=>{const i=pkgInfo(pl);if(!i)return null;return ['Group','Mat Pilates','Yoga'].includes(i.label)?'Group':i.label==='Duet'?'Duo':i.label};
+  const byType={};paid.filter(x=>x.kind!=='product').forEach(x=>{const k=lab(x.item);if(!k)return;const o=byType[k]??={rev:0,n:0};o.rev+=+x.amount||0;o.n++});
+  const nat={};cl.forEach(([,c])=>{const k=natName(c.nationality)||'Unknown';nat[k]=(nat[k]||0)+1});
+  const exCat={};exps.forEach(x=>exCat[x.cat||'Other']=(exCat[x.cat||'Other']||0)+(+x.amount||0));
+  const prod={};paid.filter(x=>x.kind==='product').forEach(x=>{const k=String(x.item||'').replace(/\s*×\d+$/,'').trim().toLowerCase().replace(/s$/,'');if(k)prod[k]=(prod[k]||0)+(+x.amount||0)});
+  const tr=trainersList().map(([id,t])=>{const st=trainerStats(id);return{n:t.name,a:st.active,i:st.clients.length-st.active,bu:Object.values(S.classes).filter(c=>c.instructor===id&&(c.date||'').startsWith(yr)).reduce((n,c)=>n+(c.booked||[]).filter(b=>b.burn).length,0)}}).sort((a,b)=>b.a-a.a);
+  const bars=(rows,fmt,col)=>{const mx=Math.max(1,...rows.map(r=>r[1]));return `<div class="rows">${rows.map(([k,v,sub])=>`<div class="frow"><span style="min-width:110px">${esc(k)}</span><span class="fill" style="flex:1;max-width:none;margin:0"><i style="width:${v/mx*100}%;background:${col||'var(--brand)'}"></i></span><b class="num" style="min-width:120px;text-align:right">${fmt(v)}${sub?`<span class="muted" style="font-weight:400;font-size:.75rem;display:block">${sub}</span>`:''}</b></div>`).join('')}</div>`};
+  const st=(k,v,sub,c)=>`<div class="stat"><span class="eyebrow">${k}</span><span class="v" ${c?`style="color:${c}"`:''}>${v}</span>${sub?`<span class="muted" style="font-size:.78rem">${sub}</span>`:''}</div>`;
+  return `<div class="pagehead"><div><div class="eyebrow">Owner only</div><h1>Data · ${yr}</h1></div>
+    <div class="toolbar"><button class="btn" data-act="dy-1">←</button><b>${yr}</b><button class="btn" data-act="dy1">→</button><select id="exPer" style="width:auto"><option value="month">This month</option><option value="year">This year</option><option value="all">Everything</option></select><button class="btn primary" data-act="excel">Export to Excel</button><button class="btn" data-act="bkdown">Download backup</button><button class="btn" data-act="bkup">Restore backup</button></div></div>
+  <div class="stats">${st('Total sales',L(tot),cad(tot))}${st('Packages',L(pk),cad(pk))}${st('Products',L(pr),cad(pr))}${st('Studio expenses',L(ex),cad(ex),'var(--bad)')}${st('Sales − expenses',L(tot-ex),cad(tot-ex),'var(--ok)')}</div>
+  <div class="stats">${st('Average per month',L(avg),cad(avg))}${st('Best month',best.v?MN[best.i]:'—',best.v?L(best.v):'')}${st('Cash',L(cash),tot?Math.round(cash/tot*100)+'%':'')}${st('Card',L(card),tot?Math.round(card/tot*100)+'%':'')}${st('Unpaid',L(unpaid),'',unpaid?'var(--bad)':'')}</div>
+  <div class="grid2">
+    <section class="panel"><header><h2>Sales by month</h2></header>${bars(mRev.map((v,i)=>[MN[i],v,mExp[i]?'expenses '+L(mExp[i]):'']).filter(r=>r[1]||r[2]),L)}</section>
+    <section class="panel"><header><h2>Packages by type</h2><span class="muted">sales · avg price</span></header>${bars(Object.entries(byType).sort((a,b)=>b[1].rev-a[1].rev).map(([k,o])=>[k,o.rev,o.n+' payments · avg '+L(o.rev/o.n)]),L)}</section>
+  </div>
+  <div class="stats">${st('Clients ever',cl.length)}${st('Active now',act,'','var(--ok)')}${st('Came back for 2+ packages',multi,cl.length?Math.round(multi/cl.length*100)+'% of clients':'')}${st('Burned sessions',Object.values(S.classes).filter(c=>(c.date||'').startsWith(yr)).reduce((n,c)=>n+(c.booked||[]).filter(b=>b.burn).length,0),'clients who didn\u2019t show','var(--bad)')}${st('Avg spend per client',L(Object.values(spend).reduce((a,b)=>a+b,0)/Math.max(1,Object.keys(spend).length)))}</div>
+  <div class="grid2">
+    <section class="panel"><header><h2>New clients & renewals by month</h2></header><div class="tablewrap"><table><thead><tr><th>Month</th><th class="r">New</th><th class="r">Renewed packages</th></tr></thead><tbody>${MN.map((m,i)=>mNew[i]||mRen[i]?`<tr><td>${m}</td><td class="r num">${mNew[i]}</td><td class="r num">${mRen[i]}</td></tr>`:'').join('')}</tbody></table></div></section>
+    <section class="panel"><header><h2>Top 10 clients by spend</h2></header>${bars(top.map(([id,v])=>[S.clients[id].name,v,cad(v)]),L)}</section>
+  </div>
+  <div class="grid2">
+    <section class="panel"><header><h2>Trainers · active clients</h2></header>${bars(tr.map(t=>[t.n,t.a,t.i+' inactive'+(t.bu?' \u00b7 '+t.bu+' burned':'')]),v=>v,'var(--ok)')}</section>
+    <section class="panel"><header><h2>Clients by country</h2></header>${bars(Object.entries(nat).sort((a,b)=>b[1]-a[1]).slice(0,10),v=>v)}</section>
+  </div>
+  <div class="grid2">
+    <section class="panel"><header><h2>Studio expenses by type</h2></header>${bars(Object.entries(exCat).sort((a,b)=>b[1]-a[1]),L,'var(--bad)')}</section>
+    <section class="panel"><header><h2>Top products</h2></header>${bars(Object.entries(prod).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>[k.replace(/^./,c=>c.toUpperCase()),v]),L)}</section>
+  </div>`;
+}
+/* ---------- change history (owner only) ---------- */
+const COL_NAMES={classes:'Session',clients:'Client',payments:'Payment',staff:'Staff',settings:'Settings',expenses:'Expense',notes:'Note',finances:'Finances'};
+function docLabel(col,d){if(!d)return '';return col==='clients'||col==='staff'?d.name:col==='payments'?[d.name||(d.client&&S.clients[d.client]?.name)||'',d.item,d.amount!=null?L(d.amount):''].filter(Boolean).join(' · '):col==='expenses'?[d.note,L(d.amount)].join(' · '):col==='classes'?[d.date,d.time,typeName(d.type),staffName(d.instructor)].filter(Boolean).join(' · '):col==='finances'?'Year '+(d.year||''):col==='notes'?String(d.text||'').slice(0,60):''}
+const shortV=v=>{if(v==null||v==='')return '—';if(Array.isArray(v))return v.length+' item'+(v.length===1?'':'s');if(typeof v==='object')return '…';const t=String(v);return t.length>40?t.slice(0,40)+'…':t};
+function diffOf(col,a,b){const out=[];const keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);
+  for(const k of keys){if(['ts','form','packages','booked'].includes(k)&&col!=='classes'){if(JSON.stringify((a||{})[k])!==JSON.stringify((b||{})[k])&&k!=='ts')out.push(k+' changed');continue}
+    if(k==='booked'){const n1=((a||{}).booked||[]).map(x=>S.clients[x.c]?.name||'?'),n2=((b||{}).booked||[]).map(x=>S.clients[x.c]?.name||'?');const add=n2.filter(x=>!n1.includes(x)),rem=n1.filter(x=>!n2.includes(x));if(add.length)out.push('booked '+add.join(', '));if(rem.length)out.push('removed '+rem.join(', '));const bu=((b||{}).booked||[]).filter(x=>x.burn).length-((a||{}).booked||[]).filter(x=>x.burn).length;if(bu>0)out.push('burned a session');if(bu<0)out.push('removed a burn');continue}
+    const x=(a||{})[k],y=(b||{})[k];if(JSON.stringify(x)!==JSON.stringify(y))out.push(k+': '+shortV(x)+' → '+shortV(y))}
+  return out.slice(0,8).join('; ')}
+function audited(st){
+  const who=()=>UI.role==='trainer'?staffName(UI.trainer)+' (trainer)':(PERMS[UI.role]||{}).label||'Unknown';
+  const log=(action,col,id,before,after)=>{if(UI.importing||col==='log'||(col==='settings'&&/^hist|^fx/.test(id)))return;
+    const e={ts:Date.now(),who:who(),action,col,id,label:docLabel(col,after||before)||id,changes:action==='edited'?diffOf(col,before,after):''};
+    if(action==='edited'&&!e.changes)return;try{st.set('log',uid(),e)}catch{}};
+  return{...st,
+    async set(c,i,d){const before=S[c]?.[i]?{...S[c][i]}:null;const r=await st.set(c,i,d);log(before?'edited':'added',c,i,before,d);return r},
+    async upd(c,i,d){const before=S[c]?.[i]?{...S[c][i]}:null;const r=await st.upd(c,i,d);log('edited',c,i,before,{...(before||{}),...d});return r},
+    async del(c,i){const before=S[c]?.[i]?{...S[c][i]}:null;const r=await st.del(c,i);log('deleted',c,i,before,null);return r}};
+}
+function pLog(){
+  if(UI.role!=='owner')return '<div class="panel empty">Owner only.</div>';
+  const f=UI.logF||'all',q=(UI.logQ||'').toLowerCase();
+  let list=Object.values(S.log).sort((a,b)=>b.ts-a.ts);
+  if(f!=='all')list=list.filter(x=>x.action===f);
+  if(q)list=list.filter(x=>(x.label+' '+x.who+' '+x.changes+' '+(COL_NAMES[x.col]||'')).toLowerCase().includes(q));
+  const shown=list.slice(0,300);
+  const col={added:'ok',edited:'warn',deleted:'bad'};
+  return `<div class="pagehead"><div><div class="eyebrow">Owner only</div><h1>Change history</h1><div class="muted" style="margin-top:4px">Every add, edit and delete — who did it and when.</div></div></div>
+  <div class="panel"><header><div class="toolbar" style="flex:1"><input id="logQ" placeholder="Search name, client, staff…" value="${esc(UI.logQ||'')}" style="max-width:320px"></div>
+    <div class="chips">${[['all','All'],['added','Added'],['edited','Edited'],['deleted','Deleted']].map(([k,n])=>`<button class="chip" data-logf="${k}" aria-pressed="${f===k}">${n}</button>`).join('')}</div></header>
+  ${shown.length?`<div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Item</th><th>Details</th></tr></thead><tbody>${shown.map(x=>`<tr><td class="num" style="white-space:nowrap">${new Date(x.ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} ${new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td>${esc(x.who)}</td><td><span class="pill ${col[x.action]||''}">${esc(x.action)}</span> <span class="muted">${esc(COL_NAMES[x.col]||x.col)}</span></td><td><b>${esc(x.label)}</b></td><td class="muted" style="font-size:.85rem">${esc(x.changes||'')}</td></tr>`).join('')}</tbody></table></div>${list.length>300?`<div class="muted" style="padding:10px">Showing latest 300 of ${list.length}.</div>`:''}`:'<div class="empty">No changes recorded yet. From now on every change shows here.</div>'}
+  </div>`;
+}
+/* --- Staff --- */
+/* ---------- Groups ---------- */
+const GDAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const GTYPES=['Semi Pilates','Mat Pilates','Yoga','Other'];
+const GSEED=[['Semi','Semi Pilates','08:30',['Mon','Wed','Fri']],['Semi 2','Semi Pilates','08:30',['Tue','Thu']],['Semi','Semi Pilates','09:30',['Tue','Thu','Fri']],['Mat','Mat Pilates','12:30',['Mon','Wed','Fri']],['Semi','Semi Pilates','14:00',['Tue','Thu']],['Semi','Semi Pilates','17:00',['Mon','Wed','Fri']],['Semi 2','Semi Pilates','17:00',['Tue','Thu']],['Semi','Semi Pilates','18:00',['Mon','Wed','Fri']],['Mat','Mat Pilates','18:00',['Tue','Thu']],['Semi','Semi Pilates','19:00',['Mon','Wed','Fri']],['Semi 2','Semi Pilates','19:00',['Tue','Thu']]];
+const gSeedId=([n,ty,tm,days])=>'gr_'+tm.replace(':','')+'_'+days.join('').toLowerCase();
+const gMissing=()=>GSEED.filter(x=>!(S.groups||{})[gSeedId(x)]&&!Object.values(S.groups||{}).some(g=>g.time===x[2]&&(g.days||[]).join()===x[3].join()));
+async function seedGroups(){const miss=gMissing();await Promise.all(miss.map(x=>{const[n,ty,tm,days]=x;return store.set('groups',gSeedId(x),{name:n+' '+tm,type:ty,days,time:tm,dur:50,trainer:'',cap:6,members:[]})}));toast(miss.length+' groups added')}
+const canEditGroups=()=>UI.role==='owner'||UI.role==='reception';
+const gFilled=g=>(g.members||[]).filter(id=>S.clients[id]).length;
+const gEnd=g=>{const[h,m]=(g.time||'00:00').split(':').map(Number),x=h*60+m+(+g.dur||50);return pad(Math.floor(x/60)%24)+':'+pad(x%60)};
+function pGroups(){
+  const gs=Object.entries(S.groups||{}).sort((a,b)=>{const da=Math.min(...(a[1].days||[]).map(d=>GDAYS.indexOf(d)),9),db=Math.min(...(b[1].days||[]).map(d=>GDAYS.indexOf(d)),9);return (a[1].time||'').localeCompare(b[1].time||'')||da-db||(a[1].name||'').localeCompare(b[1].name||'')});
+  const ed=canEditGroups();
+  const miss=ed&&gs.length?gMissing().length:0;
+  return `<div class="pagehead"><div><div class="eyebrow">${gs.length} group${gs.length===1?'':'s'}</div><h1>Groups</h1></div>${ed?`<div class="toolbar">${miss?`<button class="btn" data-gseed>Add ${miss} missing studio group${miss===1?'':'s'}</button>`:''}<button class="btn primary" data-gnew>New group</button></div>`:''}</div>
+  <div class="legend"><span><i class="gdot" style="background:var(--ok)"></i>Spots free</span><span><i class="gdot" style="background:var(--bad)"></i>Full</span></div>
+  ${gs.length?`<div class="cards">${gs.map(([id,g])=>{const f=gFilled(g),cap=+g.cap||6,full=f>=cap,col=full?'var(--bad)':'var(--ok)';
+    return `<button class="card gcard" data-group="${id}" style="border-top:4px solid ${col}">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;width:100%"><div><h3>${esc(g.name||g.type||'Group')}</h3><span class="muted" style="font-size:.8rem">${esc(g.type||'')}</span></div>
+      <span class="gspots" style="background:${col}">${f}/${cap}</span></div>
+      <div class="chips">${GDAYS.filter(d=>(g.days||[]).includes(d)).map(d=>`<span class="pill">${d}</span>`).join('')||'<span class="muted" style="font-size:.8rem">No days set</span>'}</div>
+      <dl class="kv"><dt>Time</dt><dd class="num">${esc(g.time||'—')}${g.time?' – '+gEnd(g):''}</dd><dt>Trainer</dt><dd>${esc(g.trainer?staffName(g.trainer):'—')}</dd><dt>Spots</dt><dd style="color:${col};font-weight:600">${full?'Full':(cap-f)+' free'}</dd></dl>
+      <div class="fill" style="max-width:none;margin:0"><i style="width:${Math.min(100,f/cap*100)}%;background:${col}"></i></div>
+      ${f?`<div class="muted" style="font-size:.8rem">${(g.members||[]).filter(x=>S.clients[x]).map(x=>esc(S.clients[x].name)).join(', ')}</div>`:''}
+    </button>`}).join('')}</div>`:`<div class="panel"><div class="empty">No groups yet.${ed?' Click “New group” to add one.':''}${ed?'<div style="margin-top:12px"><button class="btn primary" data-gseed>Add the studio’s 11 groups (Semi, Semi 2, Mat)</button></div>':''}</div></div>`}`;
+}
+function groupModal(id){
+  const g=id?S.groups[id]:{type:'Semi Pilates',cap:6,dur:50,time:'18:00',days:[],members:[]},ed=canEditGroups(),dis=ed?'':'disabled';
+  const allC=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  openModal(`<header><div><div class="eyebrow">${id?'Group':'New group'}</div><h2>${esc(g.name||'New group')}</h2></div><button class="x" data-close aria-label="Close">×</button></header>
+  <form class="form" id="groupForm" data-id="${id||''}">
+    <div class="field"><label for="gName">Name</label><input id="gName" value="${esc(g.name||'')}" placeholder="e.g. Evening Semi Pilates" ${dis}></div>
+    <div class="field"><label for="gType">Type</label><select id="gType" ${dis}>${GTYPES.map(x=>`<option ${x===g.type?'selected':''}>${x}</option>`).join('')}</select></div>
+    <div class="field wide"><label>Days</label><div class="chips">${GDAYS.map(d=>`<label class="chip trchk"><input type="checkbox" name="gDay" value="${d}" ${(g.days||[]).includes(d)?'checked':''} ${dis}> ${d}</label>`).join('')}</div></div>
+    <div class="field"><label for="gTime">Time</label><input type="time" id="gTime" value="${esc(g.time||'')}" step="900" ${dis}></div>
+    <div class="field"><label for="gDur">Minutes</label><input type="number" id="gDur" value="${+g.dur||50}" min="15" step="5" ${dis}></div>
+    <div class="field"><label for="gTr">Trainer</label><select id="gTr" ${dis}><option value="">—</option>${trainersList().map(([tid,s])=>`<option value="${tid}" ${tid===g.trainer?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
+    <div class="field"><label for="gCap">Total spots</label><input type="number" id="gCap" value="${+g.cap||6}" min="1" ${dis}></div>
+    <div class="field wide"><label>Clients in this group</label><div class="chips" id="gMembers">${(g.members||[]).filter(x=>S.clients[x]).map(x=>`<label class="chip trchk"><input type="checkbox" name="gMem" value="${x}" checked ${dis}> ${esc(S.clients[x].name)}</label>`).join('')||(ed?'':'<span class="muted">No clients yet</span>')}</div></div>
+    ${ed?`<div class="field wide"><label for="gAdd">Add a client</label><div style="display:flex;gap:8px"><select id="gAdd"><option value="">Choose client…</option>${allC.map(([cid,c])=>`<option value="${cid}">${esc(c.name)}</option>`).join('')}</select><button type="button" class="btn" data-gaddm>Add</button></div><span class="muted" style="font-size:.78rem">Untick a client to remove them.</span></div>
+    <div class="field wide"><div class="actions">${id&&UI.role==='owner'?'<button type="button" class="btn danger" data-gdel="'+id+'" style="margin-right:auto">Delete group</button>':''}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save group</button></div></div>`:''}
+  </form>`)}
+function pStaff(){
+  const p=P(),mon=today().slice(0,7);
+  const taught=id=>Object.values(S.classes).filter(c=>c.instructor===id&&(c.date||'').startsWith(mon)&&c.date<=today()).length;
+  const list=Object.entries(S.staff).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const pp=pins();
+  return `<div class="pagehead"><div><div class="eyebrow">${list.length} people</div><h1>Staff</h1></div><button class="btn primary" data-act="addstaff">Add staff</button></div>
+  ${list.length?`<div class="cards">${list.map(([id,s])=>{const n=taught(id);return `<button class="card" data-staff="${id}">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><h3>${esc(s.name)}</h3><span class="pill acc">${esc(roleName(s.role))}</span></div>
+    <dl class="kv"><dt>Sessions this month</dt><dd class="num">${n}</dd>
+    ${p.payroll&&s.role==='Instructor'?`<dt>Rate per session</dt><dd class="num">${L(s.rate)}</dd><dt>Owed this month</dt><dd class="num"><b>${L(n*(+s.rate||0))}</b></dd>`:''}</dl>
+    ${s.demo?'<span class="pill" style="align-self:flex-start">demo</span>':''}</button>`}).join('')}</div>`
+  :'<div class="panel empty">No staff yet. Add trainers so you can assign them to sessions.</div>'}
+  ${FB&&UI.role==='owner'?fbLoginsPanel():''}
+  ${!FB&&P().pins?`<section class="panel"><header><div><h2>Trainer links</h2><span class="muted">Send each trainer their own link. It opens only their page, after their PIN.</span></div></header>
+    <div class="rows">${trainersList().map(([id,s])=>`<div class="row tlrow"><b>${esc(s.name)}</b>${linkBox(id)}<div class="pinbox"><input id="tp_${id}" class="num" inputmode="numeric" maxlength="6" placeholder="4444" value="${esc(s.pin||'')}" aria-label="PIN for ${esc(s.name)}"><button type="button" class="btn sm primary" data-savepin="${id}">Save PIN</button></div></div>`).join('')}</div>
+    <p class="muted" style="margin:10px 0 0;font-size:.8rem">Trainers also need access to this app: open Share and add them. Type a 4–6 digit PIN next to each trainer and tap Save PIN. Empty means the default 4444.</p></section>`:''}
+  ${!FB&&p.pins?`<section class="panel"><header><h2>Desk PINs</h2><span class="muted">Each role signs in with its own PIN</span></header>
+    <form class="form" id="pinForm">${['owner','manager','reception'].map(k=>`<div class="field"><label for="pin_${k}">${PERMS[k].label}</label><input id="pin_${k}" class="num" inputmode="numeric" maxlength="6" value="${esc(pp[k])}"></div>`).join('')}
+    <div class="field"><button class="btn primary" type="submit">Save PINs</button></div></form>
+    <p class="muted" style="margin:10px 0 0;font-size:.82rem">PINs keep roles apart at the front desk. Only share this page with people you trust; anyone with access can read studio data.</p></section>`:''}`;
+}
+
+/* ---------- modals ---------- */
+function openModal(html,refresh){
+  $('#modal').innerHTML=`<div class="overlay" data-close><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  modalRefresh=refresh||null;document.documentElement.classList.add('modal-open');const f=$('#modal').querySelector('input,select,textarea');if(f&&!refresh)f.focus();
+}
+function closeModal(){UI.pickTarget=null;$('#modal').innerHTML='';modalRefresh=null;document.documentElement.classList.remove('modal-open')}
+
+function classModal(id){
+  const draw=()=>{
+    const c=S.classes[id];if(!c){closeModal();return}
+    const p=P(),bk=c.booked||[],ids=new Set(bk.map(b=>b.c));
+    const opts=Object.entries(S.clients).filter(([cid])=>!ids.has(cid)).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+    const keep=$('#bkSel')?.value||'';
+    const box=$('#modal .modal');if(!box)return;
+    box.innerHTML=`<header><div><div class="eyebrow">${esc(fmtLong(c.date))} · ${esc(c.time)} · ${c.dur||50} min</div><h2>${esc(typeName(c.type))}</h2><p class="muted" style="margin:4px 0 0">${esc(staffName(c.instructor))} · ${bk.length}/${c.cap} booked · ${bk.filter(b=>isDone(c,b)).length} done</p></div><button class="x" data-close aria-label="Close">×</button></header>
+      ${bk.length?`<div class="booked">${bk.map(b=>{const cl=S.clients[b.c];return `<div><span><b>${esc(cl?.name||'Removed client')}</b>${cl&&healthFlag(cl)?` <span class="hflag" title="${esc(healthText(cl))}">\u26a0 ${esc(healthText(cl))}</span>`:''}</span>
+        <span style="display:flex;gap:6px">${!b.burn&&isDone(c,b)?'<span class="pill ok">Done</span>':''}${`<button class="btn sm ${b.burn?'burned':''}" data-burn="${b.c}" title="Client didn't come — session counts as used">${b.burn?'\ud83d\udd25 Burned':'Burn'}</button>`}<button class="btn sm danger" data-unbook="${b.c}">Cancel</button></span></div>`}).join('')}</div>`:'<div class="empty" style="padding:12px">No one booked yet.</div>'}
+      ${bk.length<c.cap?`<div class="toolbar"><select id="bkSel" style="flex:1;min-width:0"><option value="">Choose a client to book…</option>${opts.map(([cid,cl])=>`<option value="${cid}" ${cid===keep?'selected':''}>${esc(cl.name)} — ${totalSessions(cid)} sessions</option>`).join('')}</select><button class="btn primary" data-act="book">Book</button></div>`
+      :'<div class="banner">Session is full.</div>'}
+      <div class="err" id="bkErr"></div>
+      ${p.editClasses?`<div class="actions"><button class="btn danger" data-act="delclass">Delete session</button><button class="btn" data-act="editclass">Edit session</button></div><div id="delSlot"></div>`:''}`;
+    box.dataset.cls=id;
+  };
+  openModal('',draw);draw();
+}
+const c0dur=id=>id&&S.classes[id]?S.classes[id].dur||50:50;
+function classForm(id,pre){
+  const c=id?S.classes[id]:{date:(UI.schedView||'line')==='line'?(UI.schedDay||today()):UI.week<=today()&&today()<addDays(UI.week,7)?today():UI.week,time:'18:00',dur:50,type:CLASS_TYPES[0],cap:1,instructor:'',...(pre||{})};
+  const st=Object.entries(S.staff).filter(([,s])=>s.role==='Instructor');
+  openModal(`<header><h2>${id?'Edit session':'Add session'}</h2><button class="x" data-close aria-label="Close">×</button></header>
+  <form class="form" id="classForm" data-id="${id||''}">
+    <div class="field"><label for="cType">Session type</label><select id="cType">${CLASS_TYPES.map(t=>`<option ${t===typeName(c.type)?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="field"><label for="cInst">Trainer</label><select id="cInst"><option value="">Unassigned</option>${st.map(([sid,s])=>`<option value="${sid}" ${sid===c.instructor?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
+    <div class="field"><label for="cDate">Date</label><input type="date" id="cDate" value="${c.date}" required></div>
+    <div class="field"><label for="cTime">Start</label><input type="time" id="cTime" value="${c.time}" required></div>
+    <div class="field"><label for="cCap">Clients (1 = private)</label><input type="number" id="cCap" value="${c.cap}" min="1"></div>
+    ${id?'':`<div class="field wide" style="gap:10px"><div id="cCliWrap" class="form" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));row-gap:22px">${clientPicker('cCli0')}</div><button type="button" class="btn sm" data-act="addcli" style="align-self:flex-start;margin-top:18px">+ Add client</button></div>`}
+    <div class="field wide"><div class="actions"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">${id?'Save changes':'Add session'}</button></div></div>
+  </form>`);
+  if(!st.length)$('#classForm').insertAdjacentHTML('afterbegin','<p class="wide muted" style="margin:0">Tip: add trainers on the Staff page to assign them.</p>');
+}
+const RF={
+  lang:['English','Albanian','Italian','Turkish'],
+  serv:['Pilates','Functional Training','Bodyshape','Yoga','Meditation'],
+  pref:['Private','Semi-Private','Both'],
+  goals:['Toning & sculpting your body','Improving posture, flexibility & strength','Reducing stress & boosting overall happiness','Rehabilitation, injury recovery or pain'],
+  times:['08:30-10:30','10:30-16:00','16:00-19:00','Any Time'],
+  days:[['Mon','Monday'],['Tue','Tuesday'],['Wed','Wednesday'],['Thu','Thursday'],['Fri','Friday'],['Sat','Saturday'],['Sun','Sunday']],
+  med:['None','Scoliosis','Hernia','Pregnancy','Any disabilities, injury, disease'],
+  past:['None','Any Muscle or Bone Injury','Any Neurological Problem like Hernia- Sciatica','Vertigo -Migraine','Bursitis - Tendinopathy','Osteoporosis','Blood Pressure','Meniscus -ACL','Asthma','Any Heart Disease','Diabetes - Hypoglycemia','Epilepsy'],
+  pain:['None','Neck','Shoulder','Elbow','Lower back','Upper back','Wrist','Pelvis','Knee','Ankle']};
+const rfHas=(str,o)=>String(str||'').toLowerCase().includes(o.toLowerCase());
+const rfRest=(str,opts)=>{let t=String(str||'');opts.forEach(o=>{t=t.replace(new RegExp(o.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),'')});return t.split(',').map(x=>x.trim()).filter(x=>x&&!/^(no|jo|none)$/i.test(x)).join(', ')};
+const rfChk=(name,opts,isOn)=>`<div class="chips">${opts.map(o=>`<label class="chip trchk"><input type="checkbox" name="${name}" value="${esc(o)}" ${isOn(o)?'checked':''}> ${esc(o)}</label>`).join('')}</div>`;
+function regFormFields(c){const f=c.form||{},av=f.availability||{};
+  const q=(t,body)=>`<div class="field wide"><label>${t}</label>${body}</div>`;
+  return `<details class="field wide rfedit" ${c.form?'':'open'}><summary><b>Registration form</b> <span class="muted">${c.form?(f.submitted?'filled '+esc(f.submitted.slice(0,10)):'filled'):'not filled yet'}</span></summary>
+  <div class="form" style="margin-top:12px">
+  ${q('Language you can communicate',rfChk('rfLang',RF.lang,o=>rfHas(f.languages,o)||(o==='Albanian'&&rfHas(f.languages,'Shqip'))))}
+  ${q('Which of our services interest you the most?',rfChk('rfServ',RF.serv,o=>rfHas(f.services,o)))}
+  ${q('Private session (1 to 1) or Semi-Private (max. 6 people)?',`<div class="chips">${RF.pref.map(o=>`<label class="chip trchk"><input type="radio" name="rfPref" value="${o}" ${f.sessionPref===o?'checked':''}> ${o}</label>`).join('')}</div>`)}
+  ${q('Main goal or expectation from Core Pilates?',rfChk('rfGoal',RF.goals,o=>rfHas(f.goals,o.split(',')[0])))}
+  ${q('What times are you available?',`<div class="tablewrap"><table class="rfav"><thead><tr><th></th>${RF.times.map(t=>`<th>${t}</th>`).join('')}</tr></thead><tbody>${RF.days.map(([k,n])=>`<tr><th>${n}</th>${RF.times.map(t=>`<td><input type="checkbox" name="rfAv" value="${k}|${t}" ${rfHas(av[k],t)?'checked':''} aria-label="${n} ${t}"></td>`).join('')}</tr>`).join('')}</tbody></table></div>`)}
+  ${q('Medical conditions at the moment?',rfChk('rfMed',RF.med,o=>o==='None'?!!c.form&&!f.medical:rfHas(f.medical,o.split(',')[0]))+`<input id="rfMedOther" placeholder="Other condition (leave empty if none)" value="${esc(rfRest(f.medical,RF.med.concat(['Any disabilities','injury','disease','disiease'])))}" style="margin-top:6px">`)}
+  ${q('Ever suffered from one of these conditions?',rfChk('rfPast',RF.past,o=>o==='None'?!!c.form&&!f.pastConditions:rfHas(f.pastConditions,o.split(' ')[0]==='Any'?o:o.split(' ')[0])))}
+  ${q('Do you feel any pain on these areas?',rfChk('rfPain',RF.pain,o=>o==='None'?!!c.form&&!(f.pain||[]).length:(f.pain||[]).some(x=>x.toLowerCase()===o.toLowerCase())))}
+  ${q('Doctor confirmation (if pregnant or medical condition)',`<input id="rfDoc" value="${esc(f.doctorNote||'')}" placeholder="e.g. Doctor note received">`)}
+  <div class="field wide"><label class="trchk"><input type="checkbox" id="rfConsent" ${rfHas(f.consent,'agree')&&!rfHas(f.consent,'not')?'checked':''}> Client agrees to the consent form and Core Pilates Studio Rules</label></div>
+  </div></details>`}
+function readRegForm(old){
+  const vals=n=>[...document.querySelectorAll(`input[name=${n}]:checked`)].map(x=>x.value).filter(v=>v!=='None');
+  const av={};vals('rfAv').forEach(v=>{const[k,t]=v.split('|');av[k]=av[k]?av[k]+', '+t:t});
+  const med=vals('rfMed'),mo=($('#rfMedOther')||{}).value?.trim();if(mo)med.push(mo);
+  const f={languages:vals('rfLang').join(', '),services:vals('rfServ').join(', '),sessionPref:(document.querySelector('input[name=rfPref]:checked')||{}).value||'',goals:vals('rfGoal').join(', '),availability:av,medical:med.join(', '),pastConditions:vals('rfPast').join(', '),pain:vals('rfPain'),doctorNote:($('#rfDoc')||{}).value?.trim()||'',consent:$('#rfConsent')?.checked?'Agree':''};
+  const any=document.querySelector('input[value=None]:checked')||f.languages||f.services||f.sessionPref||f.goals||Object.keys(av).length||f.medical||f.pastConditions||f.pain.length||f.doctorNote||f.consent;
+  if(!any&&!old)return null;
+  return{...(old||{}),...f,submitted:(old&&old.submitted)||new Date().toISOString().slice(0,16).replace('T',' ')}}
+const fmtD=x=>x?parse(x).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
+function pkgHistory(c,onlyPast){
+  const row=(r,cur)=>{const i=pkgInfo(r.plan)||{k:'pt',label:r.plan||'—',n:''};const exp=r.end&&r.end<today();
+    return `<div class="pkgrow ${cur?'cur':''}"><span class="slot ${i.k}" style="cursor:default;font-family:var(--body);font-size:.75rem;font-weight:600">${esc(i.label)}</span><b class="num">${esc(i.n)}</b><span>${fmtD(r.start)} → ${fmtD(r.end)}</span><span class="muted">${(r.trainers||[]).map(t=>esc(staffName(t))).join(', ')}</span><span>${cur?(exp?'<span class="pill bad">Expired</span>':'<span class="pill ok">Active</span>')+` <span class="muted">${r.left} left</span>`:`<span class="muted">${r.left!=null?r.left+' left at end':''}${r.carried?' · moved to next':''}</span>`}</span></div>`};
+  const past=[...(c.packages||[])].reverse();
+  if(onlyPast)return `<div class="eyebrow" style="margin-bottom:6px">Past packages${past.length?' \u00b7 '+past.length:''}</div>${past.length?`<div class="pkglist">${past.map(r=>row(r,0)).join('')}</div>`:'<div class="muted" style="font-size:.88rem">No past packages.</div>'}`;
+  return `<div class="eyebrow" style="margin-bottom:6px">Active package</div>
+  ${c.plan?`<div class="pkglist">${row({plan:c.plan,start:c.packageStart,end:c.expires,left:leftOf(c),trainers:c.trainers||[]},1)}</div>`:'<div class="muted" style="font-size:.88rem">No package yet — use Sell pack.</div>'}
+  <div class="eyebrow" style="margin:14px 0 6px">Past packages${past.length?' · '+past.length:''}</div>
+  ${past.length?`<div class="pkglist">${past.map(r=>row(r,0)).join('')}</div>`:'<div class="muted" style="font-size:.88rem">No past packages.</div>'}`}
+function clientModal(id){
+  const c=id?S.clients[id]:{name:'',phone:'',email:'',notes:'',credits:0};
+  const p=P();
+  const hist=id?payList().filter(([,x])=>x.client===id).slice(0,8):[];
+  const visits=id?Object.values(S.classes).filter(k=>(k.booked||[]).some(b=>b.c===id)).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,6):[];
+  const s=id?clientStatus(c):null;
+  openModal(`<header><div>${id?`<div class="eyebrow">${pkgH(c.plan,'No package')} · ${flagPills(c)}</div>`:''}<h2>${id?esc(c.name):'New client'}${id&&c.birthday?` <span class="muted" style="font-size:.95rem;font-weight:500">· ${ageOf(c.birthday)} yrs${c.birthday.slice(5)===today().slice(5)?' · 🎂 Birthday today':''}</span>`:''}</h2></div><button class="x" data-close aria-label="Close">×</button></header>
+  ${id?`<div class="minis"><span>Total sessions <b class="num">${totalSessions(id)}</b></span><span>Sessions left <b class="num">${leftCell(c)}</b></span><span>Burned <b class="num" style="color:var(--bad)">${burnedOf(id)}</b></span><span>Expires <b>${esc(c.expires?fmtDay(c.expires):'—')}</b></span></div>`:''}
+  <form class="form" id="clientForm" data-id="${id||''}">
+    <div class="field wide"><label for="clName">Full name</label><input id="clName" value="${esc(c.name)}" required></div>
+    <div class="field"><label for="clEmer">Emergency contact</label><input id="clEmer" inputmode="tel" value="${esc(c.emergency||'')}"></div>
+    <div class="field"><label for="clPhone">Phone</label><input id="clPhone" value="${esc(c.phone||'')}" placeholder="+355 6…"></div>
+    <div class="field"><label for="clEmail">Email</label><input id="clEmail" type="email" value="${esc(c.email||'')}"></div>
+    <div class="field"><label for="clNat">Country</label><input id="clNat" list="natList" value="${esc(natName(c.nationality))}" placeholder="e.g. Albania"><datalist id="natList">${NATIONALITIES.map(n=>`<option value="${n}">`).join('')}</datalist></div>
+    <div class="field"><label for="clBday">Birthday</label><input id="clBday" type="date" value="${esc(c.birthday||'')}"></div>
+    <div class="field"><label for="clSrc">How they found us</label><select id="clSrc"><option value="">Choose\u2026</option>${SOURCES.map(x=>`<option ${x===c.source?'selected':''}>${x}</option>`).join('')}</select></div>
+    <div class="field wide pkgedit"><div class="eyebrow" style="margin-bottom:8px">Active package</div><div class="form" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+      ${(()=>{const pi=pkgInfo(c.plan),tl=pi?String(c.plan).split('·')[0].trim():'';return `<div class="field"><label for="clPType">Type</label><select id="clPType"><option value="">No package</option>${(tl&&!PKG_TYPES.some(t=>t.toLowerCase()===tl.toLowerCase())?[tl,...PKG_TYPES]:PKG_TYPES).map(t=>`<option ${t.toLowerCase()===tl.toLowerCase()?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
+      <div class="field"><label for="clPN">Sessions</label><input id="clPN" type="number" min="0" value="${pi?pi.n:''}"></div>`})()}
+      <div class="field"><label for="clLeft">Sessions left</label><input id="clLeft" type="number" value="${leftOf(c)}"></div>
+      <div class="field"><label for="clStart">Start</label><input id="clStart" type="date" value="${esc(c.packageStart||'')}"></div>
+      <div class="field"><label for="clExp">Expires</label><input id="clExp" type="date" value="${esc(c.expires||'')}"></div>
+      <div class="field wide"><label>Trainers</label><div class="chips">${trainersList().map(([tid,t])=>`<label class="chip trchk"><input type="checkbox" name="clTr" value="${tid}" ${(c.trainers||[]).includes(tid)?'checked':''}> ${esc(t.name)}</label>`).join('')}</div></div>
+    </div></div>
+    ${id?`<div class="field wide">${pkgHistory(c,1)}</div>`:''}
+    ${regFormFields(c)}
+    <div class="field wide"><div class="actions">${id&&p.delClient?'<button type="button" class="btn danger" data-act="delclient">Delete client</button>':''}${id&&UI.role!=='trainer'?`<button type="button" class="btn" data-sell="${id}">Sell pack</button>`:''}<button class="btn primary" type="submit">${id?'Save':'Add client'}</button></div><div id="delSlot"></div></div>
+  </form>
+`);
+  if(id){const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=true);const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='none';f.querySelector('.actions')?.insertAdjacentHTML('beforeend','<button type="button" class="btn primary" data-act="cledit">Edit</button>')}}
+}
+function staffModal(id){
+  const s=id?S.staff[id]:{name:'',role:'Instructor',phone:'',rate:''};
+  openModal(`<header><h2>${id?esc(s.name):'Add staff'}</h2><button class="x" data-close aria-label="Close">×</button></header>
+  <form class="form" id="staffForm" data-id="${id||''}">
+    <div class="field wide"><label for="stName">Name</label><input id="stName" value="${esc(s.name)}" required></div>
+    <div class="field"><label for="stRole">Role</label><select id="stRole">${STAFF_ROLES.map(r=>`<option value="${r}" ${r===s.role?'selected':''}>${roleName(r)}</option>`).join('')}</select></div>
+    <div class="field"><label for="stPhone">Phone</label><input id="stPhone" inputmode="tel" value="${esc(s.phone||'')}" placeholder="+355 6\u2026"></div>
+    <div class="field"><label for="stEmail">Email</label><input id="stEmail" type="email" value="${esc(s.email||'')}"></div>
+    <div class="field"><label for="stBday">Birthday</label><input id="stBday" type="date" value="${esc(s.birthday||'')}"></div>
+    <div class="field"><label for="stAge">Age</label><input id="stAge" type="number" min="16" max="90" value="${esc(s.birthday?ageOf(s.birthday):(s.age||''))}" placeholder="Auto from birthday"></div>
+    <div class="field wide"><label for="stAddr">Address</label><input id="stAddr" value="${esc(s.address||'')}" placeholder="Street, area, Tirana"></div>
+    ${!FB&&P().pins?`<div class="field"><label for="stPin">Login PIN (trainers)</label><input id="stPin" class="num" inputmode="numeric" maxlength="6" value="${esc(s.pin||'')}" placeholder="4444"></div>`:''}
+    ${P().payroll?`<div class="field"><label for="stRate">Pay per session (Lek)</label><input id="stRate" type="number" min="0" step="100" value="${esc(s.rate||'')}"></div>`:''}
+    <div class="field wide"><div class="actions">${id&&UI.role==='owner'?'<button type="button" class="btn danger" data-act="delstaff">Remove</button>':''}<button class="btn primary" type="submit">${id?'Save':'Add'}</button></div><div id="delSlot"></div></div>
+  </form>`);
+}
+function confirmIn(slot,text,onYes){
+  const el=$(slot);if(!el)return;
+  el.innerHTML=`<div class="confirm"><span>${esc(text)}</span><span style="display:flex;gap:6px"><button type="button" class="btn sm" data-cno>Keep</button><button type="button" class="btn sm danger" data-cyes>Delete</button></span></div>`;
+  el.querySelector('[data-cno]').onclick=()=>el.innerHTML='';
+  el.querySelector('[data-cyes]').onclick=onYes;
+}
+
+/* ---------- actions ---------- */
+async function recordSale(clientId,prodKey,amount,method,dt,tm){
+  const pr=PRODUCTS.find(x=>x.k===prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
+  const ok=await save(()=>store.set('payments',uid(),{kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:+amount||0,method,by:UI.role}));
+  if(!ok)return false;
+  if(clientId){
+    const c=S.clients[clientId]||{},up={plan:pr.n};
+    if(pr.unl){const base=isUnl(c)?c.unlimitedUntil:d;up.unlimitedUntil=addDays(base,pr.days)}
+    else if(pr.c){
+      const hist=[...(c.packages||[])],left=c.plan?leftOf(c):0,still=c.plan&&left>0&&!(c.expires&&c.expires<d);
+      if(c.plan)hist.push({plan:c.plan,start:c.packageStart||'',end:c.expires||'',left,trainers:c.trainers||[],closed:d,carried:still?left:0});
+      Object.assign(up,{packages:hist,packageStart:d,expires:pr.c>=36?(()=>{const x=parse(d);x.setMonth(x.getMonth()+(pr.c>=72?6:3));return addDays(ymd(x),7)})():addDays(d,37),credits:pr.c+(still?left:0),active:true,price:+amount||0});
+    }
+    if(pr.c||pr.unl)await save(()=>store.upd('clients',clientId,up));
+  }
+  toast('Sale recorded: '+pr.n+' · '+L(amount));return true;
+}
+async function book(classId,clientId){
+  const c=S.classes[classId],cl=S.clients[clientId],err=$('#bkErr');
+  if(!clientId){err.textContent='Choose a client first.';return}
+  const unl=isUnl(cl);
+  if((c.booked||[]).length>=c.cap){err.textContent='Session is full.';return}
+  if(await save(()=>store.upd('classes',classId,{booked:[...(c.booked||[]),{c:clientId,u:unl,in:false}]}))){
+    toast(cl.name+' booked');
+  }
+}
+async function unbook(classId,clientId){
+  const c=S.classes[classId],b=(c.booked||[]).find(x=>x.c===clientId),cl=S.clients[clientId];
+  if(await save(()=>store.upd('classes',classId,{booked:c.booked.filter(x=>x.c!==clientId)}))){
+    toast('Booking cancelled');
+  }
+}
+async function toggleBurn(classId,clientId){
+  const c=S.classes[classId],b=c.booked.find(x=>x.c===clientId),cl=S.clients[clientId];
+  if(await save(()=>store.upd('classes',classId,{booked:c.booked.map(x=>x.c===clientId?{...x,burn:!x.burn,in:false}:x)}))&&cl){
+    toast(b.burn?'Burn removed · session given back':cl.name+' · session burned');
+  }
+}
+function burnedOf(cid,from,to){let n=0;for(const c of Object.values(S.classes))if((!from||c.date>=from)&&(!to||c.date<=to))for(const b of c.booked||[])if(b.c===cid&&b.burn)n++;return n}
+async function toggleIn(classId,clientId){
+  const c=S.classes[classId],b=c.booked.find(x=>x.c===clientId),cl=S.clients[clientId];
+  if(await save(()=>store.upd('classes',classId,{booked:c.booked.map(x=>x.c===clientId?{...x,in:!x.in}:x)}))&&cl){
+    const left=(+cl.credits||0)+(b.in?1:-1);
+    await save(()=>store.upd('clients',clientId,{credits:left}));
+    if(!b.in)toast(cl.name+' checked in · '+left+' session'+(left===1?'':'s')+' left');
+  }
+}
+
+/* ---------- demo data ---------- */
+async function loadDemo(){
+  const t=today(),w=monday(t);
+  const staff={st_elira:{name:'Elira Hoxha',role:'Instructor',phone:'+355 69 210 4411',rate:1200},st_arben:{name:'Arben Kola',role:'Instructor',phone:'+355 68 330 1902',rate:1100},st_sara:{name:'Sara Dervishi',role:'Reception',phone:'+355 69 455 7810'}};
+  const names=['Anisa Brahimi','Klea Shehu','Dritan Leka','Megi Gjoka','Ina Basha','Lorena Meta','Erion Cela','Jonida Prifti'];
+  const clients={};names.forEach((n,i)=>{clients['cl_'+i]={name:n,phone:'+355 6'+(7+i%3)+' '+(100+i*37)+' '+(1000+i*413),email:'',notes:i===2?'Lower back sensitivity, avoid deep flexion':'',plan:i===4?'Monthly unlimited':i%2?'10-session pack':'5-session pack',credits:[3,7,1,0,0,5,2,8][i],expires:addDays(t,[20,60,5,-3,30,40,3,80][i]),...(i===4?{unlimitedUntil:addDays(t,18)}:{})}});
+  const slots=[['08:00','Reformer Group','st_elira'],['12:30','Mat Pilates','st_arben'],['18:00','Reformer Group','st_elira'],['19:15','Reformer Beginners','st_arben']];
+  const classes={};let k=0;
+  for(let d=0;d<6;d++)slots.forEach(([tm,ty,ins],j)=>{if(d===5&&j>1)return;const date=addDays(w,d);const n=(d*3+j*2)%7;
+    const booked=[...Array(n)].map((_,i)=>({c:'cl_'+((d+j+i)%8),u:(d+j+i)%8===4,in:date<t||(date===t&&tm<new Date().toTimeString().slice(0,5))}));
+    const seen=new Set();classes['cs_'+(k++)]={date,time:tm,dur:50,type:ty,instructor:ins,cap:ty==='Mat Pilates'?12:8,booked:booked.filter(b=>!seen.has(b.c)&&seen.add(b.c))}});
+  const pays={};[[0,'cl_1','10-session pack',13000,'Card'],[0,'','Single PT session',1500,'Cash'],[0,'cl_5','5-session pack',7000,'Cash'],[-1,'cl_4','Monthly unlimited',18000,'Bank transfer'],[-2,'cl_7','10-session pack',13000,'Card'],[-3,'cl_0','5-session pack',7000,'Cash']]
+    .forEach(([o,c,it,a,m],i)=>{pays['py_demo'+i]={date:addDays(t,o),ts:Date.now()+o*864e5-i*6e5,client:c,item:it,amount:a,method:m,by:'owner'}});
+  const all=[];
+  for(const[c,o]of[['staff',staff],['clients',clients],['classes',classes],['payments',pays]])for(const[id,d]of Object.entries(o))all.push(()=>store.set(c,id,{...d,demo:true}));
+  toast('Loading demo data…');
+  await save(()=>Promise.all(all.map(f=>f())),'Demo data loaded');
+}
+async function clearDemo(){
+  const jobs=[];for(const c of['staff','clients','classes','payments','expenses','notes','finances'])for(const[id,d]of Object.entries(S[c]))if(d.demo)jobs.push(()=>store.del(c,id));
+  await save(()=>Promise.all(jobs.map(f=>f())),'Demo data removed');
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',async e=>{
+  if(e.target.classList&&e.target.classList.contains('tltrack')&&e.target.dataset.tadd!=null&&P().editClasses){
+    const r=e.target.getBoundingClientRect(),m=TL0+(e.target.dataset.vert?(e.clientY-r.top)/r.height:(e.clientX-r.left)/r.width)*(TL1-TL0),mm=Math.max(TL0,Math.min(TL1-30,Math.round(m/30)*30));
+    classForm(null,{date:UI.schedDay||today(),time:pad(Math.floor(mm/60))+':'+pad(mm%60),instructor:e.target.dataset.tadd});return}
+  const t=e.target.closest('button,[data-close],tr[data-client],.rowlink,g[data-fy],g[data-fmon]');if(!t)return;
+  if(t.matches('[data-close]')&&(t.classList.contains('overlay')?e.target===t:true)){closeModal();return}
+  if(t.classList.contains('overlay'))return;
+  const ds=t.dataset;
+  if(ds.role){UI.loginRole=ds.role;render();$('#pin')?.focus();return}
+  if(ds.nav){closeModal();UI.page=ds.nav;render();window.scrollTo(0,0);return}
+  if(ds.class){classModal(ds.class);return}
+  if(ds.client){clientModal(ds.client);return}
+  if(ds.staff){staffModal(ds.staff);return}
+  if(ds.cf){UI.clientFilter=ds.cf;render();return}
+  if(ds.mklogin){fbMakeLogin(ds.mklogin);return}
+  if(ds.logf){UI.logF=ds.logf;render();return}
+  if(ds.pm){UI.payMode=ds.pm;render();return}
+  if(ds.pmonth){UI.payMode='month';UI.payDay=ds.pmonth+'-01';render();return}
+  if(ds.cm){UI.chartMode=ds.cm;render();return}
+  if(ds.chm){UI.chartMode='month';UI.chartMonth=ds.chm;render();return}
+  if(ds.sv){UI.schedView=ds.sv;render();return}
+  if(ds.fcm){UI.finChartMode=ds.fcm;render();return}
+  if(ds.fy){UI.finYear=+ds.fy;UI.finMonth=null;render();return}
+  if(ds.fmon!=null){UI.finMonth=+ds.fmon;render();return}
+  if(ds.finrm){const yr=UI.finYear||new Date().getFullYear(),i=+ds.finrm;await finSave(yr,d=>d.rows.splice(i,1));return}
+  if(ds.em){UI.expMonth=ds.em;render();return}
+  if(ds.copylink){const inp=$('#lk_'+ds.copylink);try{await navigator.clipboard.writeText(inp.value);toast('Link copied')}catch{inp.focus();inp.select();toast('Press Ctrl+C / Cmd+C to copy')}return}
+  if(ds.savepin){const v=$('#tp_'+ds.savepin).value.trim();if(v&&!/^\d{4,6}$/.test(v)){toast('PIN must be 4 to 6 digits.');return}
+    await save(()=>store.upd('staff',ds.savepin,{pin:v}),'PIN saved for '+staffName(ds.savepin));return}
+  if(ds.newclient){UI.pickTarget=ds.newclient;clientModal();return}
+  if(ds.group){groupModal(ds.group);return}
+  if(ds.gseed!=null){t.disabled=true;await save(seedGroups);return}
+  if(ds.gnew!=null){groupModal(null);return}
+  if(ds.gaddm!=null){const sel=$('#gAdd'),v=sel.value;if(!v)return;if(document.querySelector('#gMembers input[value="'+v+'"]')){document.querySelector('#gMembers input[value="'+v+'"]').checked=true;return}
+    $('#gMembers').insertAdjacentHTML('beforeend',`<label class="chip trchk"><input type="checkbox" name="gMem" value="${esc(v)}" checked> ${esc(S.clients[v]?.name||'')}</label>`);sel.value='';return}
+  if(ds.gdel){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Tap again to delete';return}if(await save(()=>store.del('groups',ds.gdel),'Group deleted'))closeModal();return}
+  if(ds.team){UI.teamSel=ds.team;render();window.scrollTo(0,0);return}
+  if(ds.tf){UI.teamFilter=ds.tf;render();return}
+  if(ds.delnote){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delnote2="'+ds.delnote+'">Delete</button></span>';return}
+  if(ds.delnote2){await save(()=>store.del('notes',ds.delnote2),'Note deleted');return}
+  if(ds.delexp){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delexp2="'+ds.delexp+'">Delete</button></span>';return}
+  if(ds.delexp2){await save(()=>store.del('expenses',ds.delexp2),'Expense deleted');return}
+  if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
+  if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
+  if(ds.delpay2){await save(()=>store.del('payments',ds.delpay2),'Sale deleted. Credits were not changed.');return}
+  if('keep' in ds){render();return}
+  const cid=$('#modal .modal')?.dataset.cls;
+  if(ds.checkin&&cid){toggleIn(cid,ds.checkin);return}
+  if(ds.burn&&cid){toggleBurn(cid,ds.burn);return}
+  if(ds.unbook&&cid){unbook(cid,ds.unbook);return}
+  switch(ds.act){
+    case'logout':if(FB)FB.auth.signOut();UI.role=null;UI.trainer=null;UI.teamSel=null;ss.set('cp_role',null);ss.set('cp_trainer',null);closeModal();render();break;
+    case'wk-1':UI.week=addDays(UI.week,-7);render();break;
+    case'wk1':UI.week=addDays(UI.week,7);render();break;
+    case'wk0':UI.week=monday(today());render();break;
+    case'sd-1':UI.schedDay=addDays(UI.schedDay||today(),-1);render();break;
+    case'sd1':UI.schedDay=addDays(UI.schedDay||today(),1);render();break;
+    case'sd0':UI.schedDay=today();render();break;
+    case'cm-1':case'cm1':{const k=UI.chartMonth||today().slice(0,7),[a,b]=k.split('-').map(Number),d=new Date(a,b-1+(ds.act==='cm1'?1:-1),1);UI.chartMonth=ymd(d).slice(0,7);render();break}
+    case'pdtoday':UI.payDay=today();render();break;
+    case'pd-1':case'pd1':{const st=ds.act==='pd1'?1:-1,m=UI.payMode||'day',[y,mo]=UI.payDay.split('-').map(Number);UI.payDay=m==='day'?addDays(UI.payDay,st):m==='month'?ymd(new Date(y,mo-1+st,1)):ymd(new Date(y+st,0,1));render();break}
+    case'addclass':classForm();break;
+    case'editclass':classForm(cid);break;
+    case'delclass':confirmIn('#delSlot','Delete this session?',async()=>{
+      if(await save(()=>store.del('classes',cid),'Session deleted'))closeModal()});break;
+    case'book':book(cid,$('#bkSel').value);break;
+    case'addclient':clientModal();break;
+    case'addstaff':staffModal();break;
+    case'delclient':{const id=$('#clientForm').dataset.id;confirmIn('#delSlot','Delete '+S.clients[id].name+' and their profile?',async()=>{if(await save(()=>store.del('clients',id),'Client deleted'))closeModal()});break}
+    case'delstaff':{const id=$('#staffForm').dataset.id;confirmIn('#delSlot','Remove '+S.staff[id].name+'?',async()=>{if(await save(()=>store.del('staff',id),'Removed'))closeModal()});break}
+    case'demo':loadDemo();break;
+    case'cleardemo':clearDemo();break;
+    case'chgcode':fbChangeCode();break;
+    case'excel':exportExcel();break;
+    case'bkdown':downloadBackup();break;
+    case'bkup':if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Replaces all data — tap again';break}restoreBackup();break;
+    case'finexcel':exportFinances();break;
+    case'cledit':{const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='';t.remove();f.querySelector('#clName')?.focus()}break}
+    case'addcli':{const w=$('#cCliWrap');if(w){const n=w.querySelectorAll('[data-cpick]').length;w.insertAdjacentHTML('beforeend',clientPicker('cCli'+n));document.getElementById('cCli'+n)?.focus()}break}
+    case'callmore':UI.callAll=!UI.callAll;render();break;
+    case'dy-1':case'dy1':UI.dataYear=String(+(UI.dataYear||today().slice(0,4))+(ds.act==='dy1'?1:-1));render();break;
+    case'histimport':{if(UI.importing)break;UI.importing=1;const m=$('#histMsg');try{const rows=FB?await fbPickBackup():await (await fetch('import-2026.json')).json();if(!rows){UI.importing=0;break}const old=Object.keys(S.expenses).filter(k=>/^ex_[rk]/.test(k));for(let i=0;i<old.length;i+=25)await Promise.all(old.slice(i,i+25).map(k=>store.del('expenses',k)));let n=0;for(let i=0;i<rows.length;i+=25){await Promise.all(rows.slice(i,i+25).map(([c,id,d])=>store.set(c,id,d)));n=Math.min(rows.length,i+25);const mm=$('#histMsg');if(mm)mm.textContent='Importing… '+n+' / '+rows.length}await store.set('settings','hist2026h',{done:true,at:Date.now(),count:rows.length});UI.importing=0;render();toast('Imported '+rows.length+' records')}catch(e){UI.importing=0;render();toast('Import stopped: '+(e.message||e)+'. Press Import again to continue.')}UI.importing=0;break}
+    case'em-1':case'em1':{const k=UI.expMonth||today().slice(0,7),[a,b]=k.split('-').map(Number);UI.expMonth=ymd(new Date(a,b-1+(ds.act==='em1'?1:-1),1)).slice(0,7);render();break}
+    case'dp0':UI.dashPayDay=today();render();break;
+    case'dp-1':UI.dashPayDay=addDays(UI.dashPayDay||today(),-1);render();break;
+    case'dp1':UI.dashPayDay=addDays(UI.dashPayDay||today(),1);render();break;
+    case'notemore':UI.noteMore=true;render();break;
+    case'teamback':UI.teamSel=null;render();break;
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target.dataset&&e.target.dataset.cpick)cpHint(e.target);
+  if(e.target.id==='clientQ'){UI.clientQ=e.target.value;render()}
+  if(e.target.id==='logQ'){UI.logQ=e.target.value;render()}
+});
+document.addEventListener('change',e=>{
+  {const t=e.target;if(t.checked&&/^rf(Med|Past|Pain)$/.test(t.name))document.querySelectorAll(`input[name=${t.name}]`).forEach(x=>{if(x!==t&&(t.value==='None'||x.value==='None'))x.checked=false})}
+  if(e.target.id==='payDay'&&e.target.value){UI.payDay=e.target.value;render()}
+  if(e.target.id==='schedDate'&&e.target.value){UI.schedDay=e.target.value;UI.week=monday(e.target.value);render()}
+  if(e.target.id==='fxCad'&&+e.target.value>0){save(()=>store.set('settings','fx',{cad:+e.target.value}))}
+  if(e.target.classList.contains('cell')&&e.target.dataset.fr!=null){
+    const el=e.target,yr=UI.finYear||new Date().getFullYear(),r=el.dataset.fr,m=+el.dataset.fm,v=pnum(el.value);
+    if(Number.isNaN(v)){toast('Type a number, e.g. 388069.8');return}
+    finSave(yr,d=>{if(r==='s'){if(v==null)delete d.sales[m];else d.sales[m]=v}else{const row=d.rows[+r];row.m=row.m||{};if(v==null)delete row.m[m];else row.m[m]=v}});
+  }
+  if(e.target.dataset&&e.target.dataset.call){const id=e.target.dataset.call,on=e.target.checked,c=S.clients[id];
+    const prev=c.calledOn&&c.calledOn!==today()?c.calledOn:(c.lastCalled||'');
+    save(()=>store.upd('clients',id,on?{calledOn:today(),calledAt:Date.now(),calledBy:UI.role==='trainer'?staffName(UI.trainer):PERMS[UI.role].label,lastCalled:prev}:{calledOn:c.lastCalled||'',calledAt:0}),on?'Marked as called':'Unmarked')}
+  if(e.target.id==='noteFilter'){UI.noteFilter=e.target.value;render()}
+  if(e.target.id==='loginTrainer'){UI.loginTrainer=e.target.value}
+  if(e.target.id==='bkType'){UI.bookType=e.target.value;UI.bookDate=$('#bkDate').value;UI.bookTime=$('#bkTime').value;render()}
+  if(e.target.id==='qsProd'){const pr=PRODUCTS.find(x=>x.k===e.target.value);$('#qsAmt').value=pr.p}
+  if(e.target.id==='sProd'){const pr=PRODUCTS.find(x=>x.k===e.target.value);$('#sAmt').value=pr.p}
+});
+document.addEventListener('submit',async e=>{
+  e.preventDefault();const f=e.target;
+  if(f.id==='groupForm'){if(!canEditGroups())return;const id=f.dataset.id||'gr_'+uid(),days=[...f.querySelectorAll('[name=gDay]:checked')].map(x=>x.value),members=[...new Set([...f.querySelectorAll('[name=gMem]:checked')].map(x=>x.value))];
+    const cap=Math.max(1,+$('#gCap').value||6),d={name:$('#gName').value.trim(),type:$('#gType').value,days,time:$('#gTime').value,dur:+$('#gDur').value||50,trainer:$('#gTr').value,cap,members};
+    if(!d.name)d.name=d.type;if(members.length>cap){toast('This group has only '+cap+' spots.');return}
+    if(await save(()=>store.set('groups',id,d),'Group saved'))closeModal();return}
+  if(f.id==='codeForm'){const a1=$('#cc1').value,a2=$('#cc2').value;if(a1.length<6){toast('At least 6 characters.');return}if(a1!==a2){toast('The two codes don\u2019t match.');return}
+    try{await FB.auth.currentUser.updatePassword(a1);closeModal();toast('Code changed')}catch(e){toast(/recent-login/.test(e.code||'')?'For safety, log out and in again, then change your code.':'Could not change: '+(e.message||e.code))}return}
+  if(f.id==='loginForm'){
+    const v=$('#pin').value.trim();
+    if(FB){const tid=UI.lockTrainer||(UI.loginRole==='trainer'?$('#loginTrainer')?.value:null),email=tid?('t-'+tid+'@corepilates.app').toLowerCase():UI.loginRole+'@corepilates.app';
+      if(v.length<6){$('#loginErr').textContent='Codes are at least 6 characters.';return}
+      $('#loginErr').textContent='Signing in\u2026';
+      try{await FB.auth.signInWithEmailAndPassword(email,v)}catch(e){$('#loginErr').textContent=/wrong-password|invalid-credential|invalid-login|user-not-found/.test(e.code||'')?'That code doesn\u2019t match. Try again.':/too-many/.test(e.code||'')?'Too many tries. Wait a minute and try again.':'Could not sign in: '+(e.message||e.code);$('#pin').value='';$('#pin').focus()}
+      return}
+    if(UI.lockTrainer||UI.loginRole==='trainer'){
+      const tid=UI.lockTrainer||$('#loginTrainer')?.value,st=S.staff[tid];
+      if(st&&v&&v===String(st.pin||'4444')){UI.role='trainer';UI.trainer=tid;ss.set('cp_role','trainer');ss.set('cp_trainer',tid);UI.page='team';render()}
+      else{$('#loginErr').textContent='That PIN doesn\u2019t match '+(st?st.name:'this trainer')+'. Try again.';$('#pin').value='';$('#pin').focus()}
+      return;
+    }
+    if(v&&v===pins()[UI.loginRole]){UI.role=UI.loginRole;ss.set('cp_role',UI.role);UI.page='dash';render()}
+    else{$('#loginErr').textContent='That PIN doesn’t match the '+PERMS[UI.loginRole].label+' PIN. Try again.';$('#pin').value='';$('#pin').focus()}
+  }
+  if(f.id==='finAdd'){const n=$('#finNew').value.trim();if(!n){toast('Type a name for the cost line.');return}
+    const yr=UI.finYear||new Date().getFullYear();
+    if(finDoc(yr).rows.some(r=>r.name.toLowerCase()===n.toLowerCase())){toast('That line already exists.');return}
+    await finSave(yr,d=>{const i=d.rows.findIndex(r=>r.name==='Paychecks');d.rows.splice(i<0?d.rows.length:i,0,{name:n,m:{}})});return}
+  if(f.id==='noteForm'){
+    const text=$('#ntText').value.trim();if(!text){toast('Write a note first.');return}
+    if(await save(()=>store.set('notes',uid(),{trainer:f.dataset.tid,client:$('#ntClient').value,text,ts:Date.now(),by:UI.role}),'Note saved'))$('#ntText').value='';
+    return;
+  }
+  if(f.id==='bookForm'){
+    const tid=f.dataset.tid,type=$('#bkType').value,date=$('#bkDate').value,time=$('#bkTime').value,k=kindOf(type);
+    if(!date||!time){toast('Pick a date and time.');return}
+    const ids=[$('#bkC1')?.value,$('#bkC2')?.value].filter(Boolean);
+    if(k!=='grp'&&!ids.length){toast('Choose a client.');return}
+    if(k==='duo'&&ids.length<2){toast('Choose both clients for a duo.');return}
+    if(new Set(ids).size<ids.length){toast('Pick two different clients.');return}
+    if(Object.values(S.classes).some(c=>c.instructor===tid&&c.date===date&&c.time===time)){toast(staffName(tid)+' already has a session at '+time+' that day.');return}
+    const cap=k==='duo'?2:k==='grp'?6:1;
+    if(await save(()=>store.set('classes',uid(),{date,time,dur:50,type,instructor:tid,cap,booked:ids.map(c=>({c,u:false,in:false}))}),'Session booked \u00b7 on the Schedule now')){UI.bookDate=date;UI.bookTime=time}
+    return;
+  }
+  if(f.id==='expForm'){
+    const amt=+$('#exAmt').value,date=$('#exDate').value;
+    if(!date){toast('Pick a date.');return}
+    if(!(amt>0)){toast('Enter the amount in Lek.');return}
+    if(await save(()=>store.set('expenses',uid(),{date,cat:$('#exCat').value,note:$('#exNote').value.trim(),amount:amt,ts:Date.now(),by:UI.role}),'Expense added')){$('#exAmt').value='';$('#exNote').value=''}
+    return;
+  }
+  if(f.id==='qsForm'){
+    const amt=$('#qsAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
+    if(!$('#qsClient').value.trim()){toast('Type the client\u2019s name.');$('#qsClient').focus();return}
+    const cid=await ensureClient($('#qsClient').value);if(!cid)return;
+    if(await recordSale(cid,$('#qsProd').value,amt,$('#qsMethod').value,$('#qsDate').value)){UI.dashPayDay=today();if(P().revenue)UI.chartMode='day';UI.qsReset=true;render()}
+    return;
+  }
+  if(f.id==='saleForm'){
+    const amt=$('#sAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
+    if(!$('#sClient').value.trim()){toast('Type the client\u2019s name.');$('#sClient').focus();return}
+    const cid=await ensureClient($('#sClient').value);if(!cid)return;
+    if(await recordSale(cid,$('#sProd').value,amt,$('#sMethod').value,$('#sDate').value)){$('#sClient').value='';cpHint($('#sClient'))}
+  }
+  if(f.id==='classForm'){
+    const id=f.dataset.id,d={type:$('#cType').value,instructor:$('#cInst').value,date:$('#cDate').value,time:$('#cTime').value,dur:c0dur(id),cap:Math.max(1,+$('#cCap').value||1)};
+    if(id){if(await save(()=>store.upd('classes',id,d),'Session updated'))classModal(id)}
+    else{const names=[...document.querySelectorAll('#cCliWrap [data-cpick]')].map(x=>x.value.trim()).filter(Boolean);const ids=[];for(const nm of names){const cid=await ensureClient(nm);if(cid&&!ids.includes(cid))ids.push(cid)}
+      d.cap=Math.max(d.cap,ids.length);
+      if(await save(()=>store.set('classes',uid(),{...d,booked:ids.map(c=>({c,in:false,u:false}))}),'Session added')){closeModal();UI.week=monday(d.date);UI.schedDay=d.date;render()}}
+  }
+  if(f.id==='clientForm'){
+    const id=f.dataset.id,d={name:$('#clName').value.trim(),phone:$('#clPhone').value.trim(),emergency:$('#clEmer').value.trim(),email:$('#clEmail').value.trim(),nationality:$('#clNat').value.trim(),source:$('#clSrc').value,birthday:$('#clBday').value,trainers:[...document.querySelectorAll('input[name=clTr]:checked')].map(x=>x.value),packageStart:$('#clStart').value,expires:$('#clExp').value};
+    if(!d.name){toast('Enter the client’s name.');return}
+    {const rf=readRegForm(id?S.clients[id]?.form:null);if(rf)d.form=rf}
+    if($('#clPrev'))d.sessionsBefore=Math.max(0,+$('#clPrev').value||0);
+    if($('#clLeft'))d.credits=(+$('#clLeft').value||0)+(id&&d.packageStart===S.clients[id]?.packageStart?usedOf(id):0);
+    if($('#clPType')){const t=$('#clPType').value,n=+$('#clPN').value||0;d.plan=t?t+(n?' \u00b7 '+n:''):'';if(t)d.active=true}
+    if(id){if(await save(()=>store.upd('clients',id,d),'Client saved'))closeModal()}
+    else{const nid=uid();if(await save(()=>store.set('clients',nid,{credits:0,plan:'',...d,joined:today()}),'Client added')){const pt=UI.pickTarget;UI.pickTarget=null;if(pt&&document.getElementById(pt)){closeModal();const el=document.getElementById(pt);el.value=d.name;setTimeout(()=>{const e2=document.getElementById(pt);if(e2){e2.value=d.name;cpHint(e2)}},400)}else clientModal(nid)}}
+  }
+  if(f.id==='staffForm'){
+    const id=f.dataset.id,d={name:$('#stName').value.trim(),role:$('#stRole').value,phone:$('#stPhone').value.trim(),email:$('#stEmail').value.trim(),birthday:$('#stBday').value,age:$('#stBday').value?ageOf($('#stBday').value):($('#stAge').value?+$('#stAge').value:''),address:$('#stAddr').value.trim()};
+    if($('#stPin')){const pv=$('#stPin').value.trim();if(pv&&!/^\d{4,6}$/.test(pv)){toast('PIN must be 4 to 6 digits.');return}d.pin=pv}
+    if($('#stRate'))d.rate=+$('#stRate').value||0;
+    if(!d.name){toast('Enter a name.');return}
+    if(await save(()=>id?store.upd('staff',id,d):store.set('staff',uid(),d),id?'Saved':'Staff added'))closeModal();
+  }
+  if(f.id==='pinForm'){
+    const v={owner:$('#pin_owner').value.trim(),manager:$('#pin_manager').value.trim(),reception:$('#pin_reception').value.trim()};
+    if(Object.values(v).some(x=>!/^\d{4,6}$/.test(x))){toast('PINs must be 4 to 6 digits.');return}
+    if(new Set(Object.values(v)).size<3){toast('Use a different PIN for each role.');return}
+    await save(()=>store.set('settings','pins',v),'PINs saved');
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('cell')){e.preventDefault();e.target.blur();return}if(e.key==='Escape'&&$('#modal').innerHTML)closeModal()});
+
+let toastT;function toast(m){let el=$('.toast');if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');document.getElementById('cpd').appendChild(el)}el.textContent=m;clearTimeout(toastT);toastT=setTimeout(()=>el.remove(),3200)}
+
+/* ---------- boot ---------- */
+(async()=>{
+  const readHash=()=>{const m=/^#trainer-([A-Za-z0-9_.~-]+)$/.exec(location.hash||'');UI.lockTrainer=m?m[1]:null};readHash();
+  window.addEventListener('hashchange',()=>{readHash();UI.role=null;render()});
+  const saved=FB?null:ss.get('cp_role');if(saved&&PERMS[saved]){UI.role=saved;if(saved==='trainer'){UI.trainer=ss.get('cp_trainer');if(!UI.trainer)UI.role=null}}
+  if(UI.lockTrainer&&!(UI.role==='trainer'&&UI.trainer===UI.lockTrainer)){UI.role=null;UI.trainer=null}
+  render();
+  if(FB){store=audited(dbStore(FB.fs));fbStart(render);return}
+  let db=null,user=null;
+  for(let i=0;i<20&&!window.claude?.use;i++)await new Promise(r=>setTimeout(r,100));
+  try{if(window.claude?.use)[db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')])}catch{}
+  try{viewerIsOwner=user?!!(await user.isOwner()):false}catch{}
+  store=audited(db?dbStore(db):memStore());
+  for(const c of['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups'])store.sub(c,o=>{S[c]=o;if(!UI.importing)render()});
+  UI.loaded=true;render();
+})();
+</script>
