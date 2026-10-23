@@ -578,7 +578,6 @@ function pDash(){
   ${hasDemo&&UI.role==='owner'?`<div class="banner info"><span>Demo data is loaded. Remove it before real use.</span><button class="btn sm" data-act="cleardemo">Remove demo data</button></div>`:''}
   <div class="stats">
     <div class="stat"><span class="eyebrow">Sessions today</span><span class="v">${cls.length}</span></div>
-    <div class="stat"><span class="eyebrow">Clients booked</span><span class="v">${bk}</span></div>
     
     ${p.revenue?`<div class="stat"><span class="eyebrow">Sales today</span><span class="v">${L(revToday)}</span></div>
     <div class="stat"><span class="eyebrow">Sales this month</span><span class="v">${L(revMonth)}</span></div>`:`<div class="stat"><span class="eyebrow">Clients needing attention</span><span class="v">${alerts.length}</span></div>`}
