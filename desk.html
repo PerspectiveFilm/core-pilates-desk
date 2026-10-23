@@ -1022,7 +1022,7 @@ function fullPrice(cid,pid){const ci=$('#'+cid),pi=$('#'+pid);if(!pi)return 0;co
 function amtHint(cid,pid,aid){const h=$('#'+aid+'_hint'),ai=$('#'+aid);if(!h||!ai)return;const full=fullPrice(cid,pid),v=+ai.value||0;
   if(!full||ai.value===''){h.textContent='';h.className='cphint';return}
   if(v<full){h.textContent=L(full-v)+' goes to Debtors';h.className='cphint new'}else{h.textContent='Full price '+L(full);h.className='cphint ok'}}
-function applyDisc(cid,pid,aid){const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
+function applyDisc(cid,pid,aid,fromClient){const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const M=UI.amtManual||(UI.amtManual={});if(fromClient&&M[aid]){amtHint(cid,pid,aid);return}M[aid]=0;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
 function cpHint(el){const h=document.getElementById(el.id+'_hint');if(!h)return;const v=el.value.trim();
   if(!v){h.textContent='';h.className='cphint';return}
   if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+leftOf(c)+' left'+(discOf(c)?' \u00b7 '+discLabel(c):'');h.className='cphint ok'}
@@ -1661,8 +1661,8 @@ document.addEventListener('click',async e=>{
   }
 });
 document.addEventListener('input',e=>{
-  if(e.target.dataset&&e.target.dataset.cpick){cpHint(e.target);if(e.target.id==='qsClient')applyDisc('qsClient','qsProd','qsAmt');if(e.target.id==='sClient')applyDisc('sClient','sProd','sAmt')}
-  if(e.target.id==='qsAmt')amtHint('qsClient','qsProd','qsAmt');if(e.target.id==='sAmt')amtHint('sClient','sProd','sAmt');
+  if(e.target.dataset&&e.target.dataset.cpick){cpHint(e.target);if(e.target.id==='qsClient')applyDisc('qsClient','qsProd','qsAmt',1);if(e.target.id==='sClient')applyDisc('sClient','sProd','sAmt',1)}
+  if(e.target.id==='qsAmt'){(UI.amtManual||(UI.amtManual={})).qsAmt=1;amtHint('qsClient','qsProd','qsAmt')}if(e.target.id==='sAmt'){(UI.amtManual||(UI.amtManual={})).sAmt=1;amtHint('sClient','sProd','sAmt')}
   if(e.target.id==='clientQ'){UI.clientQ=e.target.value;render()}
   if(e.target.id==='logQ'){UI.logQ=e.target.value;render()}
 });
@@ -1751,14 +1751,14 @@ document.addEventListener('submit',async e=>{
     const amt=$('#qsAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#qsClient').value.trim()){toast('Type the client\u2019s name.');$('#qsClient').focus();return}
     const full=fullPrice('qsClient','qsProd');const cid=await ensureClient($('#qsClient').value);if(!cid)return;
-    if(await recordSale(cid,$('#qsProd').value,Math.max(+amt,full),$('#qsMethod').value,$('#qsDate').value,null,+amt<full?amt:null)){UI.dashPayDay=today();if(P().revenue)UI.chartMode='day';UI.qsReset=true;render()}
+    if(await recordSale(cid,$('#qsProd').value,Math.max(+amt,full),$('#qsMethod').value,$('#qsDate').value,null,+amt<full?amt:null)){UI.dashPayDay=today();if(P().revenue)UI.chartMode='day';UI.qsReset=true;UI.amtManual={};render()}
     return;
   }
   if(f.id==='saleForm'){
     const amt=$('#sAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#sClient').value.trim()){toast('Type the client\u2019s name.');$('#sClient').focus();return}
     const full=fullPrice('sClient','sProd');const cid=await ensureClient($('#sClient').value);if(!cid)return;
-    if(await recordSale(cid,$('#sProd').value,Math.max(+amt,full),$('#sMethod').value,$('#sDate').value,null,+amt<full?amt:null)){$('#sClient').value='';cpHint($('#sClient'))}
+    if(await recordSale(cid,$('#sProd').value,Math.max(+amt,full),$('#sMethod').value,$('#sDate').value,null,+amt<full?amt:null)){$('#sClient').value='';cpHint($('#sClient'));UI.amtManual={}}
   }
   if(f.id==='classForm'){
     const id=f.dataset.id,d={type:$('#cType').value,instructor:$('#cInst').value,date:$('#cDate').value,time:$('#cTime').value,dur:c0dur(id),cap:Math.max(1,+$('#cCap').value||1)};
