@@ -520,7 +520,7 @@ let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id
 function render(){
   _uc=null;
   const ae=document.activeElement,fid=ae&&ae.id,sel=ae&&'selectionStart' in ae?[ae.selectionStart,ae.selectionEnd]:null;
-  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sMethod,#sDate').forEach(el=>{if('value' in el)keep[el.id]=el.value});
+  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sPaid,#sMethod,#sDate').forEach(el=>{if('value' in el)keep[el.id]=el.value});
   $('#root').innerHTML=UI.role?shell():login();
   if(!UI.qsReset)for(const k in keep){const el=document.getElementById(k);if(el){el.value=keep[k];if(el.dataset.cpick)cpHint(el)}}UI.qsReset=false;
   if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch{}}}
@@ -596,6 +596,7 @@ function pDash(){
     <div class="stat"><span class="eyebrow">Sales this month</span><span class="v">${L(revMonth)}</span></div>`:`<div class="stat"><span class="eyebrow">Clients needing attention</span><span class="v">${alerts.length}</span></div>`}
   </div>
   ${clientStats()}
+  ${debtorsPanel()}
   ${p.revenue||p.payDates?revChart():revDay()}
   ${quickSaleRow()}
   <div class="grid2">
@@ -970,6 +971,23 @@ function expCell(c){const e=isUnl(c)?c.unlimitedUntil:c.expires;if(!e)return '<s
 function sNum(c){const n=leftOf(c);return ` <span class="snum ${n<=0?'zero':''}" title="Sessions left">${n}</span>`}
 function expShort(c){const e=c.expires;if(!e)return sNum(c);const d=daysBetween(today(),e),dt=parse(e).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
   return ' \u00b7 '+(d<0?`<b style="color:var(--bad)">Expired ${esc(dt)}</b>`:d===0?'<b style="color:var(--bad)">Expires today</b>':`<b style="color:${d<5?'var(--warn)':'var(--ink)'}">Expires ${esc(dt)}</b>`)+sNum(c)}
+function debtList(){const by={};for(const[id,x]of Object.entries(S.payments))if(+x.owed>0){const k=x.client||('n:'+(x.name||'Walk-in'));(by[k]??={k,client:x.client,name:x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'),owed:0,items:[]});by[k].owed+=+x.owed;by[k].items.push([id,x])}
+  return Object.values(by).sort((a,b)=>b.owed-a.owed)}
+function debtorsPanel(){const ds=debtList(),tot=ds.reduce((a,d)=>a+d.owed,0);
+  return `<section class="panel"><header><div><h2>Debtors</h2><span class="muted">${ds.length?ds.length+' client'+(ds.length===1?'':'s')+' owe <b class="num" style="color:var(--bad)">'+L(tot)+'</b>':'Nobody owes money'}</span></div></header>
+  ${ds.length?`<div class="rows">${ds.map(d=>{const c=d.client?S.clients[d.client]:null;return `<div class="row" style="grid-template-columns:minmax(0,1fr) auto;align-items:start">
+    <div style="min-width:0"><b>${d.client?`<button type="button" class="linkbtn" style="font-size:inherit;color:var(--ink)" data-client="${d.client}">${esc(d.name)}</button>`:esc(d.name)}</b>${c&&c.phone?` <a class="muted num" style="font-size:.8rem" href="tel:${esc(c.phone)}">${esc(c.phone)}</a>`:''}
+      ${d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||'')).map(([id,x])=>`<div class="muted" style="font-size:.82rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px"><span>${esc(fmtDay(x.date))} \u00b7 ${esc(planName(x.item)||x.item)}${x.total?' \u00b7 paid '+L(x.amount)+' of '+L(x.total):''}</span><b class="num" style="color:var(--bad)">${L(x.owed)}</b><button class="btn sm" data-settle="${id}">Paid</button></div>`).join('')}</div>
+    <b class="num" style="color:var(--bad);white-space:nowrap">${L(d.owed)}</b></div>`}).join('')}</div>`:'<div class="empty" style="padding:14px">No open debts.</div>'}</section>`}
+function settleModal(id){const x=S.payments[id];if(!x)return;
+  openModal(`<header><div><div class="eyebrow">Debt payment</div><h2>${esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</h2></div><button class="x" data-close aria-label="Close">\u00d7</button></header>
+  <p class="muted" style="margin:0">${esc(planName(x.item)||x.item)} \u00b7 ${esc(fmtDay(x.date))} \u00b7 owes <b style="color:var(--bad)">${L(x.owed)}</b></p>
+  <form class="form" id="settleForm" data-id="${id}">
+    <div class="field"><label for="stAmt">Amount received (Lek)</label><input type="number" id="stAmt" value="${+x.owed}" min="0" max="${+x.owed}" step="any"></div>
+    <div class="field"><label for="stMethod">Paid by</label><select id="stMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
+    <div class="field"><label for="stDate">Date</label><input type="date" id="stDate" value="${today()}"></div>
+    <div class="field wide"><div class="actions"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save payment</button></div></div>
+  </form>`)}
 function quickSaleRow(){
   const p=P(),t=today(),d=p.allPayments?(UI.dashPayDay||t):t;
   const pays=payList().filter(([,x])=>x.date===d);
@@ -983,6 +1001,7 @@ function quickSaleRow(){
       ${clientPicker('qsClient')}
       <div class="field"><label for="qsProd">Package</label><select id="qsProd">${groups.map(g=>`<optgroup label="${esc(g)}">${PRODUCTS.filter(x=>x.g===g).map(x=>`<option value="${x.k}">${esc(x.n)}${x.p?' \u00b7 '+L(x.p):''}</option>`).join('')}</optgroup>`).join('')}</select></div>
       <div class="field"><label for="qsAmt">Amount (Lek)</label><input id="qsAmt" type="number" min="0" step="100" value="${PRODUCTS[0].p}"></div>
+      <div class="field"><label for="qsPaid">Paid now (Lek)</label><input id="qsPaid" type="number" min="0" step="100" placeholder="Full amount"></div>
       <div class="field"><label for="qsMethod">Paid by</label><select id="qsMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
       <div class="field"><label for="qsDate">Date</label><input type="date" id="qsDate" value="${today()}"></div>
       <div class="field"><button class="btn primary" type="submit">Record sale</button></div>
@@ -1087,6 +1106,7 @@ function pPay(){
       ${clientPicker('sClient')}
       <div class="field"><label for="sProd">Item</label><select id="sProd">${[...new Set(PRODUCTS.map(x=>x.g))].map(g=>`<optgroup label="${esc(g)}">${PRODUCTS.filter(x=>x.g===g).map(x=>`<option value="${x.k}">${esc(x.d)}${x.p?' · '+L(x.p):''}</option>`).join('')}</optgroup>`).join('')}</select></div>
       <div class="field"><label for="sAmt">Amount (Lek)</label><input id="sAmt" type="number" min="0" step="100" value="${PRODUCTS[0].p}"></div>
+      <div class="field"><label for="sPaid">Paid now (Lek)</label><input id="sPaid" type="number" min="0" step="100" placeholder="Full amount"></div>
       <div class="field"><label for="sMethod">Paid by</label><select id="sMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
       <div class="field"><label for="sDate">Date</label><input type="date" id="sDate" value="${UI.payDay||today()}"></div>
       <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record sale</button></div>
@@ -1100,7 +1120,7 @@ function pPay(){
     return `<section class="panel"><header><h2>By month</h2></header><div class="rows">${m.map((v,i)=>`<button class="frow" style="border:0;border-top:1px solid var(--line);background:none;width:100%;text-align:left;cursor:pointer" data-pmonth="${d.slice(0,4)}-${pad(i+1)}"><span style="width:40px">${MN[i]}</span><span class="fill" style="flex:1;max-width:none;margin:0"><i style="width:${v/mx*100}%;background:var(--brand)"></i></span><b class="num" style="min-width:110px;text-align:right">${L(v)}</b></button>`).join('')}</div></section>`})():''}
   <section class="panel"><header><h2>Sales log</h2><span class="muted">${day.length} sale${day.length===1?'':'s'}</span></header>
     ${day.length?`<div class="tablewrap"><table><thead><tr><th>${pm==='day'?'Time':'Date'}</th><th>Client</th><th>Item</th><th>Method</th><th class="r">Amount</th>${p.delPayment||p.editPayment?'<th></th>':''}</tr></thead><tbody>
-    ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(x.method)}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
+    ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(x.method)}${!x.unpaid&&+x.owed>0?' <span class="pill bad" style="white-space:nowrap">Owes '+L(x.owed)+'</span>':''}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
       ${p.delPayment||p.editPayment?`<td class="r" style="white-space:nowrap">${p.editPayment?`<button class="btn sm" data-editpay="${id}">Edit</button>`:''}${p.delPayment?` <button class="btn sm danger" data-delpay="${id}">Delete</button>`:''}</td>`:''}</tr>`).join('')}
     </tbody></table></div>`:`<div class="empty">No sales recorded for this ${pm}.</div>`}
   </section>`;
@@ -1132,7 +1152,7 @@ async function exportExcel(){
   const pays=Object.values(S.payments).filter(x=>inP(x.date)).sort((a,b)=>(a.ts||0)-(b.ts||0));
   const exps=Object.values(S.expenses).filter(x=>inP(x.date)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const cname=x=>x.kind==='product'?'Product':(x.client&&S.clients[x.client]?S.clients[x.client].name:(x.name||'Walk-in'));
-  const P=pays.map(x=>({Date:x.date,Client:cname(x),Item:x.item,Type:x.kind==='product'?'Product':'Package',Method:x.unpaid?'Unpaid':x.method,'Amount (L)':x.unpaid?0:+x.amount||0,'Unpaid (L)':x.unpaid?+x.owed||0:'',By:x.by||''}));
+  const P=pays.map(x=>({Date:x.date,Client:cname(x),Item:x.item,Type:x.kind==='product'?'Product':'Package',Method:x.unpaid?'Unpaid':x.method,'Amount (L)':x.unpaid?0:+x.amount||0,'Unpaid (L)':+x.owed>0?+x.owed:'',By:x.by||''}));
   const E=exps.map(x=>({Date:x.date,Item:x.note||'',Category:x.cat||'','Amount (L)':+x.amount||0,By:x.by||''}));
   const C=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,c])=>{const i=pkgInfo(c.plan);return{Name:c.name,Status:isActC(c)?'Active':'Inactive',Phone:c.phone||'',Email:c.email||'',Country:natName(c.nationality)||'',Birthday:c.birthday||'',Package:i?i.label:'',Sessions:i?(+i.n||''):'','Sessions left':c.plan?leftOf(c):'','Package start':c.packageStart||'','Package expires':c.expires||'',Trainers:(c.trainers||[]).map(staffName).join(', '),Discount:discLabel(c),'Total sessions':totalSessions(id),'Packages bought':(c.plan?1:0)+(c.packages||[]).length,Burned:burnedOf(id),Joined:c.joined||''}});
   const amt=rows=>rows.reduce((t,r)=>t+(+r['Amount (L)']||0),0),tot=amt(P),ex=amt(E);
@@ -1170,7 +1190,7 @@ function pData(){
   const yr=UI.dataYear||today().slice(0,4),rate=+(S.settings.fx||{}).cad||57.7;
   const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const pays=Object.values(S.payments).filter(x=>(x.date||'').startsWith(yr));
-  const paid=pays.filter(x=>!x.unpaid),unpaid=pays.filter(x=>x.unpaid).reduce((a,x)=>a+(+x.owed||0),0);
+  const paid=pays.filter(x=>!x.unpaid),unpaid=pays.reduce((a,x)=>a+(+x.owed||0),0);
   const sum=a=>a.reduce((t,x)=>t+(+x.amount||0),0);
   const tot=sum(paid),pk=sum(paid.filter(x=>x.kind!=='product')),pr=tot-pk,cash=sum(paid.filter(x=>x.method==='Cash')),card=sum(paid.filter(x=>x.method==='Card'));
   const exps=Object.values(S.expenses).filter(x=>(x.date||'').startsWith(yr)),ex=exps.reduce((a,x)=>a+(+x.amount||0),0);
@@ -1464,13 +1484,17 @@ function payModal(id){const x=S.payments[id];if(!x)return;
     <div class="field"><label for="pTime">Time</label><input type="time" id="pTime" value="${x.ts?new Date(x.ts).toTimeString().slice(0,5):''}"></div>
     <div class="field wide"><label for="pClient">Client</label><select id="pClient"><option value="">${x.kind==='product'?'— (product)':'Walk-in'}</option>${allC.map(([cid,c])=>`<option value="${cid}" ${cid===x.client?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
     <div class="field wide"><label for="pItem">Item</label><input id="pItem" value="${esc(x.item||'')}"></div>
-    <div class="field"><label for="pAmt">Amount (Lek)</label><input type="number" id="pAmt" value="${x.unpaid?(+x.owed||0):(+x.amount||0)}" min="0" step="100"></div>
+    <div class="field"><label for="pAmt">Amount (Lek)</label><input type="number" id="pAmt" value="${x.unpaid?(+x.owed||0):(+x.amount||0)}" min="0" step="any"></div>
     <div class="field"><label for="pMethod">Paid by</label><select id="pMethod">${[...METHODS,'Unpaid'].map(m=>`<option ${m===meth?'selected':''}>${m}</option>`).join('')}</select></div>
+    <div class="field"><label for="pOwed">Still owed (Lek)</label><input type="number" id="pOwed" value="${x.unpaid?0:(+x.owed||0)}" min="0" step="any"></div>
     <div class="field wide"><span class="muted" style="font-size:.8rem">Changing a sale does not change the client’s package or sessions — edit those on the client.</span><div class="actions" style="margin-top:8px"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save changes</button></div></div>
   </form>`)}
-async function recordSale(clientId,prodKey,amount,method,dt,tm){
+async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow){
   const pr=PRODUCTS.find(x=>x.k===prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
-  const ok=await save(()=>store.set('payments',uid(),{kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:+amount||0,method,by:UI.role}));
+  const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,method,by:UI.role};
+  if(paid<total){rec.owed=total-paid;rec.total=total;if(!paid)rec.unpaid=true}
+  const ok=await save(()=>store.set('payments',uid(),rec));
+  if(ok&&paid<total)toast((S.clients[clientId]?.name||'Client')+' owes '+L(total-paid)+' \u2014 added to Debtors');
   if(!ok)return false;
   if(clientId){
     const c=S.clients[clientId]||{},up={plan:pr.n};
@@ -1582,6 +1606,7 @@ document.addEventListener('click',async e=>{
   if(ds.delexp){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delexp2="'+ds.delexp+'">Delete</button></span>';return}
   if(ds.delexp2){await save(()=>store.del('expenses',ds.delexp2),'Expense deleted');return}
   if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
+  if(ds.settle){settleModal(ds.settle);return}
   if(ds.editpay){if(P().editPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
   if(ds.delpay2){await save(()=>store.del('payments',ds.delpay2),'Sale deleted. Credits were not changed.');return}
@@ -1661,10 +1686,15 @@ document.addEventListener('submit',async e=>{
     const cap=Math.max(1,+$('#gCap').value||6),d={name:$('#gName').value.trim(),type:$('#gType').value,days,time:$('#gTime').value,dur:+$('#gDur').value||50,trainer:$('#gTr').value,cap,members};
     if(!d.name)d.name=d.type;if(members.length>cap){toast('This group has only '+cap+' spots.');return}
     if(await save(()=>store.set('groups',id,d),'Group saved'))closeModal();return}
+  if(f.id==='settleForm'){const id=f.dataset.id,x=S.payments[id];if(!x)return;const amt=Math.min(+x.owed,Math.max(0,+$('#stAmt').value||0));if(!amt){toast('Enter the amount received.');return}
+    const d=$('#stDate').value||today(),left=(+x.owed)-amt;
+    const ok=await save(async()=>{await store.set('payments',uid(),{kind:'debt',date:d,ts:Date.now(),client:x.client||'',name:x.name||'',item:'Debt \u00b7 '+(planName(x.item)||x.item),amount:amt,method:$('#stMethod').value,by:UI.role,ref:id});
+      const up={...x};if(left>0){up.owed=left}else{delete up.owed;delete up.unpaid;up.settled=d}await store.set('payments',id,up)},left>0?'Payment saved \u2014 still owes '+L(left):'Debt paid in full');
+    if(ok)closeModal();return}
   if(f.id==='payForm'){if(!P().editPayment)return;const id=f.dataset.id,x=S.payments[id];if(!x)return;
     const d=$('#pDate').value||x.date,tm=$('#pTime').value||(x.ts?new Date(x.ts).toTimeString().slice(0,5):'12:00'),amt=Math.max(0,+$('#pAmt').value||0),m=$('#pMethod').value,un=m==='Unpaid';
     const nx={...x,date:d,ts:new Date(d+'T'+tm+':00').getTime()||x.ts,client:$('#pClient').value,item:$('#pItem').value.trim()||x.item,method:un?(x.method||'Cash'):m,amount:un?0:amt,editedBy:UI.role,editedAt:Date.now()};
-    if(un){nx.unpaid=true;nx.owed=amt}else{delete nx.unpaid;delete nx.owed}
+    const ow=Math.max(0,+($('#pOwed')||{}).value||0);if(un){nx.unpaid=true;nx.owed=amt}else{delete nx.unpaid;if(ow>0)nx.owed=ow;else delete nx.owed}
     if(await save(()=>store.set('payments',id,nx),'Sale updated'))closeModal();return}
   if(f.id==='codeForm'){const a1=$('#cc1').value,a2=$('#cc2').value;if(a1.length<6){toast('At least 6 characters.');return}if(a1!==a2){toast('The two codes don\u2019t match.');return}
     try{await FB.auth.currentUser.updatePassword(a1);closeModal();toast('Code changed')}catch(e){toast(/recent-login/.test(e.code||'')?'For safety, log out and in again, then change your code.':'Could not change: '+(e.message||e.code))}return}
@@ -1716,14 +1746,14 @@ document.addEventListener('submit',async e=>{
     const amt=$('#qsAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#qsClient').value.trim()){toast('Type the client\u2019s name.');$('#qsClient').focus();return}
     const cid=await ensureClient($('#qsClient').value);if(!cid)return;
-    if(await recordSale(cid,$('#qsProd').value,amt,$('#qsMethod').value,$('#qsDate').value)){UI.dashPayDay=today();if(P().revenue)UI.chartMode='day';UI.qsReset=true;render()}
+    if(await recordSale(cid,$('#qsProd').value,amt,$('#qsMethod').value,$('#qsDate').value,null,$('#qsPaid').value)){UI.dashPayDay=today();if(P().revenue)UI.chartMode='day';UI.qsReset=true;render()}
     return;
   }
   if(f.id==='saleForm'){
     const amt=$('#sAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#sClient').value.trim()){toast('Type the client\u2019s name.');$('#sClient').focus();return}
     const cid=await ensureClient($('#sClient').value);if(!cid)return;
-    if(await recordSale(cid,$('#sProd').value,amt,$('#sMethod').value,$('#sDate').value)){$('#sClient').value='';cpHint($('#sClient'))}
+    if(await recordSale(cid,$('#sProd').value,amt,$('#sMethod').value,$('#sDate').value,null,$('#sPaid').value)){$('#sClient').value='';$('#sPaid').value='';cpHint($('#sClient'))}
   }
   if(f.id==='classForm'){
     const id=f.dataset.id,d={type:$('#cType').value,instructor:$('#cInst').value,date:$('#cDate').value,time:$('#cTime').value,dur:c0dur(id),cap:Math.max(1,+$('#cCap').value||1)};
