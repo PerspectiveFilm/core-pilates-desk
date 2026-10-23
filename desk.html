@@ -520,7 +520,7 @@ let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id
 function render(){
   _uc=null;
   const ae=document.activeElement,fid=ae&&ae.id,sel=ae&&'selectionStart' in ae?[ae.selectionStart,ae.selectionEnd]:null;
-  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sPaid,#sMethod,#sDate').forEach(el=>{if('value' in el)keep[el.id]=el.value});
+  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sMethod,#sDate').forEach(el=>{if('value' in el)keep[el.id]=el.value});
   $('#root').innerHTML=UI.role?shell():login();
   if(!UI.qsReset)for(const k in keep){const el=document.getElementById(k);if(el){el.value=keep[k];if(el.dataset.cpick)cpHint(el)}}UI.qsReset=false;
   if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch{}}}
@@ -1000,8 +1000,7 @@ function quickSaleRow(){
     <form class="form" id="qsForm" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
       ${clientPicker('qsClient')}
       <div class="field"><label for="qsProd">Package</label><select id="qsProd">${groups.map(g=>`<optgroup label="${esc(g)}">${PRODUCTS.filter(x=>x.g===g).map(x=>`<option value="${x.k}">${esc(x.n)}${x.p?' \u00b7 '+L(x.p):''}</option>`).join('')}</optgroup>`).join('')}</select></div>
-      <div class="field"><label for="qsAmt">Amount (Lek)</label><input id="qsAmt" type="number" min="0" step="100" value="${PRODUCTS[0].p}"></div>
-      <div class="field"><label for="qsPaid">Paid now (Lek)</label><input id="qsPaid" type="number" min="0" step="100" placeholder="Full amount"></div>
+      <div class="field" style="position:relative"><label for="qsAmt">Amount paid (Lek)</label><input id="qsAmt" type="number" min="0" step="any" value="${PRODUCTS[0].p}"><span class="cphint" id="qsAmt_hint"></span></div>
       <div class="field"><label for="qsMethod">Paid by</label><select id="qsMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
       <div class="field"><label for="qsDate">Date</label><input type="date" id="qsDate" value="${today()}"></div>
       <div class="field"><button class="btn primary" type="submit">Record sale</button></div>
@@ -1019,7 +1018,11 @@ const discLabel=c=>discOf(c)?DISC[c.discType][0]+' '+discOf(c)+'%':'';
 const DISC_SEED={"cx_237ee0c555":10,"cx_4291871c32":5,"cx_9647339dc6":10,"cx_4928891acb":10,"cx_d9ad31d95f":10,"cx_e7b67ae698":10,"cx_690f98b101":10,"cx_d12bd44d08":10,"cx_2eb2e2eebc":5,"cx_35e1b26e0f":10,"cx_627d989aed":10,"cx_be2064665b":10,"cx_a85a3fed5c":10,"cx_a73f77d922":10,"cx_b9a224a67a":10,"cx_8d5f294f14":10,"cx_fd26e1abd6":30,"cx_2c55eab64d":10,"cx_e03ed762af":10,"cx_0a6b5ae43e":10,"cx_856c06ac63":10,"cx_67704b58ce":10,"cx_1c231fb3c2":10,"cx_ad6ef58967":10,"cx_0cf8076f49":10,"cx_6e5c9c7f39":10,"cx_7e6c9fada0":10,"cx_a39276fea4":20,"cx_9f31685669":10,"cx_aa902a5223":10,"cx_e404648e87":10,"cx_bb4f100cf2":10,"cx_dea28b34b4":10};
 async function seedDisc(){let n=0;for(const[id,pct]of Object.entries(DISC_SEED)){const c=S.clients[id];if(!c||c.discType)continue;const d=pct===10?{discType:'loyalty'}:pct===30?{discType:'influencer'}:{discType:'other',discPct:pct};await store.upd('clients',id,d);n++}
   await store.set('settings','disc2026',{done:true,at:Date.now(),count:n});toast('Discounts added to '+n+' clients')}
-function applyDisc(cid,pid,aid){const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100}
+function fullPrice(cid,pid){const ci=$('#'+cid),pi=$('#'+pid);if(!pi)return 0;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return 0;const id=ci?findClient(ci.value.trim()):null,pct=id?discOf(S.clients[id]):0;return Math.round(pr.p*(1-pct/100)/100)*100}
+function amtHint(cid,pid,aid){const h=$('#'+aid+'_hint'),ai=$('#'+aid);if(!h||!ai)return;const full=fullPrice(cid,pid),v=+ai.value||0;
+  if(!full||ai.value===''){h.textContent='';h.className='cphint';return}
+  if(v<full){h.textContent=L(full-v)+' goes to Debtors';h.className='cphint new'}else{h.textContent='Full price '+L(full);h.className='cphint ok'}}
+function applyDisc(cid,pid,aid){const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
 function cpHint(el){const h=document.getElementById(el.id+'_hint');if(!h)return;const v=el.value.trim();
   if(!v){h.textContent='';h.className='cphint';return}
   if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+leftOf(c)+' left'+(discOf(c)?' \u00b7 '+discLabel(c):'');h.className='cphint ok'}
@@ -1105,8 +1108,7 @@ function pPay(){
     <form class="form" id="saleForm">
       ${clientPicker('sClient')}
       <div class="field"><label for="sProd">Item</label><select id="sProd">${[...new Set(PRODUCTS.map(x=>x.g))].map(g=>`<optgroup label="${esc(g)}">${PRODUCTS.filter(x=>x.g===g).map(x=>`<option value="${x.k}">${esc(x.d)}${x.p?' · '+L(x.p):''}</option>`).join('')}</optgroup>`).join('')}</select></div>
-      <div class="field"><label for="sAmt">Amount (Lek)</label><input id="sAmt" type="number" min="0" step="100" value="${PRODUCTS[0].p}"></div>
-      <div class="field"><label for="sPaid">Paid now (Lek)</label><input id="sPaid" type="number" min="0" step="100" placeholder="Full amount"></div>
+      <div class="field" style="position:relative"><label for="sAmt">Amount paid (Lek)</label><input id="sAmt" type="number" min="0" step="any" value="${PRODUCTS[0].p}"><span class="cphint" id="sAmt_hint"></span></div>
       <div class="field"><label for="sMethod">Paid by</label><select id="sMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
       <div class="field"><label for="sDate">Date</label><input type="date" id="sDate" value="${UI.payDay||today()}"></div>
       <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record sale</button></div>
@@ -1660,6 +1662,7 @@ document.addEventListener('click',async e=>{
 });
 document.addEventListener('input',e=>{
   if(e.target.dataset&&e.target.dataset.cpick){cpHint(e.target);if(e.target.id==='qsClient')applyDisc('qsClient','qsProd','qsAmt');if(e.target.id==='sClient')applyDisc('sClient','sProd','sAmt')}
+  if(e.target.id==='qsAmt')amtHint('qsClient','qsProd','qsAmt');if(e.target.id==='sAmt')amtHint('sClient','sProd','sAmt');
   if(e.target.id==='clientQ'){UI.clientQ=e.target.value;render()}
   if(e.target.id==='logQ'){UI.logQ=e.target.value;render()}
 });
@@ -1747,15 +1750,15 @@ document.addEventListener('submit',async e=>{
   if(f.id==='qsForm'){
     const amt=$('#qsAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#qsClient').value.trim()){toast('Type the client\u2019s name.');$('#qsClient').focus();return}
-    const cid=await ensureClient($('#qsClient').value);if(!cid)return;
-    if(await recordSale(cid,$('#qsProd').value,amt,$('#qsMethod').value,$('#qsDate').value,null,$('#qsPaid').value)){UI.dashPayDay=today();if(P().revenue)UI.chartMode='day';UI.qsReset=true;render()}
+    const full=fullPrice('qsClient','qsProd');const cid=await ensureClient($('#qsClient').value);if(!cid)return;
+    if(await recordSale(cid,$('#qsProd').value,Math.max(+amt,full),$('#qsMethod').value,$('#qsDate').value,null,+amt<full?amt:null)){UI.dashPayDay=today();if(P().revenue)UI.chartMode='day';UI.qsReset=true;render()}
     return;
   }
   if(f.id==='saleForm'){
     const amt=$('#sAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#sClient').value.trim()){toast('Type the client\u2019s name.');$('#sClient').focus();return}
-    const cid=await ensureClient($('#sClient').value);if(!cid)return;
-    if(await recordSale(cid,$('#sProd').value,amt,$('#sMethod').value,$('#sDate').value,null,$('#sPaid').value)){$('#sClient').value='';$('#sPaid').value='';cpHint($('#sClient'))}
+    const full=fullPrice('sClient','sProd');const cid=await ensureClient($('#sClient').value);if(!cid)return;
+    if(await recordSale(cid,$('#sProd').value,Math.max(+amt,full),$('#sMethod').value,$('#sDate').value,null,+amt<full?amt:null)){$('#sClient').value='';cpHint($('#sClient'))}
   }
   if(f.id==='classForm'){
     const id=f.dataset.id,d={type:$('#cType').value,instructor:$('#cInst').value,date:$('#cDate').value,time:$('#cTime').value,dur:c0dur(id),cap:Math.max(1,+$('#cCap').value||1)};
