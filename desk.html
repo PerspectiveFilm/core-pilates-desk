@@ -1080,7 +1080,7 @@ function pPay(){
   <section class="panel"><header><h2>Sales log</h2><span class="muted">${day.length} sale${day.length===1?'':'s'}</span></header>
     ${day.length?`<div class="tablewrap"><table><thead><tr><th>${pm==='day'?'Time':'Date'}</th><th>Client</th><th>Item</th><th>Method</th><th class="r">Amount</th>${p.delPayment?'<th></th>':''}</tr></thead><tbody>
     ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(x.method)}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
-      ${p.delPayment?`<td class="r"><button class="btn sm danger" data-delpay="${id}">Delete</button></td>`:''}</tr>`).join('')}
+      ${p.delPayment?`<td class="r" style="white-space:nowrap"><button class="btn sm" data-editpay="${id}">Edit</button> <button class="btn sm danger" data-delpay="${id}">Delete</button></td>`:''}</tr>`).join('')}
     </tbody></table></div>`:`<div class="empty">No sales recorded for this ${pm}.</div>`}
   </section>`;
 }
@@ -1434,6 +1434,18 @@ function confirmIn(slot,text,onYes){
 }
 
 /* ---------- actions ---------- */
+function payModal(id){const x=S.payments[id];if(!x)return;
+  const allC=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)),meth=x.unpaid?'Unpaid':x.method;
+  openModal(`<header><div><div class="eyebrow">Edit sale</div><h2>${esc(x.kind==='product'?'Product':(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in')))}</h2></div><button class="x" data-close aria-label="Close">×</button></header>
+  <form class="form" id="payForm" data-id="${id}">
+    <div class="field"><label for="pDate">Date</label><input type="date" id="pDate" value="${esc(x.date||'')}"></div>
+    <div class="field"><label for="pTime">Time</label><input type="time" id="pTime" value="${x.ts?new Date(x.ts).toTimeString().slice(0,5):''}"></div>
+    <div class="field wide"><label for="pClient">Client</label><select id="pClient"><option value="">${x.kind==='product'?'— (product)':'Walk-in'}</option>${allC.map(([cid,c])=>`<option value="${cid}" ${cid===x.client?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+    <div class="field wide"><label for="pItem">Item</label><input id="pItem" value="${esc(x.item||'')}"></div>
+    <div class="field"><label for="pAmt">Amount (Lek)</label><input type="number" id="pAmt" value="${x.unpaid?(+x.owed||0):(+x.amount||0)}" min="0" step="100"></div>
+    <div class="field"><label for="pMethod">Paid by</label><select id="pMethod">${[...METHODS,'Unpaid'].map(m=>`<option ${m===meth?'selected':''}>${m}</option>`).join('')}</select></div>
+    <div class="field wide"><span class="muted" style="font-size:.8rem">Changing a sale does not change the client’s package or sessions — edit those on the client.</span><div class="actions" style="margin-top:8px"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save changes</button></div></div>
+  </form>`)}
 async function recordSale(clientId,prodKey,amount,method,dt,tm){
   const pr=PRODUCTS.find(x=>x.k===prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
   const ok=await save(()=>store.set('payments',uid(),{kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:+amount||0,method,by:UI.role}));
@@ -1548,6 +1560,7 @@ document.addEventListener('click',async e=>{
   if(ds.delexp){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delexp2="'+ds.delexp+'">Delete</button></span>';return}
   if(ds.delexp2){await save(()=>store.del('expenses',ds.delexp2),'Expense deleted');return}
   if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
+  if(ds.editpay){if(P().delPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
   if(ds.delpay2){await save(()=>store.del('payments',ds.delpay2),'Sale deleted. Credits were not changed.');return}
   if('keep' in ds){render();return}
@@ -1625,6 +1638,11 @@ document.addEventListener('submit',async e=>{
     const cap=Math.max(1,+$('#gCap').value||6),d={name:$('#gName').value.trim(),type:$('#gType').value,days,time:$('#gTime').value,dur:+$('#gDur').value||50,trainer:$('#gTr').value,cap,members};
     if(!d.name)d.name=d.type;if(members.length>cap){toast('This group has only '+cap+' spots.');return}
     if(await save(()=>store.set('groups',id,d),'Group saved'))closeModal();return}
+  if(f.id==='payForm'){if(!P().delPayment)return;const id=f.dataset.id,x=S.payments[id];if(!x)return;
+    const d=$('#pDate').value||x.date,tm=$('#pTime').value||(x.ts?new Date(x.ts).toTimeString().slice(0,5):'12:00'),amt=Math.max(0,+$('#pAmt').value||0),m=$('#pMethod').value,un=m==='Unpaid';
+    const nx={...x,date:d,ts:new Date(d+'T'+tm+':00').getTime()||x.ts,client:$('#pClient').value,item:$('#pItem').value.trim()||x.item,method:un?(x.method||'Cash'):m,amount:un?0:amt,editedBy:UI.role,editedAt:Date.now()};
+    if(un){nx.unpaid=true;nx.owed=amt}else{delete nx.unpaid;delete nx.owed}
+    if(await save(()=>store.set('payments',id,nx),'Sale updated'))closeModal();return}
   if(f.id==='codeForm'){const a1=$('#cc1').value,a2=$('#cc2').value;if(a1.length<6){toast('At least 6 characters.');return}if(a1!==a2){toast('The two codes don\u2019t match.');return}
     try{await FB.auth.currentUser.updatePassword(a1);closeModal();toast('Code changed')}catch(e){toast(/recent-login/.test(e.code||'')?'For safety, log out and in again, then change your code.':'Could not change: '+(e.message||e.code))}return}
   if(f.id==='loginForm'){
