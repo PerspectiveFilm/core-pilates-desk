@@ -596,7 +596,6 @@ function pDash(){
     <div class="stat"><span class="eyebrow">Sales this month</span><span class="v">${L(revMonth)}</span></div>`:`<div class="stat"><span class="eyebrow">Clients needing attention</span><span class="v">${alerts.length}</span></div>`}
   </div>
   ${clientStats()}
-  ${debtorsPanel()}
   ${p.revenue||p.payDates?revChart():revDay()}
   ${quickSaleRow()}
   <div class="grid2">
@@ -616,6 +615,7 @@ function pDash(){
       :'<div class="empty">No packages expired in the last 30 days.</div>'}
     </section>`})()}
   </div>
+  ${debtorsPanel()}
   ${bdayPanel()}
   ${notesPanel()}
   ${expSection()}`;
@@ -973,12 +973,12 @@ function expShort(c){const e=c.expires;if(!e)return sNum(c);const d=daysBetween(
   return ' \u00b7 '+(d<0?`<b style="color:var(--bad)">Expired ${esc(dt)}</b>`:d===0?'<b style="color:var(--bad)">Expires today</b>':`<b style="color:${d<5?'var(--warn)':'var(--ink)'}">Expires ${esc(dt)}</b>`)+sNum(c)}
 function debtList(){const by={};for(const[id,x]of Object.entries(S.payments))if(+x.owed>0){const k=x.client||('n:'+(x.name||'Walk-in'));(by[k]??={k,client:x.client,name:x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'),owed:0,items:[]});by[k].owed+=+x.owed;by[k].items.push([id,x])}
   return Object.values(by).sort((a,b)=>b.owed-a.owed)}
-function debtorsPanel(){const ds=debtList(),tot=ds.reduce((a,d)=>a+d.owed,0);
-  return `<section class="panel"><header><div><h2>Debtors</h2><span class="muted">${ds.length?ds.length+' client'+(ds.length===1?'':'s')+' owe <b class="num" style="color:var(--bad)">'+L(tot)+'</b>':'Nobody owes money'}</span></div></header>
-  ${ds.length?`<div class="rows">${ds.map(d=>{const c=d.client?S.clients[d.client]:null;return `<div class="row" style="grid-template-columns:minmax(0,1fr) auto;align-items:start">
-    <div style="min-width:0"><b>${d.client?`<button type="button" class="linkbtn" style="font-size:inherit;color:var(--ink)" data-client="${d.client}">${esc(d.name)}</button>`:esc(d.name)}</b>${c&&c.phone?` <a class="muted num" style="font-size:.8rem" href="tel:${esc(c.phone)}">${esc(c.phone)}</a>`:''}
-      ${d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||'')).map(([id,x])=>`<div class="muted" style="font-size:.82rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px"><span>${esc(fmtDay(x.date))} \u00b7 ${esc(planName(x.item)||x.item)}${x.total?' \u00b7 paid '+L(x.amount)+' of '+L(x.total):''}</span><b class="num" style="color:var(--bad)">${L(x.owed)}</b><button class="btn sm" data-settle="${id}">Paid</button></div>`).join('')}</div>
-    <b class="num" style="color:var(--bad);white-space:nowrap">${L(d.owed)}</b></div>`}).join('')}</div>`:'<div class="empty" style="padding:14px">No open debts.</div>'}</section>`}
+function debtorsPanel(){const ds=debtList(),tot=ds.reduce((a,d)=>a+d.owed,0),show=UI.debtAll?ds:ds.slice(0,3),op=UI.debtOpen||(UI.debtOpen={});
+  return `<section class="panel"><header><div><h2>Debtors</h2><span class="muted">${ds.length?ds.length+' owe <b class="num" style="color:var(--bad)">'+L(tot)+'</b>':'Nobody owes money'}</span></div></header>
+  ${ds.length?`<div class="rows">${show.map(d=>{const c=d.client?S.clients[d.client]:null,open=op[d.k];return `<div style="border-top:1px solid var(--line);padding:7px 0">
+    <div style="display:flex;align-items:center;gap:8px;font-size:.9rem"><button type="button" class="linkbtn" style="font-size:inherit;color:var(--ink);text-align:left;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-debtopen="${esc(d.k)}">${open?'▾':'▸'} ${esc(d.name)} <span class="muted" style="font-weight:400">· ${d.items.length}</span></button>${c&&c.phone?`<a class="muted num" style="font-size:.78rem" href="tel:${esc(c.phone)}">${esc(c.phone)}</a>`:''}<b class="num" style="color:var(--bad);white-space:nowrap">${L(d.owed)}</b></div>
+    ${open?d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||'')).map(([id,x])=>`<div class="muted" style="font-size:.8rem;display:flex;gap:8px;align-items:center;justify-content:space-between;margin:5px 0 0 16px"><span>${esc(fmtDay(x.date))} · ${esc(planName(x.item)||x.item)}${x.total?' · paid '+L(x.amount)+' of '+L(x.total):''}</span><span style="display:flex;gap:6px;align-items:center"><b class="num" style="color:var(--bad)">${L(x.owed)}</b><button class="btn sm" data-settle="${id}">Paid</button></span></div>`).join(''):''}</div>`}).join('')}</div>
+  ${ds.length>3?`<button class="btn sm" style="margin-top:8px" data-act="debtall">${UI.debtAll?'Show less':'See all ('+ds.length+')'}</button>`:''}`:''}</section>`}
 function settleModal(id){const x=S.payments[id];if(!x)return;
   openModal(`<header><div><div class="eyebrow">Debt payment</div><h2>${esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</h2></div><button class="x" data-close aria-label="Close">\u00d7</button></header>
   <p class="muted" style="margin:0">${esc(planName(x.item)||x.item)} \u00b7 ${esc(fmtDay(x.date))} \u00b7 owes <b style="color:var(--bad)">${L(x.owed)}</b></p>
@@ -1606,6 +1606,7 @@ document.addEventListener('click',async e=>{
   if(ds.delexp){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delexp2="'+ds.delexp+'">Delete</button></span>';return}
   if(ds.delexp2){await save(()=>store.del('expenses',ds.delexp2),'Expense deleted');return}
   if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
+  if(ds.debtopen!=null){const op=UI.debtOpen||(UI.debtOpen={});op[ds.debtopen]=!op[ds.debtopen];render();return}
   if(ds.settle){settleModal(ds.settle);return}
   if(ds.editpay){if(P().editPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
@@ -1642,6 +1643,7 @@ document.addEventListener('click',async e=>{
     case'bkdown':downloadBackup();break;
     case'bkup':if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Replaces all data — tap again';break}restoreBackup();break;
     case'finexcel':exportFinances();break;
+    case'debtall':UI.debtAll=!UI.debtAll;render();break;
     case'discseed':{t.disabled=true;await save(seedDisc);break}
     case'cledit':{const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='';t.remove();f.querySelector('#clName')?.focus()}break}
     case'addcli':{const w=$('#cCliWrap');if(w){const n=w.querySelectorAll('[data-cpick]').length;w.insertAdjacentHTML('beforeend',clientPicker('cCli'+n));document.getElementById('cCli'+n)?.focus()}break}
