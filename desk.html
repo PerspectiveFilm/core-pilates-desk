@@ -392,9 +392,9 @@ const METHODS=['Cash','Card','Bank transfer'];
 const STAFF_ROLES=['Instructor','Reception','Manager'];
 const DEFAULT_PINS={owner:'1111',manager:'2222',reception:'3333'};
 const PERMS={
-  owner:{label:'Owner',pages:['dash','sched','team','groups','clients','pay','fin','data','log','staff'],revenue:1,payroll:1,editClasses:1,delClient:1,allPayments:1,delPayment:1,pins:1},
+  owner:{label:'Owner',pages:['dash','sched','team','groups','clients','pay','fin','data','log','staff'],revenue:1,payroll:1,editClasses:1,delClient:1,allPayments:1,delPayment:1,editPayment:1,pins:1},
   manager:{label:'Manager',pages:['dash','sched','team','groups','clients','pay','staff'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:1,delPayment:0,pins:0},
-  reception:{label:'Reception',pages:['dash','sched','team','groups','clients','pay'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:0,payDates:1,delPayment:0,pins:0},
+  reception:{label:'Reception',pages:['dash','sched','team','groups','clients','pay'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:0,payDates:1,delPayment:0,editPayment:1,pins:0},
   trainer:{label:'Trainer',pages:['team','sched','groups'],revenue:0,payroll:0,editClasses:0,delClient:0,allPayments:0,delPayment:0,pins:0},
 };
 const LOGO='<svg viewBox="0 0 100 100" fill="none" stroke="#D9967A" aria-hidden="true"><circle cx="47" cy="47" r="27" stroke-width="2.6"/><circle cx="54" cy="53" r="26" stroke-width="2.6"/><circle cx="51" cy="50" r="20" stroke-width="3"/><ellipse cx="49" cy="49" rx="17" ry="16" stroke-width="2.6"/><circle cx="50" cy="50" r="12" stroke-width="5.5"/></svg>';
@@ -1078,9 +1078,9 @@ function pPay(){
   ${pm==='year'?(()=>{const m=Array(12).fill(0);day.forEach(([,x])=>{m[+x.date.slice(5,7)-1]+=+x.amount||0});const mx=Math.max(...m,1);
     return `<section class="panel"><header><h2>By month</h2></header><div class="rows">${m.map((v,i)=>`<button class="frow" style="border:0;border-top:1px solid var(--line);background:none;width:100%;text-align:left;cursor:pointer" data-pmonth="${d.slice(0,4)}-${pad(i+1)}"><span style="width:40px">${MN[i]}</span><span class="fill" style="flex:1;max-width:none;margin:0"><i style="width:${v/mx*100}%;background:var(--brand)"></i></span><b class="num" style="min-width:110px;text-align:right">${L(v)}</b></button>`).join('')}</div></section>`})():''}
   <section class="panel"><header><h2>Sales log</h2><span class="muted">${day.length} sale${day.length===1?'':'s'}</span></header>
-    ${day.length?`<div class="tablewrap"><table><thead><tr><th>${pm==='day'?'Time':'Date'}</th><th>Client</th><th>Item</th><th>Method</th><th class="r">Amount</th>${p.delPayment?'<th></th>':''}</tr></thead><tbody>
+    ${day.length?`<div class="tablewrap"><table><thead><tr><th>${pm==='day'?'Time':'Date'}</th><th>Client</th><th>Item</th><th>Method</th><th class="r">Amount</th>${p.delPayment||p.editPayment?'<th></th>':''}</tr></thead><tbody>
     ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(x.method)}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
-      ${p.delPayment?`<td class="r" style="white-space:nowrap"><button class="btn sm" data-editpay="${id}">Edit</button> <button class="btn sm danger" data-delpay="${id}">Delete</button></td>`:''}</tr>`).join('')}
+      ${p.delPayment||p.editPayment?`<td class="r" style="white-space:nowrap">${p.editPayment?`<button class="btn sm" data-editpay="${id}">Edit</button>`:''}${p.delPayment?` <button class="btn sm danger" data-delpay="${id}">Delete</button>`:''}</td>`:''}</tr>`).join('')}
     </tbody></table></div>`:`<div class="empty">No sales recorded for this ${pm}.</div>`}
   </section>`;
 }
@@ -1560,7 +1560,7 @@ document.addEventListener('click',async e=>{
   if(ds.delexp){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delexp2="'+ds.delexp+'">Delete</button></span>';return}
   if(ds.delexp2){await save(()=>store.del('expenses',ds.delexp2),'Expense deleted');return}
   if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
-  if(ds.editpay){if(P().delPayment)payModal(ds.editpay);return}
+  if(ds.editpay){if(P().editPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
   if(ds.delpay2){await save(()=>store.del('payments',ds.delpay2),'Sale deleted. Credits were not changed.');return}
   if('keep' in ds){render();return}
@@ -1638,7 +1638,7 @@ document.addEventListener('submit',async e=>{
     const cap=Math.max(1,+$('#gCap').value||6),d={name:$('#gName').value.trim(),type:$('#gType').value,days,time:$('#gTime').value,dur:+$('#gDur').value||50,trainer:$('#gTr').value,cap,members};
     if(!d.name)d.name=d.type;if(members.length>cap){toast('This group has only '+cap+' spots.');return}
     if(await save(()=>store.set('groups',id,d),'Group saved'))closeModal();return}
-  if(f.id==='payForm'){if(!P().delPayment)return;const id=f.dataset.id,x=S.payments[id];if(!x)return;
+  if(f.id==='payForm'){if(!P().editPayment)return;const id=f.dataset.id,x=S.payments[id];if(!x)return;
     const d=$('#pDate').value||x.date,tm=$('#pTime').value||(x.ts?new Date(x.ts).toTimeString().slice(0,5):'12:00'),amt=Math.max(0,+$('#pAmt').value||0),m=$('#pMethod').value,un=m==='Unpaid';
     const nx={...x,date:d,ts:new Date(d+'T'+tm+':00').getTime()||x.ts,client:$('#pClient').value,item:$('#pItem').value.trim()||x.item,method:un?(x.method||'Cash'):m,amount:un?0:amt,editedBy:UI.role,editedAt:Date.now()};
     if(un){nx.unpaid=true;nx.owed=amt}else{delete nx.unpaid;delete nx.owed}
