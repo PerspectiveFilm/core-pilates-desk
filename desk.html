@@ -521,7 +521,7 @@ let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id
 function render(){
   _uc=null;
   const ae=document.activeElement,fid=ae&&ae.id,sel=ae&&'selectionStart' in ae?[ae.selectionStart,ae.selectionEnd]:null;
-  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sMethod,#sDate').forEach(el=>{if('value' in el)keep[el.id]=el.value});
+  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sMethod,#sDate,#sNote').forEach(el=>{if('value' in el)keep[el.id]=el.value});
   $('#root').innerHTML=UI.role?shell():login();
   if(!UI.qsReset)for(const k in keep){const el=document.getElementById(k);if(el){el.value=keep[k];if(el.dataset.cpick)cpHint(el)}}UI.qsReset=false;
   if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch{}}}
@@ -1113,6 +1113,7 @@ function pPay(){
       <div class="field" style="position:relative"><label for="sAmt">Amount paid (Lek)</label><input id="sAmt" type="number" min="0" step="any" value="${PRODUCTS[0].p}"><span class="cphint" id="sAmt_hint"></span></div>
       <div class="field"><label for="sMethod">Paid by</label><select id="sMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
       <div class="field"><label for="sDate">Date</label><input type="date" id="sDate" value="${UI.payDay||today()}"></div>
+      <div class="field wide"><label for="sNote">Note (optional)</label><input id="sNote" placeholder="What it was and why — e.g. paid half, rest on Friday"></div>
       <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record sale</button></div>
     </form></section>
   <div class="stats">
@@ -1124,7 +1125,7 @@ function pPay(){
     return `<section class="panel"><header><h2>By month</h2></header><div class="rows">${m.map((v,i)=>`<button class="frow" style="border:0;border-top:1px solid var(--line);background:none;width:100%;text-align:left;cursor:pointer" data-pmonth="${d.slice(0,4)}-${pad(i+1)}"><span style="width:40px">${MN[i]}</span><span class="fill" style="flex:1;max-width:none;margin:0"><i style="width:${v/mx*100}%;background:var(--brand)"></i></span><b class="num" style="min-width:110px;text-align:right">${L(v)}</b></button>`).join('')}</div></section>`})():''}
   <section class="panel"><header><h2>Sales log</h2><span class="muted">${day.length} sale${day.length===1?'':'s'}</span></header>
     ${day.length?`<div class="tablewrap"><table><thead><tr><th>${pm==='day'?'Time':'Date'}</th><th>Client</th><th>Item</th><th>Method</th><th class="r">Amount</th>${p.delPayment||p.editPayment?'<th></th>':''}</tr></thead><tbody>
-    ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(x.method)}${!x.unpaid&&+x.owed>0?' <span class="pill bad" style="white-space:nowrap">Owes '+L(x.owed)+'</span>':''}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
+    ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}${x.note?`<div class="muted" style="font-size:.8rem;max-width:280px;white-space:normal">\u270e ${esc(x.note)}</div>`:''}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(x.method)}${!x.unpaid&&+x.owed>0?' <span class="pill bad" style="white-space:nowrap">Owes '+L(x.owed)+'</span>':''}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
       ${p.delPayment||p.editPayment?`<td class="r" style="white-space:nowrap">${p.editPayment?`<button class="btn sm" data-editpay="${id}">Edit</button>`:''}${p.delPayment?` <button class="btn sm danger" data-delpay="${id}">Delete</button>`:''}</td>`:''}</tr>`).join('')}
     </tbody></table></div>`:`<div class="empty">No sales recorded for this ${pm}.</div>`}
   </section>`;
@@ -1156,7 +1157,7 @@ async function exportExcel(){
   const pays=Object.values(S.payments).filter(x=>inP(x.date)).sort((a,b)=>(a.ts||0)-(b.ts||0));
   const exps=Object.values(S.expenses).filter(x=>inP(x.date)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const cname=x=>x.kind==='product'?'Product':(x.client&&S.clients[x.client]?S.clients[x.client].name:(x.name||'Walk-in'));
-  const P=pays.map(x=>({Date:x.date,Client:cname(x),Item:x.item,Type:x.kind==='product'?'Product':'Package',Method:x.unpaid?'Unpaid':x.method,'Amount (L)':x.unpaid?0:+x.amount||0,'Unpaid (L)':+x.owed>0?+x.owed:'',By:x.by||''}));
+  const P=pays.map(x=>({Date:x.date,Client:cname(x),Item:x.item,Type:x.kind==='product'?'Product':'Package',Method:x.unpaid?'Unpaid':x.method,'Amount (L)':x.unpaid?0:+x.amount||0,'Unpaid (L)':+x.owed>0?+x.owed:'',Note:x.note||'',By:x.by||''}));
   const E=exps.map(x=>({Date:x.date,Item:x.note||'',Category:x.cat||'','Amount (L)':+x.amount||0,By:x.by||''}));
   const C=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,c])=>{const i=pkgInfo(c.plan);return{Name:c.name,Status:isActC(c)?'Active':'Inactive',Phone:c.phone||'',Email:c.email||'',Country:natName(c.nationality)||'',Birthday:c.birthday||'',Package:i?i.label:'',Sessions:i?(+i.n||''):'','Sessions left':c.plan?leftOf(c):'','Package start':c.packageStart||'','Package expires':c.expires||'',Trainers:(c.trainers||[]).map(staffName).join(', '),Discount:discLabel(c),'Total sessions':totalSessions(id),'Packages bought':(c.plan?1:0)+(c.packages||[]).length,Burned:burnedOf(id),Joined:c.joined||''}});
   const amt=rows=>rows.reduce((t,r)=>t+(+r['Amount (L)']||0),0),tot=amt(P),ex=amt(E);
@@ -1488,14 +1489,15 @@ function payModal(id){const x=S.payments[id];if(!x)return;
     <div class="field"><label for="pTime">Time</label><input type="time" id="pTime" value="${x.ts?new Date(x.ts).toTimeString().slice(0,5):''}"></div>
     <div class="field wide"><label for="pClient">Client</label><select id="pClient"><option value="">${x.kind==='product'?'— (product)':'Walk-in'}</option>${allC.map(([cid,c])=>`<option value="${cid}" ${cid===x.client?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
     <div class="field wide"><label for="pItem">Item</label><input id="pItem" value="${esc(x.item||'')}"></div>
+    <div class="field wide"><label for="pNote">Note</label><input id="pNote" value="${esc(x.note||'')}" placeholder="What it was and why"></div>
     <div class="field"><label for="pAmt">Amount (Lek)</label><input type="number" id="pAmt" value="${x.unpaid?(+x.owed||0):(+x.amount||0)}" min="0" step="any"></div>
     <div class="field"><label for="pMethod">Paid by</label><select id="pMethod">${[...METHODS,'Unpaid'].map(m=>`<option ${m===meth?'selected':''}>${m}</option>`).join('')}</select></div>
     <div class="field"><label for="pOwed">Still owed (Lek)</label><input type="number" id="pOwed" value="${x.unpaid?0:(+x.owed||0)}" min="0" step="any"></div>
     <div class="field wide"><span class="muted" style="font-size:.8rem">Changing a sale does not change the client’s package or sessions — edit those on the client.</span><div class="actions" style="margin-top:8px"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save changes</button></div></div>
   </form>`)}
-async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow){
+async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
   const pr=PRODUCTS.find(x=>x.k===prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
-  const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,method,by:UI.role};
+  const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,method,by:UI.role};if(note&&note.trim())rec.note=note.trim();
   if(paid<total){rec.owed=total-paid;rec.total=total;if(!paid)rec.unpaid=true}
   const ok=await save(()=>store.set('payments',uid(),rec));
   if(ok&&paid<total)toast((S.clients[clientId]?.name||'Client')+' owes '+L(total-paid)+' \u2014 added to Debtors');
@@ -1700,7 +1702,7 @@ document.addEventListener('submit',async e=>{
     if(ok)closeModal();return}
   if(f.id==='payForm'){if(!P().editPayment)return;const id=f.dataset.id,x=S.payments[id];if(!x)return;
     const d=$('#pDate').value||x.date,tm=$('#pTime').value||(x.ts?new Date(x.ts).toTimeString().slice(0,5):'12:00'),amt=Math.max(0,+$('#pAmt').value||0),m=$('#pMethod').value,un=m==='Unpaid';
-    const nx={...x,date:d,ts:new Date(d+'T'+tm+':00').getTime()||x.ts,client:$('#pClient').value,item:$('#pItem').value.trim()||x.item,method:un?(x.method||'Cash'):m,amount:un?0:amt,editedBy:UI.role,editedAt:Date.now()};
+    const nx={...x,date:d,ts:new Date(d+'T'+tm+':00').getTime()||x.ts,client:$('#pClient').value,item:$('#pItem').value.trim()||x.item,method:un?(x.method||'Cash'):m,amount:un?0:amt,editedBy:UI.role,editedAt:Date.now()};{const nt=($('#pNote')||{}).value||'';if(nt.trim())nx.note=nt.trim();else delete nx.note}
     const ow=Math.max(0,+($('#pOwed')||{}).value||0);if(un){nx.unpaid=true;nx.owed=amt}else{delete nx.unpaid;if(ow>0)nx.owed=ow;else delete nx.owed}
     if(await save(()=>store.set('payments',id,nx),'Sale updated'))closeModal();return}
   if(f.id==='codeForm'){const a1=$('#cc1').value,a2=$('#cc2').value;if(a1.length<6){toast('At least 6 characters.');return}if(a1!==a2){toast('The two codes don\u2019t match.');return}
@@ -1760,7 +1762,7 @@ document.addEventListener('submit',async e=>{
     const amt=$('#sAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#sClient').value.trim()){toast('Type the client\u2019s name.');$('#sClient').focus();return}
     const full=fullPrice('sClient','sProd');const cid=await ensureClient($('#sClient').value);if(!cid)return;
-    if(await recordSale(cid,$('#sProd').value,Math.max(+amt,full),$('#sMethod').value,$('#sDate').value,null,+amt<full?amt:null)){$('#sClient').value='';cpHint($('#sClient'));UI.amtManual={}}
+    if(await recordSale(cid,$('#sProd').value,Math.max(+amt,full),$('#sMethod').value,$('#sDate').value,null,+amt<full?amt:null,$('#sNote').value)){$('#sClient').value='';$('#sNote').value='';cpHint($('#sClient'));UI.amtManual={}}
   }
   if(f.id==='classForm'){
     const id=f.dataset.id,d={type:$('#cType').value,instructor:$('#cInst').value,date:$('#cDate').value,time:$('#cTime').value,dur:c0dur(id),cap:Math.max(1,+$('#cCap').value||1)};
