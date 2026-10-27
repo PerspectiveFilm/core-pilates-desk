@@ -521,7 +521,7 @@ let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id
 function render(){
   _uc=null;
   const ae=document.activeElement,fid=ae&&ae.id,sel=ae&&'selectionStart' in ae?[ae.selectionStart,ae.selectionEnd]:null;
-  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sMethod,#sDate,#sNote,#ppClient,#ppAmt,#ppMethod,#ppDate,#ppNote').forEach(el=>{if('value' in el)keep[el.id]=el.value});
+  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sAmt,#sMethod,#sDate,#sNote,#ppClient,#ppProd,#ppQty,#ppAmt,#ppMethod,#ppDate,#ppNote').forEach(el=>{if('value' in el)keep[el.id]=el.value});
   $('#root').innerHTML=UI.role?shell():login();
   if(!UI.qsReset)for(const k in keep){const el=document.getElementById(k);if(el){el.value=keep[k];if(el.dataset.cpick)cpHint(el)}}UI.qsReset=false;
   if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch{}}}
@@ -994,25 +994,24 @@ const SHOP_DEFAULT=[['Water',80],['Socks',1500],['Protein Bar',300],['Crispy Waf
 const shopId=n=>'pd_'+String(n).toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
 function shopList(){const o={};SHOP_DEFAULT.forEach(([n,p],i)=>o[shopId(n)]={name:n,price:p,ord:i});for(const[id,d]of Object.entries(S.products||{}))o[id]={...(o[id]||{ord:1000}),...d};
   return Object.entries(o).filter(([,d])=>!d.hidden&&d.name).sort((a,b)=>(a[1].ord??1000)-(b[1].ord??1000)||a[1].name.localeCompare(b[1].name))}
-function cartTotal(){const L0=Object.fromEntries(shopList());let t=0;for(const[id,q]of Object.entries(UI.ppCart||{}))if(L0[id])t+=(+L0[id].price||0)*q;return t}
-function productPanel(){const list=shopList(),cart=UI.ppCart||(UI.ppCart={}),tot=cartTotal(),edit=UI.ppEdit;
-  const lines=Object.entries(cart).filter(([id,q])=>q>0&&list.some(([k])=>k===id)).map(([id,q])=>{const d=Object.fromEntries(list)[id];return `<span class="chip" style="display:inline-flex;gap:6px;align-items:center;color:var(--ink)"><b>${esc(d.name)}</b><button type="button" class="xbtn" data-ppdec="${id}" aria-label="One less">−</button><span class="num">${q}</span><button type="button" class="xbtn" data-ppinc="${id}" aria-label="One more">+</button><span class="num muted">${L((+d.price||0)*q)}</span></span>`}).join('');
-  return `<section class="panel"><header><div><h2>Sell a product</h2><span class="muted">Tap a product to add it. Client name is optional.</span></div><div class="toolbar"><button type="button" class="btn sm" data-act="ppedit">${edit?'Done':'Edit products'}</button><button type="button" class="btn sm" data-act="ppadd">+ Add product</button></div></header>
-    <div class="chips" style="margin-bottom:12px">${list.map(([id,d])=>`<span style="display:inline-flex;align-items:center;gap:2px"><button type="button" class="chip" data-pp="${id}" aria-pressed="${cart[id]>0}">${esc(d.name)} <span class="num" style="opacity:.75">${L(d.price)}</span>${cart[id]>0?' <b>×'+cart[id]+'</b>':''}</button>${edit?`<button type="button" class="xbtn" data-ppeditone="${id}" title="Edit">✎</button><button type="button" class="xbtn" data-pphide="${id}" title="Remove">×</button>`:''}</span>`).join('')}</div>
-    ${lines?`<div class="chips" style="margin-bottom:12px">${lines}<button type="button" class="btn sm" data-act="ppclear">Clear</button></div>`:''}
-    <form class="form" id="ppForm" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
-      <div class="field" style="position:relative"><label for="ppClient">Client (optional)</label><input id="ppClient" list="clientNames_ppClient" autocomplete="off" placeholder="Walk-in"><datalist id="clientNames_ppClient">${Object.values(S.clients).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist></div>
-      <div class="field" style="position:relative"><label for="ppAmt">Amount paid (Lek)</label><input id="ppAmt" type="number" min="0" step="any" value="${tot}"><span class="cphint" id="ppAmt_hint"></span></div>
+function ppPrice(){const d=Object.fromEntries(shopList())[($('#ppProd')||{}).value];return d?(+d.price||0)*Math.max(1,+(($('#ppQty')||{}).value)||1):0}
+function productPanel(){const list=shopList();
+  return `<section class="panel"><header><div><h2>Sell a product</h2><span class="muted">Client name is optional</span></div><div class="toolbar"><button type="button" class="btn sm" data-act="ppeditsel">Edit product</button><button type="button" class="btn sm" data-act="ppadd">+ Add product</button></div></header>
+    <form class="form" id="ppForm" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="field"><label for="ppClient">Client (optional)</label><input id="ppClient" list="clientNames_ppClient" autocomplete="off" placeholder="Walk-in"><datalist id="clientNames_ppClient">${Object.values(S.clients).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist></div>
+      <div class="field"><label for="ppProd">Product</label><select id="ppProd">${list.map(([id,d])=>`<option value="${id}">${esc(d.name)} · ${L(d.price)}</option>`).join('')}</select></div>
+      <div class="field"><label for="ppQty">Quantity</label><input id="ppQty" type="number" min="1" step="1" value="1"></div>
+      <div class="field" style="position:relative"><label for="ppAmt">Amount paid (Lek)</label><input id="ppAmt" type="number" min="0" step="any" value="${list[0]?list[0][1].price:0}"><span class="cphint" id="ppAmt_hint"></span></div>
       <div class="field"><label for="ppMethod">Paid by</label><select id="ppMethod">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div>
       <div class="field"><label for="ppDate">Date</label><input type="date" id="ppDate" value="${UI.payDay||today()}"></div>
       <div class="field wide"><label for="ppNote">Note (optional)</label><input id="ppNote" placeholder="What it was and why"></div>
-      <div class="field wide" style="flex-direction:row;justify-content:space-between;align-items:center"><span class="muted">Total <b class="num" style="color:var(--ink)">${L(tot)}</b></span><button class="btn primary" type="submit" ${tot||lines?'':'disabled'}>Record product sale</button></div>
+      <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record product sale</button></div>
     </form></section>`}
-function ppSync(){const a=$('#ppAmt');if(!a)return;if(!(UI.amtManual||{}).ppAmt)a.value=cartTotal();const h=$('#ppAmt_hint'),t=cartTotal(),v=+a.value||0;if(h){if(t&&v<t){h.textContent=L(t-v)+' goes to Debtors';h.className='cphint new'}else{h.textContent='';h.className='cphint'}}}
+function ppSync(){const a=$('#ppAmt');if(!a)return;const t=ppPrice();if(!(UI.amtManual||{}).ppAmt)a.value=t;const h=$('#ppAmt_hint'),v=+a.value||0;if(h){if(t&&v<t){h.textContent=L(t-v)+' goes to Debtors';h.className='cphint new'}else{h.textContent='';h.className='cphint'}}}
 function productModal(id){const d=id?Object.fromEntries(shopList())[id]:{name:'',price:''};
   openModal(`<header><h2>${id?'Edit product':'Add product'}</h2><button class="x" data-close aria-label="Close">×</button></header>
   <form class="form" id="prodForm" data-id="${id||''}"><div class="field"><label for="pdName">Name</label><input id="pdName" value="${esc(d.name||'')}" placeholder="e.g. Yoga mat"></div><div class="field"><label for="pdPrice">Price (Lek)</label><input id="pdPrice" type="number" min="0" step="any" value="${esc(d.price??'')}"></div>
-  <div class="field wide"><div class="actions"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save product</button></div></div></form>`)}
+  <div class="field wide"><div class="actions">${id?`<button type="button" class="btn danger" data-pphide="${id}" style="margin-right:auto">Remove product</button>`:''}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save product</button></div></div></form>`)}
 function quickSaleRow(){
   const p=P(),t=today(),d=p.allPayments?(UI.dashPayDay||t):t;
   const pays=payList().filter(([,x])=>x.date===d);
@@ -1637,11 +1636,7 @@ document.addEventListener('click',async e=>{
   if(ds.delexp2){await save(()=>store.del('expenses',ds.delexp2),'Expense deleted');return}
   if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
   if(ds.debtopen!=null){const op=UI.debtOpen||(UI.debtOpen={});op[ds.debtopen]=!op[ds.debtopen];render();return}
-  if(ds.pp){const c=UI.ppCart||(UI.ppCart={});c[ds.pp]=(c[ds.pp]||0)+1;if(UI.amtManual)UI.amtManual.ppAmt=0;render();ppSync();return}
-  if(ds.ppinc){UI.ppCart[ds.ppinc]=(UI.ppCart[ds.ppinc]||0)+1;if(UI.amtManual)UI.amtManual.ppAmt=0;render();ppSync();return}
-  if(ds.ppdec){UI.ppCart[ds.ppdec]=Math.max(0,(UI.ppCart[ds.ppdec]||0)-1);if(!UI.ppCart[ds.ppdec])delete UI.ppCart[ds.ppdec];if(UI.amtManual)UI.amtManual.ppAmt=0;render();ppSync();return}
-  if(ds.ppeditone){productModal(ds.ppeditone);return}
-  if(ds.pphide){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Remove?';return}await save(()=>store.set('products',ds.pphide,{...(S.products[ds.pphide]||{}),name:Object.fromEntries(shopList())[ds.pphide]?.name||'',hidden:true}),'Product removed');return}
+  if(ds.pphide){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Remove?';return}await save(()=>store.set('products',ds.pphide,{...(S.products[ds.pphide]||{}),name:Object.fromEntries(shopList())[ds.pphide]?.name||'',hidden:true}),'Product removed');closeModal();return}
   if(ds.settle){settleModal(ds.settle);return}
   if(ds.editpay){if(P().editPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
@@ -1679,8 +1674,7 @@ document.addEventListener('click',async e=>{
     case'bkup':if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Replaces all data — tap again';break}restoreBackup();break;
     case'finexcel':exportFinances();break;
     case'ppadd':productModal(null);break;
-    case'ppedit':UI.ppEdit=!UI.ppEdit;render();break;
-    case'ppclear':UI.ppCart={};if(UI.amtManual)UI.amtManual.ppAmt=0;render();ppSync();break;
+    case'ppeditsel':{const v=($('#ppProd')||{}).value;if(v)productModal(v);break}
     case'debtall':UI.debtAll=!UI.debtAll;render();break;
     case'discseed':{t.disabled=true;await save(seedDisc);break}
     case'cledit':{const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='';t.remove();f.querySelector('#clName')?.focus()}break}
@@ -1699,6 +1693,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('input',e=>{
   if(e.target.dataset&&e.target.dataset.cpick){cpHint(e.target);if(e.target.id==='qsClient')applyDisc('qsClient','qsProd','qsAmt',1);if(e.target.id==='sClient')applyDisc('sClient','sProd','sAmt',1)}
   if(e.target.id==='ppAmt'){(UI.amtManual||(UI.amtManual={})).ppAmt=1;ppSync()}
+  if(e.target.id==='ppQty'){if(UI.amtManual)UI.amtManual.ppAmt=0;ppSync()}
   if(e.target.id==='qsAmt'){(UI.amtManual||(UI.amtManual={})).qsAmt=1;amtHint('qsClient','qsProd','qsAmt')}if(e.target.id==='sAmt'){(UI.amtManual||(UI.amtManual={})).sAmt=1;amtHint('sClient','sProd','sAmt')}
   if(e.target.id==='clientQ'){UI.clientQ=e.target.value;render()}
   if(e.target.id==='logQ'){UI.logQ=e.target.value;render()}
@@ -1720,6 +1715,7 @@ document.addEventListener('change',e=>{
   if(e.target.id==='loginTrainer'){UI.loginTrainer=e.target.value}
   if(e.target.id==='bkType'){UI.bookType=e.target.value;UI.bookDate=$('#bkDate').value;UI.bookTime=$('#bkTime').value;render()}
   if(e.target.id==='qsProd'){applyDisc('qsClient','qsProd','qsAmt')}
+  if(e.target.id==='ppProd'){if(UI.amtManual)UI.amtManual.ppAmt=0;ppSync()}
   if(e.target.id==='sProd'){applyDisc('sClient','sProd','sAmt')}
 });
 document.addEventListener('submit',async e=>{
@@ -1730,11 +1726,11 @@ document.addEventListener('submit',async e=>{
     if(await save(()=>store.set('groups',id,d),'Group saved'))closeModal();return}
   if(f.id==='prodForm'){const name=$('#pdName').value.trim().replace(/\s+/g,' '),price=Math.max(0,+$('#pdPrice').value||0);if(!name){toast('Enter the product name.');return}
     const id=f.dataset.id||shopId(name);if(await save(()=>store.set('products',id,{...(S.products[id]||{}),name,price,hidden:false}),'Product saved'))closeModal();return}
-  if(f.id==='ppForm'){const list=Object.fromEntries(shopList()),cart=Object.entries(UI.ppCart||{}).filter(([id,q])=>q>0&&list[id]);if(!cart.length){toast('Tap a product first.');return}
-    const total=cartTotal(),amt=$('#ppAmt').value===''?total:Math.max(0,+$('#ppAmt').value||0),d=$('#ppDate').value||today(),nm=$('#ppClient').value.trim().replace(/\s+/g,' '),cid=nm?findClient(nm):null;
-    const rec={kind:'product',date:d,ts:new Date(d+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:cid||'',item:cart.map(([id,q])=>list[id].name+(q>1?' \u00d7'+q:'')).join(', '),amount:Math.min(amt,Math.max(total,amt)),method:$('#ppMethod').value,by:UI.role};
+  if(f.id==='ppForm'){const d0=Object.fromEntries(shopList())[$('#ppProd').value];if(!d0){toast('Choose a product.');return}
+    const q=Math.max(1,Math.round(+$('#ppQty').value||1)),total=(+d0.price||0)*q,amt=$('#ppAmt').value===''?total:Math.max(0,+$('#ppAmt').value||0),d=$('#ppDate').value||today(),nm=$('#ppClient').value.trim().replace(/\s+/g,' '),cid=nm?findClient(nm):null;
+    const rec={kind:'product',date:d,ts:new Date(d+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:cid||'',item:d0.name+(q>1?' ×'+q:''),amount:amt,method:$('#ppMethod').value,by:UI.role};
     if(nm&&!cid)rec.name=nm;const nt=$('#ppNote').value.trim();if(nt)rec.note=nt;if(amt<total){rec.owed=total-amt;rec.total=total;if(!amt)rec.unpaid=true}
-    if(await save(()=>store.set('payments',uid(),rec),amt<total?'Sale saved \u2014 '+L(total-amt)+' added to Debtors':'Product sale saved')){UI.ppCart={};UI.amtManual={};['ppClient','ppNote'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});const a=$('#ppAmt');if(a)a.value='';render();ppSync()}
+    if(await save(()=>store.set('payments',uid(),rec),amt<total?'Sale saved — '+L(total-amt)+' added to Debtors':'Product sale saved')){UI.amtManual={};['ppClient','ppNote'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});const qq=$('#ppQty');if(qq)qq.value=1;ppSync()}
     return}
   if(f.id==='settleForm'){const id=f.dataset.id,x=S.payments[id];if(!x)return;const amt=Math.min(+x.owed,Math.max(0,+$('#stAmt').value||0));if(!amt){toast('Enter the amount received.');return}
     const d=$('#stDate').value||today(),left=(+x.owed)-amt;
