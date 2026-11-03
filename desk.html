@@ -1461,7 +1461,8 @@ function pkgHistory(c,onlyPast){
   const row=(r,cur)=>{const i=pkgInfo(r.plan)||{k:'pt',label:r.plan||'—',n:''};const exp=r.end&&r.end<today();
     return `<div class="pkgrow ${cur?'cur':''}"><span class="slot ${i.k}" style="cursor:default;font-family:var(--body);font-size:.75rem;font-weight:600">${esc(i.label)}</span><b class="num">${esc(i.n)}</b><span>${fmtD(r.start)} → ${fmtD(r.end)}</span><span class="muted">${(r.trainers||[]).map(t=>esc(staffName(t))).join(', ')}</span><span>${cur?(exp?'<span class="pill bad">Expired</span>':'<span class="pill ok">Active</span>')+` <span class="muted">${r.left} left</span>`:`<span class="muted">${r.left!=null?r.left+' left at end':''}${r.carried?' · moved to next':''}</span>`}</span></div>`};
   const past=[...(c.packages||[])].reverse();
-  if(onlyPast)return `<div class="eyebrow" style="margin-bottom:6px">Past packages${past.length?' \u00b7 '+past.length:''}</div>${past.length?`<div class="pkglist">${past.map(r=>row(r,0)).join('')}</div>`:'<div class="muted" style="font-size:.88rem">No past packages.</div>'}`;
+  const cidU=usage().m.get(c),canU=cidU&&c.plan&&(UI.role==='owner'||UI.role==='reception');
+  if(onlyPast)return `<div class="eyebrow" style="margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Past packages${past.length?' \u00b7 '+past.length:''}</span>${canU?`<button type="button" class="btn sm" data-undopkg="${cidU}" title="Removes the active package and brings back the previous one">Undo active package</button>`:''}</div>${past.length?`<div class="pkglist">${past.map(r=>row(r,0)).join('')}</div>`:'<div class="muted" style="font-size:.88rem">No past packages.</div>'}`;
   return `<div class="eyebrow" style="margin-bottom:6px">Active package</div>
   ${c.plan?`<div class="pkglist">${row({plan:c.plan,start:c.packageStart,end:c.expires,left:leftOf(c),trainers:c.trainers||[]},1)}</div>`:'<div class="muted" style="font-size:.88rem">No package yet — use Sell pack.</div>'}
   <div class="eyebrow" style="margin:14px 0 6px">Past packages${past.length?' · '+past.length:''}</div>
@@ -1537,9 +1538,15 @@ function payModal(id){const x=S.payments[id];if(!x)return;
     <div class="field"><label for="pOwed">Still owed (Lek)</label><input type="number" id="pOwed" value="${x.unpaid?0:(+x.owed||0)}" min="0" step="any"></div>
     <div class="field wide"><span class="muted" style="font-size:.8rem">Changing a sale does not change the client’s package or sessions — edit those on the client.</span><div class="actions" style="margin-top:8px"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save changes</button></div></div>
   </form>`)}
+function usedSince(cid,start){let n=0;const now=Date.now();for(const cl of Object.values(S.classes)){if(start&&cl.date<start)continue;const end=new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000;for(const b of cl.booked||[])if(b.c===cid&&(b.burn||end<now))n++}return n}
+function undoPkgPatch(cid,prev){const c=S.clients[cid];if(!c)return null;
+  if(prev)return{plan:prev.plan||'',packageStart:prev.packageStart||'',expires:prev.expires||'',credits:+prev.credits||0,unlimitedUntil:prev.unlimitedUntil||'',price:+prev.price||0,packages:(c.packages||[]).slice(0,prev.npk||0)};
+  const hist=[...(c.packages||[])],h=hist.pop();
+  if(!h)return{plan:'',packageStart:'',expires:'',credits:0,packages:[]};
+  return{plan:h.plan||'',packageStart:h.start||'',expires:h.end||'',credits:(+h.left||0)+usedSince(cid,h.start),trainers:h.trainers&&h.trainers.length?h.trainers:(c.trainers||[]),packages:hist}}
 async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
   const pr=PRODUCTS.find(x=>x.k===prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
-  const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,method,by:UI.role};if(note&&note.trim())rec.note=note.trim();
+  const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,method,by:UI.role};if(note&&note.trim())rec.note=note.trim();if(clientId&&(pr.c||pr.unl)&&S.clients[clientId]){const c0=S.clients[clientId];rec.prev={plan:c0.plan||'',packageStart:c0.packageStart||'',expires:c0.expires||'',credits:+c0.credits||0,unlimitedUntil:c0.unlimitedUntil||'',price:+c0.price||0,npk:(c0.packages||[]).length}}
   if(paid<total){rec.owed=total-paid;rec.total=total;if(!paid)rec.unpaid=true}
   const ok=await save(()=>store.set('payments',uid(),rec));
   if(ok&&paid<total)toast((S.clients[clientId]?.name||'Client')+' owes '+L(total-paid)+' \u2014 added to Debtors');
@@ -1657,10 +1664,12 @@ document.addEventListener('click',async e=>{
   if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
   if(ds.debtopen!=null){const op=UI.debtOpen||(UI.debtOpen={});op[ds.debtopen]=!op[ds.debtopen];render();return}
   if(ds.pphide){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Remove?';return}await save(()=>store.set('products',ds.pphide,{...(S.products[ds.pphide]||{}),name:Object.fromEntries(shopList())[ds.pphide]?.name||'',hidden:true}),'Product removed');closeModal();return}
+  if(ds.undopkg){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Tap again to undo';return}const pt=undoPkgPatch(ds.undopkg,null);if(pt&&await save(()=>store.upd('clients',ds.undopkg,pt),'Package undone \u2014 previous package is active again'))clientModal(ds.undopkg);return}
   if(ds.settle){settleModal(ds.settle);return}
   if(ds.editpay){if(P().editPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
-  if(ds.delpay2){await save(()=>store.del('payments',ds.delpay2),'Sale deleted. Credits were not changed.');return}
+  if(ds.delpay2){const x=S.payments[ds.delpay2],c=x&&x.client?S.clients[x.client]:null,undo=c&&x.kind==='package'&&c.packageStart===x.date&&c.plan===x.item;
+    await save(async()=>{await store.del('payments',ds.delpay2);if(undo){const pt=undoPkgPatch(x.client,x.prev);if(pt)await store.upd('clients',x.client,pt)}},undo?'Sale deleted \u2014 '+c.name+'\u2019s package was undone too':'Sale deleted');return}
   if('keep' in ds){render();return}
   const cid=$('#modal .modal')?.dataset.cls;
   if(ds.checkin&&cid){toggleIn(cid,ds.checkin);return}
