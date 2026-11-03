@@ -843,7 +843,7 @@ function expSection(){
 const kfmt=v=>{if(v<0)return '-'+kfmt(-v);return v>=1e6?(v/1e6).toFixed(1).replace(/\.0$/,'')+'M':v>=1e3?Math.round(v/1e3)+'k':String(Math.round(v))};
 
 /* --- Monthly revenue chart --- */
-function chartToggle(){const m=UI.chartMode||'month';return `<div class="chips"><button class="chip" data-cm="day" aria-pressed="${m==='day'}">Day</button><button class="chip" data-cm="month" aria-pressed="${m==='month'}">Month</button>${P().revenue?`<button class="chip" data-cm="six" aria-pressed="${m==='six'}">Last 6 months</button>`:''}</div>`}
+function chartToggle(){const m=UI.chartMode||'month';return `<div class="chips"><button class="chip" data-cm="day" aria-pressed="${m==='day'}">Day</button><button class="chip" data-cm="month" aria-pressed="${m==='month'}">Month</button>${P().revenue?`<button class="chip" data-cm="six" aria-pressed="${m==='six'}">${new Date().getFullYear()}</button>`:''}</div>`}
 function revChart(){let m=UI.chartMode||'month';if(m==='six'&&!P().revenue)m=UI.chartMode='month';return m==='day'?revDay():m==='month'?revDaily():revSix()}
 function revDay(){
   const t=today(),d=P().allPayments||P().payDates?(UI.dashPayDay||t):t,pays=payList().filter(([,x])=>x.date===d);
@@ -872,18 +872,23 @@ function revDaily(){
   const kfmt=v=>v>=1e6?(v/1e6).toFixed(v%1e6?1:0)+'M':v>=1e3?Math.round(v/1e3)+'k':String(v);
   const grid=[0,.25,.5,.75,1].map(f=>{const v=f*nice,yv=y(v);/*daily*/return `<line x1="${l}" x2="${W-r}" y1="${yv}" y2="${yv}" style="stroke:var(--line)" stroke-width="1"/><text x="${l-8}" y="${yv+4}" text-anchor="end" style="fill:var(--muted);font:11px var(--mono)">${kfmt(v)}</text>`}).join('');
   const bars=ds.map((d,i)=>{const x=l+i*cw+(cw-bw)/2,cx=x+bw/2,yv=y(d.v),h=Math.max(0,H-b-yv),isT=d.k===td,wd=parse(d.k).toLocaleDateString('en-GB',{weekday:'short'}).slice(0,2),sun=parse(d.k).getDay()===0;
-    return `${d.v?`<rect x="${x}" y="${yv}" width="${bw}" height="${h}" rx="2" style="fill:var(--brand);opacity:${isT?1:.6}"><title>${fmtDay(d.k)}: ${L(d.v)}</title></rect><text x="${cx}" y="${yv-6}" text-anchor="middle" style="fill:var(--ink);font:500 10px var(--mono)">${kfmt(d.v)}</text>`:''}<text x="${cx}" y="${H-22}" text-anchor="middle" style="fill:${isT?'var(--ink)':'var(--muted)'};font:${isT?700:500} 11px var(--mono)">${d.d}</text><text x="${cx}" y="${H-8}" text-anchor="middle" style="fill:${sun?'var(--bad)':'var(--muted)'};font:400 9px var(--body)">${wd}</text>`}).join('');
+    const selD=UI.chDay===d.k;return `<g data-chday="${d.k}" style="cursor:pointer"><rect x="${l+i*cw}" y="${t}" width="${cw}" height="${H-t}" style="fill:${selD?'var(--accent-soft)':'transparent'}"></rect>${d.v?`<rect x="${x}" y="${yv}" width="${bw}" height="${h}" rx="2" style="fill:var(--brand);opacity:${isT||selD?1:.6}"><title>${fmtDay(d.k)}: ${L(d.v)}</title></rect><text x="${cx}" y="${yv-6}" text-anchor="middle" style="fill:var(--ink);font:500 10px var(--mono)">${kfmt(d.v)}</text>`:''}<text x="${cx}" y="${H-22}" text-anchor="middle" style="fill:${isT?'var(--ink)':'var(--muted)'};font:${isT?700:500} 11px var(--mono)">${d.d}</text><text x="${cx}" y="${H-8}" text-anchor="middle" style="fill:${sun?'var(--bad)':'var(--muted)'};font:400 9px var(--body)">${wd}</text></g>`}).join('');
   const total=ds.reduce((s,d)=>s+d.v,0),open=ds.filter(d=>d.v>0),best=open.reduce((a,d)=>d.v>(a?.v||0)?d:a,null);
   const name=new Date(yy,mm-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
   return `<section class="panel"><header><div><h2>Daily sales · ${esc(name)}</h2></div>
     <div class="toolbar"><button class="btn sm" data-act="cm-1" aria-label="Previous month">←</button><button class="btn sm" data-act="cm1" aria-label="Next month" ${mk>=td.slice(0,7)?'disabled':''}>→</button>${chartToggle()}</div></header>
     <div class="months" style="margin-bottom:12px">${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((n,i)=>{const k=yy+'-'+pad(i+1),v=Object.values(S.payments).filter(x=>(x.date||'').startsWith(k)).reduce((a,x)=>a+(+x.amount||0),0);return `<button class="mon ${k===mk?'on':''} ${k===td.slice(0,7)?'cur':''}" data-chm="${k}" ${k>td.slice(0,7)?'disabled':''}><span>${n}</span><b class="num">${v?kfmt(v):'\u2014'}</b></button>`}).join('')}</div>
     <p class="muted" style="margin:-4px 0 10px"><b class="num" style="color:var(--ink)">${L(total)}</b> total in ${esc(name)}</p>
-    <div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:820px;height:auto;display:block" role="img" aria-label="Daily sales for ${esc(name)}">${grid}${bars}</svg></div></section>`;
+    <div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:820px;height:auto;display:block" role="img" aria-label="Daily sales for ${esc(name)}">${grid}${bars}</svg></div>
+    ${UI.chDay&&UI.chDay.startsWith(mk)?daySales(UI.chDay):'<p class="muted" style="margin:6px 0 0;font-size:.8rem">Tap a day to see its sales.</p>'}</section>`;
 }
+function daySales(k){const pays=payList().filter(([,x])=>x.date===k),tot=pays.reduce((a,[,x])=>a+(+x.amount||0),0);
+  const nm=x=>x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'Product':(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'));
+  return `<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><b>${esc(fmtLong(k))}</b><span><b class="num">${L(tot)}</b> <span class="muted">· ${pays.length} sale${pays.length===1?'':'s'}</span> <button class="xbtn" data-act="chdayx" aria-label="Close">×</button></span></div>
+  ${pays.length?`<div class="rows">${pays.map(([,x])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr) auto;padding:6px 0"><span class="t" style="font-size:.8rem">${x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}</span><div style="min-width:0;font-size:.88rem"><b>${esc(nm(x))}</b> <span class="muted">· ${esc(planName(x.item)||x.item)} · ${esc(x.unpaid?'Unpaid':x.method)}</span>${+x.owed>0?` <span class="pill bad">Owes ${L(x.owed)}</span>`:''}${x.note?`<div class="muted" style="font-size:.78rem">✎ ${esc(x.note)}</div>`:''}</div><span class="num" style="font-weight:600">${L(x.amount)}</span></div>`).join('')}</div>`:'<div class="muted" style="font-size:.85rem">No sales this day.</div>'}</div>`}
 function revSix(){
   const now=new Date(),ms=[];
-  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);ms.push({k:ymd(d).slice(0,7),n:d.toLocaleDateString('en-GB',{month:'short'})})}
+  const yr=now.getFullYear();for(let i=0;i<12;i++){const d=new Date(yr,i,1);ms.push({k:ymd(d).slice(0,7),n:d.toLocaleDateString('en-GB',{month:'short'})})}
   const pays=Object.values(S.payments);
   ms.forEach(m=>m.v=pays.filter(x=>(x.date||'').startsWith(m.k)).reduce((s,x)=>s+(+x.amount||0),0));
   const max=Math.max(...ms.map(m=>m.v));
@@ -891,15 +896,14 @@ function revSix(){
   const W=600,H=230,l=52,r=8,t=22,b=28,cw=(W-l-r)/ms.length,bw=Math.min(56,cw*.56),y=v=>t+(H-t-b)*(1-v/nice);
   const kfmt=v=>v>=1e6?(v/1e6).toFixed(v%1e6?1:0)+'M':v>=1e3?Math.round(v/1e3)+'k':String(v);
   const grid=[0,.25,.5,.75,1].map(f=>{const v=f*nice,yy=y(v);return `<line x1="${l}" x2="${W-r}" y1="${yy}" y2="${yy}" style="stroke:var(--line)" stroke-width="1"/><text x="${l-8}" y="${yy+4}" text-anchor="end" style="fill:var(--muted);font:11px var(--mono)">${kfmt(v)}</text>`}).join('');
-  const bars=ms.map((m,i)=>{const x=l+i*cw+(cw-bw)/2,yy=y(m.v),h=Math.max(0,H-b-yy),cur=i===ms.length-1;
-    return `<rect x="${x}" y="${yy}" width="${bw}" height="${h}" rx="3" style="fill:var(--brand);opacity:${cur?1:.5}"><title>${m.n}: ${L(m.v)}</title></rect>
+  const bars=ms.map((m,i)=>{const x=l+i*cw+(cw-bw)/2,yy=y(m.v),h=Math.max(0,H-b-yy),cur=m.k===ymd(now).slice(0,7);
+    return `<g data-chm="${m.k}" style="cursor:pointer"><rect x="${l+i*cw}" y="${t}" width="${cw}" height="${H-t}" style="fill:transparent"></rect><rect x="${x}" y="${yy}" width="${bw}" height="${h}" rx="3" style="fill:var(--brand);opacity:${cur?1:.5}"><title>${m.n}: ${L(m.v)}</title></rect>
     ${m.v?`<text x="${x+bw/2}" y="${yy-6}" text-anchor="middle" style="fill:var(--ink);font:500 11px var(--mono)">${kfmt(m.v)}</text>`:''}
-    <text x="${x+bw/2}" y="${H-8}" text-anchor="middle" style="fill:${cur?'var(--ink)':'var(--muted)'};font:${cur?600:400} 12px var(--body)">${m.n}</text>`}).join('');
-  const total=ms.reduce((s,m)=>s+m.v,0),cur=ms[5].v,prev=ms[4].v;
-  const chg=prev?Math.round((cur-prev)/prev*100):null;
-  return `<section class="panel"><header><div><h2>Monthly sales</h2><span class="muted">Last 6 months · ${L(total)} total</span></div>
-    <div class="toolbar">${chg!==null?`<span class="pill ${chg>=0?'ok':'warn'}">${chg>=0?'+':''}${chg}% vs ${ms[4].n} so far</span>`:''}${chartToggle()}</div></header>
-    <div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:420px;height:auto;display:block" role="img" aria-label="Monthly sales, last 6 months">${grid}${bars}</svg></div></section>`;
+    <text x="${x+bw/2}" y="${H-8}" text-anchor="middle" style="fill:${cur?'var(--ink)':'var(--muted)'};font:${cur?600:400} 12px var(--body)">${m.n}</text></g>`}).join('');
+  const total=ms.reduce((s,m)=>s+m.v,0);
+  return `<section class="panel"><header><div><h2>Monthly sales</h2><span class="muted">${yr} · ${L(total)} total · tap a month to open it</span></div>
+    <div class="toolbar">${chartToggle()}</div></header>
+    <div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:420px;height:auto;display:block" role="img" aria-label="Monthly sales ${yr}">${grid}${bars}</svg></div></section>`;
 }
 
 /* --- Schedule --- */
@@ -1611,7 +1615,7 @@ document.addEventListener('click',async e=>{
   if(e.target.classList&&e.target.classList.contains('tltrack')&&e.target.dataset.tadd!=null&&P().editClasses){
     const r=e.target.getBoundingClientRect(),m=TL0+(e.target.dataset.vert?(e.clientY-r.top)/r.height:(e.clientX-r.left)/r.width)*(TL1-TL0),mm=Math.max(TL0,Math.min(TL1-30,Math.round(m/30)*30));
     classForm(null,{date:UI.schedDay||today(),time:pad(Math.floor(mm/60))+':'+pad(mm%60),instructor:e.target.dataset.tadd});return}
-  const t=e.target.closest('button,[data-close],tr[data-client],.rowlink,g[data-fy],g[data-fmon]');if(!t)return;
+  const t=e.target.closest('button,[data-close],tr[data-client],.rowlink,g[data-fy],g[data-fmon],g[data-chday],g[data-chm]');if(!t)return;
   if(t.matches('[data-close]')&&(t.classList.contains('overlay')?e.target===t:true)){closeModal();return}
   if(t.classList.contains('overlay'))return;
   const ds=t.dataset;
@@ -1626,6 +1630,7 @@ document.addEventListener('click',async e=>{
   if(ds.pm){UI.payMode=ds.pm;render();return}
   if(ds.pmonth){UI.payMode='month';UI.payDay=ds.pmonth+'-01';render();return}
   if(ds.cm){UI.chartMode=ds.cm;render();return}
+  if(ds.chday){UI.chDay=UI.chDay===ds.chday?null:ds.chday;render();return}
   if(ds.chm){UI.chartMode='month';UI.chartMonth=ds.chm;render();return}
   if(ds.sv){UI.schedView=ds.sv;render();return}
   if(ds.fcm){UI.finChartMode=ds.fcm;render();return}
@@ -1690,6 +1695,7 @@ document.addEventListener('click',async e=>{
     case'finexcel':exportFinances();break;
     case'ppadd':productModal(null);break;
     case'ppeditsel':{const v=($('#ppProd')||{}).value;if(v)productModal(v);break}
+    case'chdayx':UI.chDay=null;render();break;
     case'debtall':UI.debtAll=!UI.debtAll;render();break;
     case'discseed':{t.disabled=true;await save(seedDisc);break}
     case'cledit':{const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='';t.remove();f.querySelector('#clName')?.focus()}break}
