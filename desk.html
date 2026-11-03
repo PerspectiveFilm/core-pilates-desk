@@ -1851,7 +1851,12 @@ document.addEventListener('submit',async e=>{
     if($('#clLeft')&&UI.role==='owner')d.credits=(+$('#clLeft').value||0)+(id&&d.packageStart===S.clients[id]?.packageStart?usedOf(id):0);
     if($('#clPType')&&UI.role==='owner'){const t=$('#clPType').value,n=+$('#clPN').value||0;d.plan=t?t+(n?' \u00b7 '+n:''):'';if(t)d.active=true}
     const gsel=$('#clGrp')?$('#clGrp').value:null;
-    if(id){if(await save(async()=>{await store.upd('clients',id,d);if(gsel!==null&&gsel!==grpOf(id))await setClientGroup(id,gsel)},'Client saved'))closeModal()}
+    let saleMsg='';
+    if(id&&UI.role==='owner'){const old=S.clients[id],m=pkgSale(old),np=d.plan!==undefined?d.plan:old.plan,ns=d.packageStart||old.packageStart;
+      if(m&&np&&(np!==old.plan||ns!==old.packageStart)){const x=m.x,pid=Object.keys(S.payments).find(k=>S.payments[k]===x);if(pid){const tm=x.ts?new Date(x.ts).toTimeString().slice(0,5):'12:00';d.__sale={pid,nx:{...x,item:np,date:ns,ts:new Date(ns+'T'+tm+':00').getTime()||x.ts,editedBy:UI.role,editedAt:Date.now()}};saleMsg=' \u2014 sale on Payments updated too'}}
+      else if(!m&&np&&(np!==old.plan||ns!==old.packageStart))saleMsg=' \u2014 no sale found for this package, record it on Payments'}
+    const sx=d.__sale;delete d.__sale;
+    if(id){if(await save(async()=>{await store.upd('clients',id,d);if(sx)await store.set('payments',sx.pid,sx.nx);if(gsel!==null&&gsel!==grpOf(id))await setClientGroup(id,gsel)},'Client saved'+saleMsg))closeModal()}
     else{const nid=uid();if(await save(async()=>{await store.set('clients',nid,{credits:0,plan:'',...d,joined:today()});if(gsel)await setClientGroup(nid,gsel)},'Client added')){const pt=UI.pickTarget;UI.pickTarget=null;if(pt&&document.getElementById(pt)){closeModal();const el=document.getElementById(pt);el.value=d.name;setTimeout(()=>{const e2=document.getElementById(pt);if(e2){e2.value=d.name;cpHint(e2)}},400)}else clientModal(nid)}}
   }
   if(f.id==='staffForm'){
