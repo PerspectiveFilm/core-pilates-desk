@@ -465,21 +465,24 @@ const clientName=id=>S.clients[id]?.name||'Walk-in';
 const classesOn=d=>Object.entries(S.classes).filter(([,c])=>c.date===d&&(UI.role!=='trainer'||c.instructor===UI.trainer)).sort((a,b)=>a[1].time.localeCompare(b[1].time));
 const isUnl=c=>c&&c.unlimitedUntil&&c.unlimitedUntil>=today();
 let _uc=null;
-function usage(){if(_uc)return _uc;const m=new Map(),idx={},now=Date.now();for(const [id,c] of Object.entries(S.clients))m.set(c,id);
+function usage(){if(_uc)return _uc;const m=new Map(),idx={},now=Date.now();for(const [id,c] of Object.entries(S.clients))m.set(c,id);const paid={};for(const x of Object.values(S.payments))if(x.client&&x.kind==='package'&&x.date)(paid[x.client]??=[]).push(x);
   for(const cl of Object.values(S.classes)){const end=new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000;
     for(const b of cl.booked||[]){const c=S.clients[b.c];if(!c)continue;if(c.packageStart&&cl.date<c.packageStart)continue;if(b.burn||end<now)idx[b.c]=(idx[b.c]||0)+1}}
-  return _uc={m,idx}}
+  return _uc={m,idx,paid}}
 const usedOf=id=>usage().idx[id]||0;
 const leftOf=c=>{const id=usage().m.get(c);return (+c.credits||0)-(id?usedOf(id):0)};
 const isDone=(cl,b)=>!b.burn&&new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000<Date.now();
 function leftCell(c){const n=leftOf(c);return `<span style="color:${n<=0?'var(--bad)':n<=2?'var(--warn)':'inherit'};font-weight:600">${n}</span>`}
-function clientFlags(c){const f=[];
+function clientFlags(c){const f=[];if(c&&c.plan&&c.expires&&c.expires>=today()&&!pkgPaid(c))f.push({k:'nosale',txt:'No sale for this package',cls:'bad'});
   if(c.expires&&c.expires<today())f.push({k:'expired',txt:'Package expired',cls:'bad'});
   else if(c.expires&&daysBetween(today(),c.expires)<5)f.push({k:'exp',txt:'Expires soon',cls:'warn'});
   if(c.plan&&leftOf(c)<=0)f.push({k:'low',txt:'No sessions left',cls:'bad'});
   return f}
 function clientStatus(c){return clientFlags(c)[0]||{k:'ok',txt:'Active',cls:'ok'}}
-const isActC=c=>!!(c&&c.plan&&c.expires&&c.expires>=today());
+const PAY_WINDOW=21;const normPlan=t=>String(t||'').toLowerCase().replace(/\s+/g,' ').trim();
+const pkgSale=c=>{if(!c||!c.plan||!c.packageStart)return null;const u=usage(),id=u.m.get(c);if(!id)return null;const ps=u.paid[id]||[],pl=normPlan(c.plan);let best=null;for(const x of ps){if(normPlan(x.item)!==pl)continue;const dd=Math.abs(daysBetween(c.packageStart,x.date));if(dd<=PAY_WINDOW&&(!best||dd<best.dd))best={x,dd}}return best};
+const pkgPaid=c=>!!pkgSale(c);
+const isActC=c=>!!(c&&c.plan&&c.expires&&c.expires>=today()&&pkgPaid(c));
 const flagPills=(c,noNum)=>{const f=clientFlags(c).filter(x=>!(noNum&&x.k==='low'));return f.length?f.map(x=>x.k==='low'?`<span class="leftnum" title="Sessions left">${leftOf(c)||0}</span>`:`<span class="pill ${x.cls}">${esc(x.txt)}</span>`).join(' '):(clientFlags(c).length?'':isActC(c)?'<span class="pill ok">Active</span>':'<span class="pill">Not active</span>')};
 function lastVisit(cid){
   let best='';for(const c of Object.values(S.classes))for(const b of c.booked||[])if(b.c===cid&&isDone(c,b)&&c.date>best)best=c.date;return best;
@@ -582,7 +585,7 @@ function pDash(){
   const pays=payList().map(x=>x[1]);
   const revToday=pays.filter(x=>x.date===d).reduce((s,x)=>s+(+x.amount||0),0);
   const mon=d.slice(0,7),revMonth=pays.filter(x=>(x.date||'').startsWith(mon)).reduce((s,x)=>s+(+x.amount||0),0);
-  const ago30=addDays(d,-30);const alerts=Object.entries(S.clients).map(([id,c])=>({id,c,s:clientStatus(c)})).filter(x=>x.s.k!=='ok'&&!(x.c.expires&&x.c.expires<ago30)&&!(!x.c.expires&&x.s.k==='low')).sort((a,b)=>(a.c.expires||'').localeCompare(b.c.expires||'')).reverse();
+  const ago30=addDays(d,-30);const alerts=Object.entries(S.clients).map(([id,c])=>({id,c,s:clientStatus(c)})).filter(x=>x.s.k!=='ok'&&x.s.k!=='nosale'&&!(x.c.expires&&x.c.expires<ago30)&&!(!x.c.expires&&x.s.k==='low')).sort((a,b)=>(a.c.expires||'').localeCompare(b.c.expires||'')).reverse();
   const isEmpty=!Object.keys(S.clients).length&&!Object.keys(S.classes).length;
   const defaultPins=!FB&&UI.role==='owner'&&!S.settings.pins;
   const hasDemo=[S.clients,S.classes,S.staff,S.payments].some(o=>Object.values(o).some(x=>x.demo));
@@ -1105,7 +1108,7 @@ function pClients(){
   if(q)list=list.filter(x=>(x.c.name+' '+(x.c.phone||'')+' '+(x.c.email||'')+' '+((x.c.form||{}).medical||'')+' '+natName(x.c.nationality)+' '+(x.c.source||'')+' '+discLabel(x.c)).toLowerCase().includes(q));
   if(f==='active')list=list.filter(x=>isActC(x.c));else if(f!=='all')list=list.filter(x=>clientFlags(x.c).some(g=>g.k===f));
   list.sort((a,b)=>a.c.name.localeCompare(b.c.name));
-  const chips=[['active','Active ('+Object.values(S.clients).filter(isActC).length+')'],['all','All'],['exp','Expires soon'],['expired','Expired']];
+  const nos=Object.values(S.clients).filter(c=>clientFlags(c).some(g=>g.k==='nosale')).length;const chips=[['active','Active ('+Object.values(S.clients).filter(isActC).length+')'],['all','All'],['exp','Expires soon'],['expired','Expired'],...(nos?[['nosale','No sale ('+nos+')']]:[])];
   return `<div class="pagehead"><div><div class="eyebrow">${Object.keys(S.clients).length} clients</div><h1>Clients</h1></div>
     <button class="btn primary" data-act="addclient">New client</button></div>
     ${UI.role==='owner'&&!S.settings.disc2026&&Object.keys(S.clients).some(id=>DISC_SEED[id])?`<div class="banner info"><span>Add discounts from the trainer sheets: ${Object.keys(DISC_SEED).length} clients (Loyalty 10%, Influencer 30%, Other 5% / 20%).</span><button class="btn sm primary" data-act="discseed">Add discounts</button></div>`:''}
