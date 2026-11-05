@@ -541,7 +541,7 @@ let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id
 function render(){
   _uc=null;
   const ae=document.activeElement,fid=ae&&ae.id,sel=ae&&'selectionStart' in ae?[ae.selectionStart,ae.selectionEnd]:null;
-  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sGrp,#sAmt,#sMethod,#sMethod_cash,#sMethod_card,#sDate,#sNote,#ppClient,#ppProd,#ppQty,#ppAmt,#ppMethod,#ppMethod_cash,#ppMethod_card,#ppDate,#ppNote').forEach(el=>{if('value' in el)keep[el.id]=el.value});
+  const keep={};document.querySelectorAll('#root [id^="qs"],#sClient,#sProd,#sGrp,#sAmt,#sMethod,#sMethod_cash,#sMethod_card,#sNote,#ppClient,#ppProd,#ppQty,#ppAmt,#ppMethod,#ppMethod_cash,#ppMethod_card,#ppNote').forEach(el=>{if('value' in el)keep[el.id]=el.value});
   $('#root').innerHTML=UI.role?shell():login();
   if(!UI.qsReset)for(const k in keep){const el=document.getElementById(k);if(el){el.value=keep[k];if(el.dataset.cpick)cpHint(el)}}UI.qsReset=false;
   if(fid){const el=document.getElementById(fid);if(el&&el!==document.body){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch{}}}
@@ -1779,7 +1779,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   {const t=e.target;if(t.checked&&/^rf(Med|Past|Pain)$/.test(t.name))document.querySelectorAll(`input[name=${t.name}]`).forEach(x=>{if(x!==t&&(t.value==='None'||x.value==='None'))x.checked=false})}
-  if(e.target.id==='payDay'&&e.target.value){UI.payDay=e.target.value;render()}
+  if((e.target.id==='payDay'||e.target.id==='sDate'||e.target.id==='ppDate')&&e.target.value&&UI.page==='pay'){UI.payDay=e.target.value;render()}
   if(e.target.id==='schedDate'&&e.target.value){UI.schedDay=e.target.value;UI.week=monday(e.target.value);render()}
   if(e.target.id==='fxCad'&&+e.target.value>0){save(()=>store.set('settings','fx',{cad:+e.target.value}))}
   if(e.target.classList.contains('cell')&&e.target.dataset.fr!=null){
