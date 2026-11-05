@@ -391,7 +391,10 @@ const PRODUCTS=[
 ];
 function shortPkg(s){return String(s||'').replace(/\s*\([^)]*\)/g,'').replace(/(\d+)\s*sessions?\b/gi,'$1').replace(/(\d+)\s+S\b/g,'$1')}
 PRODUCTS.forEach(x=>{x.d=x.n;x.n=shortPkg(x.n)});
-const PKGS=()=>PRODUCTS.filter(x=>x.k!=='other');
+const customPkgs=()=>Object.entries((typeof S!=='undefined'&&S.products)||{}).filter(([,d])=>d&&d.kind==='pkg'&&!d.hidden&&d.type).map(([id,d])=>{const unl=!!d.unl,n=unl?0:Math.max(1,+d.sessions||1);const nm=(d.type+' \u00b7 '+(unl?'Unlimited':n))+(d.label?' ('+d.label+')':'');return{g:'Custom packages',k:'cp_'+id,id,n:shortPkg(nm),d:nm,p:+d.price||0,c:n,unl,days:+d.days||(n>=36?97:37),custom:true}});
+const ALLP=()=>[...PRODUCTS,...customPkgs()];
+const findP=k=>ALLP().find(x=>x.k===k);
+const PKGS=()=>ALLP().filter(x=>x.k!=='other');
 const PKG_TYPES=['Private','Duet','Trio','Four','Clinic','Semi private','Yoga','Mat Pilates','Pilates for Pregnancy','Pilates for Scoliosis','Single session'];
 const CLASS_TYPES=['Personal Training','Duo Training','Semi Pilates','Yoga','Mat Pilates','Pilates for Pregnancy','Pilates for Scoliosis','Assessment'];
 const TYPE_ALIAS={'Private':'Personal Training','Duo':'Duo Training','Reformer Group':'Semi Pilates','Small group PT':'Semi Pilates'};
@@ -1015,7 +1018,7 @@ function settleModal(id){const x=S.payments[id];if(!x)return;
 const SHOP_DEFAULT=[['Water',80],['Socks',1500],['Protein Bar',300],['Crispy Wafer',350],['Wafer Matcha',350],['Energy Mix',450],['Drink Desire',480],['Drink Happy',480],['Drink Booster',480],['Drink After Party',480],['Drink Still',280],['Lofoten Still Water',460],['Popped Chips',250],['Brownie',300],['Pop Roll',200],['Gooey Filled',300],['Ginger Shot',300],['Nut Fruit',400],['Impakt Bar',300],['Pivo Leggings',2500],['Pivo Crop',1000]];
 const shopId=n=>'pd_'+String(n).toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
 function shopList(){const o={};SHOP_DEFAULT.forEach(([n,p],i)=>o[shopId(n)]={name:n,price:p,ord:i});for(const[id,d]of Object.entries(S.products||{}))o[id]={...(o[id]||{ord:1000}),...d};
-  return Object.entries(o).filter(([,d])=>!d.hidden&&d.name).sort((a,b)=>(a[1].ord??1000)-(b[1].ord??1000)||a[1].name.localeCompare(b[1].name))}
+  return Object.entries(o).filter(([,d])=>!d.hidden&&d.name&&d.kind!=='pkg').sort((a,b)=>(a[1].ord??1000)-(b[1].ord??1000)||a[1].name.localeCompare(b[1].name))}
 function ppPrice(){const d=Object.fromEntries(shopList())[($('#ppProd')||{}).value];return d?(+d.price||0)*Math.max(1,+(($('#ppQty')||{}).value)||1):0}
 function productPanel(){const list=shopList();
   return `<section class="panel"><header><div><h2>Sell a product</h2><span class="muted">Type the client\u2019s name, or tap Walk-in</span></div><div class="toolbar"><button type="button" class="btn sm" data-act="ppeditsel">Edit product</button><button type="button" class="btn sm" data-act="ppadd">+ Add product</button></div></header>
@@ -1030,6 +1033,17 @@ function productPanel(){const list=shopList();
       <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record product sale</button></div>
     </form></section>`}
 function ppSync(){const a=$('#ppAmt');if(!a)return;const t=ppPrice();if(!(UI.amtManual||{}).ppAmt)a.value=t;const h=$('#ppAmt_hint'),v=+a.value||0;if(h){if(t&&v<t){h.textContent=L(t-v)+' goes to Debtors';h.className='cphint new'}else{h.textContent='';h.className='cphint'}}}
+function pkgModal(id){const d=id?S.products[id]:{type:'Private',sessions:8,price:'',days:37,unl:false,label:''};
+  openModal(`<header><div><div class="eyebrow">${id?'Edit package':'New package'}</div><h2>${id?esc(d.type+' · '+(d.unl?'Unlimited':d.sessions)):'New package'}</h2></div><button class="x" data-close aria-label="Close">×</button></header>
+  <form class="form" id="pkgForm" data-id="${id||''}">
+    <div class="field"><label for="pkType">Type</label><select id="pkType">${[...new Set([d.type,...PKG_TYPES])].filter(Boolean).map(t=>`<option ${t===d.type?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
+    <div class="field"><label for="pkN">Sessions</label><input id="pkN" type="number" min="1" step="1" value="${d.unl?'':esc(d.sessions||'')}" ${d.unl?'disabled':''}></div>
+    <div class="field"><label class="trchk" style="margin-top:22px"><input type="checkbox" id="pkUnl" ${d.unl?'checked':''}> Unlimited sessions</label></div>
+    <div class="field"><label for="pkPrice">Price (Lek)</label><input id="pkPrice" type="number" min="0" step="any" value="${esc(d.price??'')}"></div>
+    <div class="field"><label for="pkDays">Valid for (days)</label><input id="pkDays" type="number" min="1" step="1" value="${esc(d.days||37)}"></div>
+    <div class="field"><label for="pkLabel">Label (optional)</label><input id="pkLabel" value="${esc(d.label||'')}" placeholder="e.g. Black Friday"></div>
+    <div class="field wide"><span class="muted" style="font-size:.8rem">It appears in the package list under “Custom packages” and works like any other package.</span><div class="actions" style="margin-top:8px">${id?`<button type="button" class="btn danger" data-pkdel="${id}" style="margin-right:auto">Remove package</button>`:''}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save package</button></div></div>
+  </form>`)}
 function productModal(id){const d=id?Object.fromEntries(shopList())[id]:{name:'',price:''};
   openModal(`<header><h2>${id?'Edit product':'Add product'}</h2><button class="x" data-close aria-label="Close">×</button></header>
   <form class="form" id="prodForm" data-id="${id||''}"><div class="field"><label for="pdName">Name</label><input id="pdName" value="${esc(d.name||'')}" placeholder="e.g. Yoga mat"></div><div class="field"><label for="pdPrice">Price (Lek)</label><input id="pdPrice" type="number" min="0" step="any" value="${esc(d.price??'')}"></div>
@@ -1065,12 +1079,12 @@ const discLabel=c=>discOf(c)?DISC[c.discType][0]+' '+discOf(c)+'%':'';
 const DISC_SEED={"cx_237ee0c555":10,"cx_4291871c32":5,"cx_9647339dc6":10,"cx_4928891acb":10,"cx_d9ad31d95f":10,"cx_e7b67ae698":10,"cx_690f98b101":10,"cx_d12bd44d08":10,"cx_2eb2e2eebc":5,"cx_35e1b26e0f":10,"cx_627d989aed":10,"cx_be2064665b":10,"cx_a85a3fed5c":10,"cx_a73f77d922":10,"cx_b9a224a67a":10,"cx_8d5f294f14":10,"cx_fd26e1abd6":30,"cx_2c55eab64d":10,"cx_e03ed762af":10,"cx_0a6b5ae43e":10,"cx_856c06ac63":10,"cx_67704b58ce":10,"cx_1c231fb3c2":10,"cx_ad6ef58967":10,"cx_0cf8076f49":10,"cx_6e5c9c7f39":10,"cx_7e6c9fada0":10,"cx_a39276fea4":20,"cx_9f31685669":10,"cx_aa902a5223":10,"cx_e404648e87":10,"cx_bb4f100cf2":10,"cx_dea28b34b4":10};
 async function seedDisc(){let n=0;for(const[id,pct]of Object.entries(DISC_SEED)){const c=S.clients[id];if(!c||c.discType)continue;const d=pct===10?{discType:'loyalty'}:pct===30?{discType:'influencer'}:{discType:'other',discPct:pct};await store.upd('clients',id,d);n++}
   await store.set('settings','disc2026',{done:true,at:Date.now(),count:n});toast('Discounts added to '+n+' clients')}
-function fullPrice(cid,pid){const ci=$('#'+cid),pi=$('#'+pid);if(!pi)return 0;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return 0;const id=ci?findClient(ci.value.trim()):null,pct=id?discOf(S.clients[id]):0;return Math.round(pr.p*(1-pct/100)/100)*100}
+function fullPrice(cid,pid){const ci=$('#'+cid),pi=$('#'+pid);if(!pi)return 0;const pr=findP(pi.value);if(!pr)return 0;const id=ci?findClient(ci.value.trim()):null,pct=id?discOf(S.clients[id]):0;return Math.round(pr.p*(1-pct/100)/100)*100}
 function amtHint(cid,pid,aid){const h=$('#'+aid+'_hint'),ai=$('#'+aid);if(!h||!ai)return;const full=fullPrice(cid,pid),v=+ai.value||0;
   if(!full||ai.value===''){h.textContent='';h.className='cphint';return}
   if(v<full){h.textContent=L(full-v)+' goes to Debtors';h.className='cphint new'}else{h.textContent='Full price '+L(full);h.className='cphint ok'}}
 function grpVis(pid,fid,gid,cid){const pi=$('#'+pid),f=$('#'+fid);if(!pi||!f)return;const on=isGrpProd(pi.value)&&Object.keys(S.groups||{}).length;f.style.display=on?'':'none';const g=$('#'+gid),c=$('#'+cid);if(on&&g&&c&&!g.value){const id=findClient(c.value.trim());if(id&&grpOf(id))g.value=grpOf(id)}}
-function applyDisc(cid,pid,aid,fromClient){if(pid==='qsProd')grpVis('qsProd','qsGrpF','qsGrp','qsClient');if(pid==='sProd')grpVis('sProd','sGrpF','sGrp','sClient');const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const M=UI.amtManual||(UI.amtManual={});if(fromClient&&M[aid]){amtHint(cid,pid,aid);return}M[aid]=0;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
+function applyDisc(cid,pid,aid,fromClient){if(pid==='qsProd')grpVis('qsProd','qsGrpF','qsGrp','qsClient');if(pid==='sProd')grpVis('sProd','sGrpF','sGrp','sClient');const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const M=UI.amtManual||(UI.amtManual={});if(fromClient&&M[aid]){amtHint(cid,pid,aid);return}M[aid]=0;const pr=findP(pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
 function cpHint(el){const h=document.getElementById(el.id+'_hint');if(!h)return;const v=el.value.trim();
   if(!v){h.textContent='';h.className='cphint';return}
   if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+(leftOf(c)===Infinity?'unlimited':leftOf(c))+' left'+(discOf(c)?' \u00b7 '+discLabel(c):'');h.className='cphint ok'}
@@ -1153,7 +1167,7 @@ function pPay(){
   const clientsSorted=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name));
   return `<div class="pagehead"><div><div class="eyebrow">${esc(title)}</div><h1>Payments</h1></div>
     ${p.allPayments?`<div class="toolbar"><div class="chips">${[['day','Day'],['month','Month'],['year','Year']].map(([k,n])=>`<button class="chip" data-pm="${k}" aria-pressed="${pm===k}">${n}</button>`).join('')}</div><button class="btn" data-act="pd-1" aria-label="Previous">←</button>${pm==='day'?`<input type="date" id="payDay" value="${d}" style="width:auto">`:`<b style="min-width:120px;text-align:center">${esc(title)}</b>`}<button class="btn" data-act="pd1" aria-label="Next">→</button></div>`:p.payDates?`<div class="toolbar"><button class="btn" data-act="pd-1" aria-label="Previous day" ${d<='2026-01-01'?'disabled':''}>←</button><input type="date" id="payDay" value="${d}" min="2026-01-01" max="${today()}" style="width:auto"><button class="btn" data-act="pd1" aria-label="Next day" ${d>=today()?'disabled':''}>→</button>${d!==today()?'<button class="btn" data-act="pdtoday">Today</button>':''}</div>`:''}</div>
-  <section class="panel"><header><h2>Record a sale</h2><span class="muted">Packs update the client’s package automatically</span></header>
+  <section class="panel"><header><div><h2>Record a sale</h2><span class="muted">Packs update the client’s package automatically</span></div>${UI.role==='owner'||UI.role==='reception'?'<div class="toolbar"><button type="button" class="btn sm" data-act="pkgedit">Edit package</button><button type="button" class="btn sm" data-act="pkgnew">+ New package</button></div>':''}</header>
     <form class="form" id="saleForm">
       ${clientPicker('sClient')}
       <div class="field"><label for="sProd">Item</label><select id="sProd">${[...new Set(PKGS().map(x=>x.g))].map(g=>`<optgroup label="${esc(g)}">${PKGS().filter(x=>x.g===g).map(x=>`<option value="${x.k}">${esc(x.d)}${x.p?' · '+L(x.p):''}</option>`).join('')}</optgroup>`).join('')}</select></div>
@@ -1563,7 +1577,7 @@ function undoPkgPatch(cid,prev){const c=S.clients[cid];if(!c)return null;
   if(!h)return{plan:'',packageStart:'',expires:'',credits:0,packages:[]};
   return{plan:h.plan||'',packageStart:h.start||'',expires:h.end||'',credits:(+h.left||0)+usedSince(cid,h.start),trainers:h.trainers&&h.trainers.length?h.trainers:(c.trainers||[]),packages:hist}}
 async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
-  const pr=PRODUCTS.find(x=>x.k===prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
+  const pr=findP(prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
   const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,method,by:UI.role};if(note&&note.trim())rec.note=note.trim();if(clientId&&(pr.c||pr.unl)&&S.clients[clientId]){const c0=S.clients[clientId];rec.prev={plan:c0.plan||'',packageStart:c0.packageStart||'',expires:c0.expires||'',credits:+c0.credits||0,unlimitedUntil:c0.unlimitedUntil||'',price:+c0.price||0,npk:(c0.packages||[]).length}}
   if(paid<total){rec.owed=total-paid;rec.total=total;if(!paid)rec.unpaid=true}
   const ok=await save(()=>store.set('payments',uid(),rec));
@@ -1576,7 +1590,7 @@ async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
     else if(pr.c){
       const hist=[...(c.packages||[])],left=c.plan&&!isUnl(c)?leftOf(c):0,still=c.plan&&left>0&&!(c.expires&&c.expires<d);
       if(c.plan)hist.push({plan:c.plan,start:c.packageStart||'',end:c.expires||'',left,trainers:c.trainers||[],closed:d,carried:still?left:0});
-      Object.assign(up,{packages:hist,packageStart:d,expires:pr.c>=36?(()=>{const x=parse(d);x.setMonth(x.getMonth()+(pr.c>=72?6:3));return addDays(ymd(x),7)})():addDays(d,37),credits:pr.c+(still?left:0),active:true,price:+amount||0});
+      Object.assign(up,{packages:hist,packageStart:d,expires:pr.custom?addDays(d,pr.days):pr.c>=36?(()=>{const x=parse(d);x.setMonth(x.getMonth()+(pr.c>=72?6:3));return addDays(ymd(x),7)})():addDays(d,37),credits:pr.c+(still?left:0),active:true,price:+amount||0});
     }
     if(pr.c||pr.unl)await save(()=>store.upd('clients',clientId,up));
   }
@@ -1685,6 +1699,7 @@ document.addEventListener('click',async e=>{
   if(ds.debtopen!=null){const op=UI.debtOpen||(UI.debtOpen={});op[ds.debtopen]=!op[ds.debtopen];render();return}
   if(ds.pphide){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Remove?';return}await save(()=>store.set('products',ds.pphide,{...(S.products[ds.pphide]||{}),name:Object.fromEntries(shopList())[ds.pphide]?.name||'',hidden:true}),'Product removed');closeModal();return}
   if(ds.undopkg){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Tap again to undo';return}const pt=undoPkgPatch(ds.undopkg,null);if(pt&&await save(()=>store.upd('clients',ds.undopkg,pt),'Package undone \u2014 previous package is active again'))clientModal(ds.undopkg);return}
+  if(ds.pkdel){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Tap again to remove';return}if(await save(()=>store.set('products',ds.pkdel,{...S.products[ds.pkdel],hidden:true}),'Package removed'))closeModal();return}
   if(ds.settle){settleModal(ds.settle);return}
   if(ds.editpay){if(P().editPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
@@ -1723,6 +1738,8 @@ document.addEventListener('click',async e=>{
     case'bkup':if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Replaces all data — tap again';break}restoreBackup();break;
     case'finexcel':exportFinances();break;
     case'ppadd':productModal(null);break;
+    case'pkgnew':pkgModal(null);break;
+    case'pkgedit':{const v=($('#sProd')||{}).value||'';if(v.startsWith('cp_'))pkgModal(v.slice(3));else toast('Pick one of your custom packages in the Item list first. Built-in packages can\u2019t be edited here.');break}
     case'ppwalk':{const c=$('#ppClient');if(c){c.value='Walk-in';c.focus()}break}
     case'ppeditsel':{const v=($('#ppProd')||{}).value;if(v)productModal(v);break}
     case'chdayx':UI.chDay=null;render();break;
@@ -1766,6 +1783,7 @@ document.addEventListener('change',e=>{
   if(e.target.id==='loginTrainer'){UI.loginTrainer=e.target.value}
   if(e.target.id==='bkType'){UI.bookType=e.target.value;UI.bookDate=$('#bkDate').value;UI.bookTime=$('#bkTime').value;render()}
   if(e.target.id==='qsProd'){applyDisc('qsClient','qsProd','qsAmt')}
+  if(e.target.id==='pkUnl'){const n=$('#pkN');if(n){n.disabled=e.target.checked;if(e.target.checked)n.value=''}}
   if(e.target.id==='ppProd'){if(UI.amtManual)UI.amtManual.ppAmt=0;ppSync()}
   if(e.target.id==='sProd'){applyDisc('sClient','sProd','sAmt')}
 });
@@ -1775,6 +1793,9 @@ document.addEventListener('submit',async e=>{
     const cap=Math.max(1,+$('#gCap').value||6),d={name:$('#gName').value.trim(),type:$('#gType').value,days,time:$('#gTime').value,dur:+$('#gDur').value||50,trainer:$('#gTr').value,cap,members};
     if(!d.name)d.name=d.type;if(members.length>cap){toast('This group has only '+cap+' spots.');return}
     if(await save(()=>store.set('groups',id,d),'Group saved'))closeModal();return}
+  if(f.id==='pkgForm'){const unl=$('#pkUnl').checked,n=Math.round(+$('#pkN').value||0),price=+$('#pkPrice').value,days=Math.round(+$('#pkDays').value||0);
+    if(!unl&&n<1){toast('Enter the number of sessions, or tick Unlimited.');return}if(!(price>=0)||$('#pkPrice').value===''){toast('Enter the price.');return}if(days<1){toast('Enter how many days it is valid.');return}
+    const id=f.dataset.id||('pk_'+uid());if(await save(()=>store.set('products',id,{kind:'pkg',type:$('#pkType').value,sessions:unl?0:n,unl,price,days,label:$('#pkLabel').value.trim(),hidden:false,by:UI.role}),'Package saved'))closeModal();return}
   if(f.id==='prodForm'){const name=$('#pdName').value.trim().replace(/\s+/g,' '),price=Math.max(0,+$('#pdPrice').value||0);if(!name){toast('Enter the product name.');return}
     const id=f.dataset.id||shopId(name);if(await save(()=>store.set('products',id,{...(S.products[id]||{}),name,price,hidden:false}),'Product saved'))closeModal();return}
   if(f.id==='ppForm'){const d0=Object.fromEntries(shopList())[$('#ppProd').value];if(!d0){toast('Choose a product.');return}
