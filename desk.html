@@ -1079,7 +1079,7 @@ function quickSaleRow(){
 </div>`;
 }
 function clientPicker(id){
-  return `<div class="field" style="position:relative"><label for="${id}">Client</label><input id="${id}" list="clientNames_${id}" autocomplete="off" placeholder="Type client name\u2026" data-cpick="1"><datalist id="clientNames_${id}">${Object.values(S.clients).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist><span class="cphint" id="${id}_hint"></span></div>`}
+  return `<div class="field" style="position:relative"><label for="${id}" style="display:flex;justify-content:space-between;align-items:center;gap:6px">Client <button type="button" class="linkbtn" data-newclient="${id}">+ New client</button></label><input id="${id}" list="clientNames_${id}" autocomplete="off" placeholder="Type client name\u2026" data-cpick="1"><datalist id="clientNames_${id}">${Object.values(S.clients).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist><span class="cphint" id="${id}_hint"></span></div>`}
 const findClient=n=>{n=String(n||'').trim().toLowerCase();if(!n)return null;const e=Object.entries(S.clients).find(([,c])=>c.name.trim().toLowerCase()===n);return e?e[0]:null};
 async function ensureClient(name){name=String(name||'').trim().replace(/\s+/g,' ');if(!name)return null;const ex=findClient(name);if(ex)return ex;
   const id=uid();const ok=await save(()=>store.set('clients',id,{name,phone:'',email:'',notes:'',credits:0,plan:'',joined:today()}));if(!ok)return null;toast('New client added: '+name);return id}
