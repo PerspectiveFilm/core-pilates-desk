@@ -840,7 +840,7 @@ function expSection(){
   const name=new Date(+sel.slice(0,4),+sel.slice(5)-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
   return `<section class="panel"><header><div><h2>Studio expenses</h2><span class="muted">${esc(name)}</span></div>
     <div class="toolbar"><button class="btn sm" data-act="em-1" aria-label="Previous month">\u2190</button><button class="btn sm" data-act="em1" aria-label="Next month" ${sel>=cur?'disabled':''}>\u2192</button><span class="num" style="font-size:1.15rem;font-weight:700">${L(tot)}</span></div></header>
-    ${sel===cur?`<form id="expForm" class="expadd"><select id="exCat" aria-label="Category">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id="exNote" placeholder="Note (optional)" aria-label="Note"><input id="exAmt" type="number" min="0" step="50" placeholder="Lek" aria-label="Amount"><input type="hidden" id="exDate" value="${today()}"><button class="btn primary" type="submit">Add</button></form>`:''}
+    ${sel===cur?`<form id="expForm" class="expadd"><select id="exCat" aria-label="Category">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id="exNote" placeholder="Note (optional)" aria-label="Note"><input id="exAmt" type="number" min="0" step="any" placeholder="Lek" aria-label="Amount"><input type="hidden" id="exDate" value="${today()}"><button class="btn primary" type="submit">Add</button></form>`:''}
     ${rows.length?`<div class="rows">${rows.map(([id,e])=>`<div class="exrow"><span class="muted num">${esc(parse(e.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}))}</span><span><b>${esc(e.cat)}</b>${e.note?` <span class="muted">\u00b7 ${esc(e.note)}</span>`:''}</span><span class="num">${L(e.amount)}</span>${canDel?`<button class="xbtn" data-delexp="${id}" aria-label="Delete">\u00d7</button>`:''}</div>`).join('')}</div>`:'<div class="empty" style="padding:14px">No expenses this month.</div>'}
   </section>`;
 }
@@ -1516,7 +1516,7 @@ function staffModal(id){
     <div class="field"><label for="stAge">Age</label><input id="stAge" type="number" min="16" max="90" value="${esc(s.birthday?ageOf(s.birthday):(s.age||''))}" placeholder="Auto from birthday"></div>
     <div class="field wide"><label for="stAddr">Address</label><input id="stAddr" value="${esc(s.address||'')}" placeholder="Street, area, Tirana"></div>
     ${!FB&&P().pins?`<div class="field"><label for="stPin">Login PIN (trainers)</label><input id="stPin" class="num" inputmode="numeric" maxlength="6" value="${esc(s.pin||'')}" placeholder="4444"></div>`:''}
-    ${P().payroll?`<div class="field"><label for="stRate">Pay per session (Lek)</label><input id="stRate" type="number" min="0" step="100" value="${esc(s.rate||'')}"></div>`:''}
+    ${P().payroll?`<div class="field"><label for="stRate">Pay per session (Lek)</label><input id="stRate" type="number" min="0" step="any" value="${esc(s.rate||'')}"></div>`:''}
     <div class="field wide"><div class="actions">${id&&UI.role==='owner'?'<button type="button" class="btn danger" data-act="delstaff">Remove</button>':''}<button class="btn primary" type="submit">${id?'Save':'Add'}</button></div><div id="delSlot"></div></div>
   </form>`);
 }
