@@ -169,7 +169,7 @@
 #cpd .bd.today{background:var(--accent-soft);border-color:var(--brand)}
 #cpd .bd.today b{color:var(--ink)}
 #cpd .bd:hover{border-color:var(--brand)}
-#cpd .expadd{display:grid;grid-template-columns:160px minmax(0,1fr) 120px auto;gap:8px;margin-bottom:10px}
+#cpd .expadd{display:grid;grid-template-columns:160px minmax(0,1fr) 120px 150px auto;gap:8px;margin-bottom:10px}
 #cpd .expadd input,#cpd .expadd select{height:38px;box-sizing:border-box}
 @media (max-width:600px){#cpd .expadd{grid-template-columns:1fr 1fr}
 #cpd .expadd #exNote{grid-column:1/-1;order:3}
@@ -833,6 +833,15 @@ const NAT_FIX={Albanian:'Albania',Kosovar:'Kosovo',Italian:'Italy',Turkish:'Turk
 const natName=v=>NAT_FIX[v]||v||'';
 const SOURCES=['Instagram','Facebook','TikTok','Google search','Google Maps','Website','Friend / referral','Walk-in','Trainer referral','Event','Other'];
 const EXP_CATS=['Cleaning','Water & coffee','Office supplies','Towels & laundry','Small repairs','Transport','Other'];
+function expModal(id){const e=S.expenses[id];if(!e)return;
+  openModal(`<header><div><div class="eyebrow">Edit expense</div><h2>${esc(e.cat)}</h2></div><button class="x" data-close aria-label="Close">\u00d7</button></header>
+  <form class="form" id="expEditForm" data-id="${id}">
+    <div class="field"><label for="eeDate">Date</label><input type="date" id="eeDate" value="${esc(e.date||'')}"></div>
+    <div class="field"><label for="eeCat">Category</label><select id="eeCat">${[...new Set([e.cat,...EXP_CATS])].map(c=>`<option ${c===e.cat?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+    <div class="field"><label for="eeAmt">Amount (Lek)</label><input type="number" id="eeAmt" min="0" step="any" value="${+e.amount||0}"></div>
+    <div class="field wide"><label for="eeNote">Note</label><input id="eeNote" value="${esc(e.note||'')}"></div>
+    <div class="field wide"><div class="actions"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save changes</button></div></div>
+  </form>`)}
 function expSection(){
   const cur=today().slice(0,7),sel=UI.expMonth||cur;
   const rows=Object.entries(S.expenses||{}).filter(([,e])=>(e.date||'').startsWith(sel)).sort((a,b)=>(b[1].date+(b[1].ts||0)).localeCompare(a[1].date+(a[1].ts||0)));
@@ -840,8 +849,8 @@ function expSection(){
   const name=new Date(+sel.slice(0,4),+sel.slice(5)-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
   return `<section class="panel"><header><div><h2>Studio expenses</h2><span class="muted">${esc(name)}</span></div>
     <div class="toolbar"><button class="btn sm" data-act="em-1" aria-label="Previous month">\u2190</button><button class="btn sm" data-act="em1" aria-label="Next month" ${sel>=cur?'disabled':''}>\u2192</button><span class="num" style="font-size:1.15rem;font-weight:700">${L(tot)}</span></div></header>
-    ${sel===cur?`<form id="expForm" class="expadd"><select id="exCat" aria-label="Category">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id="exNote" placeholder="Note (optional)" aria-label="Note"><input id="exAmt" type="number" min="0" step="any" placeholder="Lek" aria-label="Amount"><input type="hidden" id="exDate" value="${today()}"><button class="btn primary" type="submit">Add</button></form>`:''}
-    ${rows.length?`<div class="rows">${rows.map(([id,e])=>`<div class="exrow"><span class="muted num">${esc(parse(e.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}))}</span><span><b>${esc(e.cat)}</b>${e.note?` <span class="muted">\u00b7 ${esc(e.note)}</span>`:''}</span><span class="num">${L(e.amount)}</span>${canDel?`<button class="xbtn" data-delexp="${id}" aria-label="Delete">\u00d7</button>`:''}</div>`).join('')}</div>`:'<div class="empty" style="padding:14px">No expenses this month.</div>'}
+    ${`<form id="expForm" class="expadd"><select id="exCat" aria-label="Category">${EXP_CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id="exNote" placeholder="Note (optional)" aria-label="Note"><input id="exAmt" type="number" min="0" step="any" placeholder="Lek" aria-label="Amount"><input type="date" id="exDate" value="${sel===cur?today():sel+'-01'}" aria-label="Date"><button class="btn primary" type="submit">Add</button></form>`}
+    ${rows.length?`<div class="rows">${rows.map(([id,e])=>`<div class="exrow"><span class="muted num">${esc(parse(e.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}))}</span><span><b>${esc(e.cat)}</b>${e.note?` <span class="muted">\u00b7 ${esc(e.note)}</span>`:''}</span><span class="num">${L(e.amount)}</span>${canDel?`<span style="display:inline-flex;gap:6px"><button class="xbtn" data-editexp="${id}" aria-label="Edit" title="Edit">\u270e</button><button class="xbtn" data-delexp="${id}" aria-label="Delete">\u00d7</button></span>`:''}</div>`).join('')}</div>`:'<div class="empty" style="padding:14px">No expenses this month.</div>'}
   </section>`;
 }
 const kfmt=v=>{if(v<0)return '-'+kfmt(-v);return v>=1e6?(v/1e6).toFixed(1).replace(/\.0$/,'')+'M':v>=1e3?Math.round(v/1e3)+'k':String(Math.round(v))};
@@ -1663,6 +1672,7 @@ document.addEventListener('click',async e=>{
   if(ds.tf){UI.teamFilter=ds.tf;render();return}
   if(ds.delnote){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delnote2="'+ds.delnote+'">Delete</button></span>';return}
   if(ds.delnote2){await save(()=>store.del('notes',ds.delnote2),'Note deleted');return}
+  if(ds.editexp){expModal(ds.editexp);return}
   if(ds.delexp){t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delexp2="'+ds.delexp+'">Delete</button></span>';return}
   if(ds.delexp2){await save(()=>store.del('expenses',ds.delexp2),'Expense deleted');return}
   if(ds.sell){closeModal();UI.page='pay';render();$('#sClient').value=S.clients[ds.sell].name;cpHint($('#sClient'));$('#sProd').value='pr8';$('#sAmt').value=PRODUCTS.find(x=>x.k==='pr8').p;return}
@@ -1815,6 +1825,8 @@ document.addEventListener('submit',async e=>{
     if(await save(()=>store.set('classes',uid(),{date,time,dur:50,type,instructor:tid,cap,booked:ids.map(c=>({c,u:false,in:false}))}),'Session booked \u00b7 on the Schedule now')){UI.bookDate=date;UI.bookTime=time}
     return;
   }
+  if(f.id==='expEditForm'){const id=f.dataset.id,e=S.expenses[id];if(!e)return;const amt=+$('#eeAmt').value,date=$('#eeDate').value;if(!date){toast('Pick a date.');return}if(!(amt>0)){toast('Enter the amount in Lek.');return}
+    if(await save(()=>store.set('expenses',id,{...e,date,cat:$('#eeCat').value,note:$('#eeNote').value.trim(),amount:amt,editedBy:UI.role,editedAt:Date.now()}),'Expense updated'))closeModal();return}
   if(f.id==='expForm'){
     const amt=+$('#exAmt').value,date=$('#exDate').value;
     if(!date){toast('Pick a date.');return}
