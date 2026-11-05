@@ -409,7 +409,7 @@ const sessLabel=c=>{const k=kindOf(c.type),names=(c.booked||[]).map(b=>S.clients
 const slotCls=c=>{const b=c.booked||[];if(b.length&&b.length>=c.cap&&b.every(x=>isDone(c,x)||x.burn))return b.every(x=>x.burn)?'burn':'ok';return kindOf(c.type)+(b.length?'':' open')};
 const roleName=r=>r==='Instructor'?'Trainer':r;
 const METHODS=['Cash','Card','Bank transfer'];
-const AMT_OF={qsMethod:'qsAmt',sMethod:'sAmt',ppMethod:'ppAmt',stMethod:'stAmt',pMethod:'pAmt'};
+const AMT_OF={dpMethod:'dpAmt',qsMethod:'qsAmt',sMethod:'sAmt',ppMethod:'ppAmt',stMethod:'stAmt',pMethod:'pAmt'};
 function methodField(id,sel,extra=[]){const sp=sel&&typeof sel==='object'?sel:null,cur=sp?'Split':sel;
   return `<div class="field"><label for="${id}">Paid by</label><select id="${id}" data-msel="1">${[...METHODS,...extra].map(m=>`<option ${m===cur?'selected':''}>${m}</option>`).join('')}<option value="Split" ${cur==='Split'?'selected':''}>Split (cash + card)</option></select>
   <div id="${id}_split" style="display:${cur==='Split'?'grid':'none'};grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"><input id="${id}_cash" type="number" min="0" step="any" placeholder="Cash" value="${sp?esc(sp.Cash||''):''}" data-mpart="${id}" aria-label="Cash part"><input id="${id}_card" type="number" min="0" step="any" placeholder="Card" value="${sp?esc(sp.Card||''):''}" data-mpart="${id}" aria-label="Card part"></div></div>`}
@@ -1054,6 +1054,18 @@ function pkgModal(id){const d=id?S.products[id]:{type:'Private',sessions:8,price
     <div class="field"><label for="pkLabel">Label (optional)</label><input id="pkLabel" value="${esc(d.label||'')}" placeholder="e.g. Black Friday"></div>
     <div class="field wide"><span class="muted" style="font-size:.8rem">It appears in the package list under “Custom packages” and works like any other package.</span><div class="actions" style="margin-top:8px">${id?`<button type="button" class="btn danger" data-pkdel="${id}" style="margin-right:auto">Remove package</button>`:''}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save package</button></div></div>
   </form>`)}
+function debtPayPanel(){const ds=debtList();if(!ds.length)return '';
+  return `<section class="panel"><header><div><h2>Debt payment</h2><span class="muted">A client pays back money they owe · ${ds.length} owe <b class="num" style="color:var(--bad)">${L(ds.reduce((a,d)=>a+d.owed,0))}</b></span></div></header>
+    <form class="form" id="dpForm" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="field" style="position:relative"><label for="dpClient">Client who owes</label><select id="dpClient"><option value="">Choose…</option>${ds.map(d=>`<option value="${esc(d.k)}">${esc(d.name)} · owes ${L(d.owed)}</option>`).join('')}</select></div>
+      <div class="field"><label for="dpAmt">Amount received (Lek)</label><input id="dpAmt" type="number" min="0" step="any"></div>
+      ${methodField('dpMethod','Cash')}
+      <div class="field"><label for="dpDate">Date</label><input type="date" id="dpDate" value="${UI.payDay||today()}"></div>
+      <div class="field wide"><label for="dpNote">Note (optional)</label><input id="dpNote" placeholder="e.g. paid the rest of the October package"></div>
+      <div class="field wide" style="flex-direction:row;justify-content:space-between;align-items:center"><span class="muted" id="dpInfo" style="font-size:.85rem"></span><button class="btn primary" type="submit">Record debt payment</button></div>
+    </form></section>`}
+function dpInfo(){const k=($('#dpClient')||{}).value,el=$('#dpInfo');if(!el)return;const d=debtList().find(x=>x.k===k);if(!d){el.textContent='';return}
+  el.innerHTML=d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||'')).map(([,x])=>`${esc(fmtDay(x.date))} · ${esc(planName(x.item)||x.item)} · <b style="color:var(--bad)">${L(x.owed)}</b>`).join('<br>');const a=$('#dpAmt');if(a&&!a.value)a.value=d.owed}
 function productModal(id){const d=id?Object.fromEntries(shopList())[id]:{name:'',price:''};
   openModal(`<header><h2>${id?'Edit product':'Add product'}</h2><button class="x" data-close aria-label="Close">×</button></header>
   <form class="form" id="prodForm" data-id="${id||''}"><div class="field"><label for="pdName">Name</label><input id="pdName" value="${esc(d.name||'')}" placeholder="e.g. Yoga mat"></div><div class="field"><label for="pdPrice">Price (Lek)</label><input id="pdPrice" type="number" min="0" step="any" value="${esc(d.price??'')}"></div>
@@ -1189,6 +1201,7 @@ function pPay(){
       <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record sale</button></div>
     </form></section>
   ${productPanel()}
+  ${debtPayPanel()}
   <div class="stats">
     <div class="stat"><span class="eyebrow">Total ${pm==='year'?'this year':pm==='month'?'this month':d===today()?'today':'this day'}</span><span class="v">${L(tot)}</span></div>
     ${(()=>{let pk=0,pr=0;day.forEach(([,x])=>{if(x.kind==='product')pr+=+x.amount||0;else pk+=+x.amount||0});return `<div class="stat"><span class="eyebrow">Packages</span><span class="v">${L(pk)}</span></div><div class="stat"><span class="eyebrow">Products</span><span class="v">${L(pr)}</span></div>`})()}
@@ -1796,13 +1809,14 @@ document.addEventListener('change',e=>{
   if(e.target.id==='bkType'){UI.bookType=e.target.value;UI.bookDate=$('#bkDate').value;UI.bookTime=$('#bkTime').value;render()}
   if(e.target.id==='qsProd'){applyDisc('qsClient','qsProd','qsAmt')}
   if(e.target.dataset&&e.target.dataset.msel){const b=$('#'+e.target.id+'_split');if(b)b.style.display=e.target.value==='Split'?'grid':'none'}
+  if(e.target.id==='dpClient'){const a=$('#dpAmt');if(a)a.value='';dpInfo()}
   if(e.target.id==='pkUnl'){const n=$('#pkN');if(n){n.disabled=e.target.checked;if(e.target.checked)n.value=''}}
   if(e.target.id==='ppProd'){if(UI.amtManual)UI.amtManual.ppAmt=0;ppSync()}
   if(e.target.id==='sProd'){applyDisc('sClient','sProd','sAmt')}
 });
 document.addEventListener('submit',async e=>{
   e.preventDefault();const f=e.target;
-  {const mid={qsForm:'qsMethod',saleForm:'sMethod',ppForm:'ppMethod',settleForm:'stMethod',payForm:'pMethod'}[f.id];if(mid){const m=readMethod(mid);if(m&&typeof m==='object'){if(!(splitSum(m)>0)){toast('Enter the cash and card amounts.');return}const a=$('#'+AMT_OF[mid]);if(a)a.value=splitSum(m)}}}
+  {const mid={dpForm:'dpMethod',qsForm:'qsMethod',saleForm:'sMethod',ppForm:'ppMethod',settleForm:'stMethod',payForm:'pMethod'}[f.id];if(mid){const m=readMethod(mid);if(m&&typeof m==='object'){if(!(splitSum(m)>0)){toast('Enter the cash and card amounts.');return}const a=$('#'+AMT_OF[mid]);if(a)a.value=splitSum(m)}}}
   if(f.id==='groupForm'){if(!canEditGroups())return;const id=f.dataset.id||'gr_'+uid(),days=[...f.querySelectorAll('[name=gDay]:checked')].map(x=>x.value),members=[...new Set([...f.querySelectorAll('[name=gMem]:checked')].map(x=>x.value))];
     const cap=Math.max(1,+$('#gCap').value||6),d={name:$('#gName').value.trim(),type:$('#gType').value,days,time:$('#gTime').value,dur:+$('#gDur').value||50,trainer:$('#gTr').value,cap,members};
     if(!d.name)d.name=d.type;if(members.length>cap){toast('This group has only '+cap+' spots.');return}
@@ -1819,6 +1833,14 @@ document.addEventListener('submit',async e=>{
     if(nm&&!cid)rec.name=nm;const nt=$('#ppNote').value.trim();if(nt)rec.note=nt;if(amt<total){rec.owed=total-amt;rec.total=total;if(!amt)rec.unpaid=true}
     if(await save(()=>store.set('payments',uid(),rec),amt<total?'Sale saved — '+L(total-amt)+' added to Debtors':'Product sale saved')){UI.amtManual={};['ppClient','ppNote'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});const qq=$('#ppQty');if(qq)qq.value=1;ppSync()}
     return}
+  if(f.id==='dpForm'){const k=$('#dpClient').value,d=debtList().find(x=>x.k===k);if(!d){toast('Choose the client who owes.');return}
+    let amt=Math.min(d.owed,Math.max(0,+$('#dpAmt').value||0));if(!amt){toast('Enter the amount received.');return}
+    const dt=$('#dpDate').value||today(),m=readMethod('dpMethod'),nt=$('#dpNote').value.trim(),items=d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||''));
+    const ok=await save(async()=>{let left=amt;const rec={kind:'debt',date:dt,ts:new Date(dt+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:d.client||'',name:d.client?'':d.name,item:'Debt payment',amount:amt,by:UI.role,refs:items.map(i=>i[0])};applyMethod(rec,m);if(nt)rec.note=nt;
+      await store.set('payments',uid(),rec);
+      for(const[id,x]of items){if(left<=0)break;const pay=Math.min(left,+x.owed);left-=pay;const up={...x},rest=(+x.owed)-pay;if(rest>0)up.owed=rest;else{delete up.owed;delete up.unpaid;up.settled=dt}await store.set('payments',id,up)}},
+      amt<d.owed?'Debt payment saved \u2014 '+d.name+' still owes '+L(d.owed-amt):'Debt paid in full \u2014 '+d.name+' owes nothing now');
+    if(ok){['dpAmt','dpNote'].forEach(x=>{const el=$('#'+x);if(el)el.value=''});render()}return}
   if(f.id==='settleForm'){const id=f.dataset.id,x=S.payments[id];if(!x)return;const amt=Math.min(+x.owed,Math.max(0,+$('#stAmt').value||0));if(!amt){toast('Enter the amount received.');return}
     const d=$('#stDate').value||today(),left=(+x.owed)-amt;
     const ok=await save(async()=>{await store.set('payments',uid(),{kind:'debt',date:d,ts:Date.now(),client:x.client||'',name:x.name||'',item:'Debt \u00b7 '+(planName(x.item)||x.item),amount:amt,...applyMethod({},readMethod('stMethod')),by:UI.role,ref:id});
