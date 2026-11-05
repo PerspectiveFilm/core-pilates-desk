@@ -387,6 +387,7 @@ const PRODUCTS=[
   {g:'Pilates for Scoliosis (private)',k:'sc1',n:'Pilates for Scoliosis · 1 session',p:6000,c:1,days:30},
   {g:'Pilates for Scoliosis (private)',k:'sc8',n:'Pilates for Scoliosis · 8 sessions',p:45000,c:8,days:60},
   {g:'Offer',k:'lim',n:'Offer · Limitless (unlimited sessions)',p:32000,c:0,unl:true,days:37},
+  {g:'Debt',k:'debt',n:'Debt payment (client pays back what they owe)',p:0,c:0,debt:true},
   {g:'Other',k:'other',n:'Other / retail',p:0,c:0},
 ];
 function shortPkg(s){return String(s||'').replace(/\s*\([^)]*\)/g,'').replace(/(\d+)\s*sessions?\b/gi,'$1').replace(/(\d+)\s+S\b/g,'$1')}
@@ -1064,6 +1065,14 @@ function debtPayPanel(){const ds=debtList();if(!ds.length)return '';
       <div class="field wide"><label for="dpNote">Note (optional)</label><input id="dpNote" placeholder="e.g. paid the rest of the October package"></div>
       <div class="field wide" style="flex-direction:row;justify-content:space-between;align-items:center"><span class="muted" id="dpInfo" style="font-size:.85rem"></span><button class="btn primary" type="submit">Record debt payment</button></div>
     </form></section>`}
+async function payDebt(k,amt0,m,dt,nt){const d=debtList().find(x=>x.k===k);if(!d){toast('This client has no debt.');return false}
+  const amt=Math.min(d.owed,Math.max(0,+amt0||0));if(!amt){toast('Enter the amount received.');return false}
+  const items=d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||''));
+  return await save(async()=>{let left=amt;const rec={kind:'debt',date:dt,ts:new Date(dt+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:d.client||'',name:d.client?'':d.name,item:'Debt payment',amount:amt,by:UI.role,refs:items.map(i=>i[0])};applyMethod(rec,m);if(nt)rec.note=nt;
+    await store.set('payments',uid(),rec);
+    for(const[id,x]of items){if(left<=0)break;const pay=Math.min(left,+x.owed);left-=pay;const up={...x},rest=(+x.owed)-pay;if(rest>0)up.owed=rest;else{delete up.owed;delete up.unpaid;up.settled=dt}await store.set('payments',id,up)}},
+    amt<d.owed?'Debt payment saved — '+d.name+' still owes '+L(d.owed-amt):'Debt paid in full — '+d.name+' owes nothing now')}
+const owedOf=cid=>{const d=cid&&debtList().find(x=>x.client===cid);return d?d.owed:0};
 function dpInfo(){const k=($('#dpClient')||{}).value,el=$('#dpInfo');if(!el)return;const d=debtList().find(x=>x.k===k);if(!d){el.textContent='';return}
   el.innerHTML=d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||'')).map(([,x])=>`${esc(fmtDay(x.date))} · ${esc(planName(x.item)||x.item)} · <b style="color:var(--bad)">${L(x.owed)}</b>`).join('<br>');const a=$('#dpAmt');if(a&&!a.value)a.value=d.owed}
 function productModal(id){const d=id?Object.fromEntries(shopList())[id]:{name:'',price:''};
@@ -1101,12 +1110,12 @@ const discLabel=c=>discOf(c)?DISC[c.discType][0]+' '+discOf(c)+'%':'';
 const DISC_SEED={"cx_237ee0c555":10,"cx_4291871c32":5,"cx_9647339dc6":10,"cx_4928891acb":10,"cx_d9ad31d95f":10,"cx_e7b67ae698":10,"cx_690f98b101":10,"cx_d12bd44d08":10,"cx_2eb2e2eebc":5,"cx_35e1b26e0f":10,"cx_627d989aed":10,"cx_be2064665b":10,"cx_a85a3fed5c":10,"cx_a73f77d922":10,"cx_b9a224a67a":10,"cx_8d5f294f14":10,"cx_fd26e1abd6":30,"cx_2c55eab64d":10,"cx_e03ed762af":10,"cx_0a6b5ae43e":10,"cx_856c06ac63":10,"cx_67704b58ce":10,"cx_1c231fb3c2":10,"cx_ad6ef58967":10,"cx_0cf8076f49":10,"cx_6e5c9c7f39":10,"cx_7e6c9fada0":10,"cx_a39276fea4":20,"cx_9f31685669":10,"cx_aa902a5223":10,"cx_e404648e87":10,"cx_bb4f100cf2":10,"cx_dea28b34b4":10};
 async function seedDisc(){let n=0;for(const[id,pct]of Object.entries(DISC_SEED)){const c=S.clients[id];if(!c||c.discType)continue;const d=pct===10?{discType:'loyalty'}:pct===30?{discType:'influencer'}:{discType:'other',discPct:pct};await store.upd('clients',id,d);n++}
   await store.set('settings','disc2026',{done:true,at:Date.now(),count:n});toast('Discounts added to '+n+' clients')}
-function fullPrice(cid,pid){const ci=$('#'+cid),pi=$('#'+pid);if(!pi)return 0;const pr=findP(pi.value);if(!pr)return 0;const id=ci?findClient(ci.value.trim()):null,pct=id?discOf(S.clients[id]):0;return Math.round(pr.p*(1-pct/100)/100)*100}
-function amtHint(cid,pid,aid){const h=$('#'+aid+'_hint'),ai=$('#'+aid);if(!h||!ai)return;const full=fullPrice(cid,pid),v=+ai.value||0;
+function fullPrice(cid,pid){const ci=$('#'+cid),pi=$('#'+pid);if(!pi)return 0;if(pi.value==='debt'){const id=ci?findClient(ci.value.trim()):null;return owedOf(id)}const pr=findP(pi.value);if(!pr)return 0;const id=ci?findClient(ci.value.trim()):null,pct=id?discOf(S.clients[id]):0;return Math.round(pr.p*(1-pct/100)/100)*100}
+function amtHint(cid,pid,aid){const h=$('#'+aid+'_hint'),ai=$('#'+aid);if(!h||!ai)return;if(($('#'+pid)||{}).value==='debt'){const ci=$('#'+cid),id=ci?findClient(ci.value.trim()):null,o=owedOf(id),v=+ai.value||0;h.textContent=!ci||!ci.value.trim()?'':!o?'This client owes nothing':v<o?'Owes '+L(o)+' \u2014 '+L(o-v)+' will still be owed':'Owes '+L(o)+' \u2014 paid in full';h.className='cphint '+(o?'new':'ok');return}const full=fullPrice(cid,pid),v=+ai.value||0;
   if(!full||ai.value===''){h.textContent='';h.className='cphint';return}
   if(v<full){h.textContent=L(full-v)+' goes to Debtors';h.className='cphint new'}else{h.textContent='Full price '+L(full);h.className='cphint ok'}}
 function grpVis(pid,fid,gid,cid){const pi=$('#'+pid),f=$('#'+fid);if(!pi||!f)return;const on=isGrpProd(pi.value)&&Object.keys(S.groups||{}).length;f.style.display=on?'':'none';const g=$('#'+gid),c=$('#'+cid);if(on&&g&&c&&!g.value){const id=findClient(c.value.trim());if(id&&grpOf(id))g.value=grpOf(id)}}
-function applyDisc(cid,pid,aid,fromClient){if(pid==='qsProd')grpVis('qsProd','qsGrpF','qsGrp','qsClient');if(pid==='sProd')grpVis('sProd','sGrpF','sGrp','sClient');const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const M=UI.amtManual||(UI.amtManual={});if(fromClient&&M[aid]){amtHint(cid,pid,aid);return}M[aid]=0;const pr=findP(pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
+function applyDisc(cid,pid,aid,fromClient){if(pid==='qsProd')grpVis('qsProd','qsGrpF','qsGrp','qsClient');if(pid==='sProd')grpVis('sProd','sGrpF','sGrp','sClient');const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const M=UI.amtManual||(UI.amtManual={});if(fromClient&&M[aid]){amtHint(cid,pid,aid);return}M[aid]=0;const pr=findP(pi.value);if(!pr)return;const id=findClient(ci.value.trim());if(pr.debt){ai.value=owedOf(id)||'';amtHint(cid,pid,aid);return}const pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
 function cpHint(el){const h=document.getElementById(el.id+'_hint');if(!h)return;const v=el.value.trim();
   if(!v){h.textContent='';h.className='cphint';return}
   if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+(leftOf(c)===Infinity?'unlimited':leftOf(c))+' left'+(discOf(c)?' \u00b7 '+discLabel(c):'');h.className='cphint ok'}
@@ -1201,7 +1210,6 @@ function pPay(){
       <div class="field wide" style="flex-direction:row;justify-content:flex-end"><button class="btn primary" type="submit">Record sale</button></div>
     </form></section>
   ${productPanel()}
-  ${debtPayPanel()}
   <div class="stats">
     <div class="stat"><span class="eyebrow">Total ${pm==='year'?'this year':pm==='month'?'this month':d===today()?'today':'this day'}</span><span class="v">${L(tot)}</span></div>
     ${(()=>{let pk=0,pr=0;day.forEach(([,x])=>{if(x.kind==='product')pr+=+x.amount||0;else pk+=+x.amount||0});return `<div class="stat"><span class="eyebrow">Packages</span><span class="v">${L(pk)}</span></div><div class="stat"><span class="eyebrow">Products</span><span class="v">${L(pr)}</span></div>`})()}
@@ -1833,14 +1841,6 @@ document.addEventListener('submit',async e=>{
     if(nm&&!cid)rec.name=nm;const nt=$('#ppNote').value.trim();if(nt)rec.note=nt;if(amt<total){rec.owed=total-amt;rec.total=total;if(!amt)rec.unpaid=true}
     if(await save(()=>store.set('payments',uid(),rec),amt<total?'Sale saved — '+L(total-amt)+' added to Debtors':'Product sale saved')){UI.amtManual={};['ppClient','ppNote'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});const qq=$('#ppQty');if(qq)qq.value=1;ppSync()}
     return}
-  if(f.id==='dpForm'){const k=$('#dpClient').value,d=debtList().find(x=>x.k===k);if(!d){toast('Choose the client who owes.');return}
-    let amt=Math.min(d.owed,Math.max(0,+$('#dpAmt').value||0));if(!amt){toast('Enter the amount received.');return}
-    const dt=$('#dpDate').value||today(),m=readMethod('dpMethod'),nt=$('#dpNote').value.trim(),items=d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||''));
-    const ok=await save(async()=>{let left=amt;const rec={kind:'debt',date:dt,ts:new Date(dt+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:d.client||'',name:d.client?'':d.name,item:'Debt payment',amount:amt,by:UI.role,refs:items.map(i=>i[0])};applyMethod(rec,m);if(nt)rec.note=nt;
-      await store.set('payments',uid(),rec);
-      for(const[id,x]of items){if(left<=0)break;const pay=Math.min(left,+x.owed);left-=pay;const up={...x},rest=(+x.owed)-pay;if(rest>0)up.owed=rest;else{delete up.owed;delete up.unpaid;up.settled=dt}await store.set('payments',id,up)}},
-      amt<d.owed?'Debt payment saved \u2014 '+d.name+' still owes '+L(d.owed-amt):'Debt paid in full \u2014 '+d.name+' owes nothing now');
-    if(ok){['dpAmt','dpNote'].forEach(x=>{const el=$('#'+x);if(el)el.value=''});render()}return}
   if(f.id==='settleForm'){const id=f.dataset.id,x=S.payments[id];if(!x)return;const amt=Math.min(+x.owed,Math.max(0,+$('#stAmt').value||0));if(!amt){toast('Enter the amount received.');return}
     const d=$('#stDate').value||today(),left=(+x.owed)-amt;
     const ok=await save(async()=>{await store.set('payments',uid(),{kind:'debt',date:d,ts:Date.now(),client:x.client||'',name:x.name||'',item:'Debt \u00b7 '+(planName(x.item)||x.item),amount:amt,...applyMethod({},readMethod('stMethod')),by:UI.role,ref:id});
@@ -1899,6 +1899,9 @@ document.addEventListener('submit',async e=>{
     if(await save(()=>store.set('expenses',uid(),{date,cat:$('#exCat').value,note:$('#exNote').value.trim(),amount:amt,ts:Date.now(),by:UI.role}),'Expense added')){$('#exAmt').value='';$('#exNote').value=''}
     return;
   }
+  if((f.id==='qsForm'&&$('#qsProd').value==='debt')||(f.id==='saleForm'&&$('#sProd').value==='debt')){const pre=f.id==='qsForm'?'qs':'s',cid=findClient($('#'+pre+'Client').value.trim());if(!cid){toast('Choose the client who owes.');return}
+    const d=debtList().find(x=>x.client===cid);if(!d){toast(S.clients[cid].name+' owes nothing.');return}
+    if(await payDebt(d.k,$('#'+pre+'Amt').value,readMethod(pre+'Method'),$('#'+pre+'Date').value||today(),(($('#'+pre+'Note')||{}).value||'').trim())){if(pre==='qs'){UI.qsReset=true;UI.amtManual={};render()}else{$('#sClient').value='';cpHint($('#sClient'));const n=$('#sNote');if(n)n.value='';UI.amtManual={};render()}}return}
   if(f.id==='qsForm'){
     const amt=$('#qsAmt').value;if(amt===''||+amt<0){toast('Enter an amount in Lek.');return}
     if(!$('#qsClient').value.trim()){toast('Type the client\u2019s name.');$('#qsClient').focus();return}
