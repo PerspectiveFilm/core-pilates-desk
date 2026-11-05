@@ -1017,9 +1017,9 @@ function shopList(){const o={};SHOP_DEFAULT.forEach(([n,p],i)=>o[shopId(n)]={nam
   return Object.entries(o).filter(([,d])=>!d.hidden&&d.name).sort((a,b)=>(a[1].ord??1000)-(b[1].ord??1000)||a[1].name.localeCompare(b[1].name))}
 function ppPrice(){const d=Object.fromEntries(shopList())[($('#ppProd')||{}).value];return d?(+d.price||0)*Math.max(1,+(($('#ppQty')||{}).value)||1):0}
 function productPanel(){const list=shopList();
-  return `<section class="panel"><header><div><h2>Sell a product</h2><span class="muted">Client name is optional</span></div><div class="toolbar"><button type="button" class="btn sm" data-act="ppeditsel">Edit product</button><button type="button" class="btn sm" data-act="ppadd">+ Add product</button></div></header>
+  return `<section class="panel"><header><div><h2>Sell a product</h2><span class="muted">Type the client\u2019s name, or tap Walk-in</span></div><div class="toolbar"><button type="button" class="btn sm" data-act="ppeditsel">Edit product</button><button type="button" class="btn sm" data-act="ppadd">+ Add product</button></div></header>
     <form class="form" id="ppForm" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="field"><label for="ppClient">Client (optional)</label><input id="ppClient" list="clientNames_ppClient" autocomplete="off" placeholder="Walk-in"><datalist id="clientNames_ppClient">${Object.values(S.clients).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist></div>
+      <div class="field"><label for="ppClient" style="display:flex;justify-content:space-between;align-items:center">Client <button type="button" class="linkbtn" data-act="ppwalk">Walk-in</button></label><input id="ppClient" list="clientNames_ppClient" autocomplete="off" placeholder="Name or Walk-in" required><datalist id="clientNames_ppClient"><option value="Walk-in">${Object.values(S.clients).sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist></div>
       <div class="field"><label for="ppProd">Product</label><select id="ppProd">${list.map(([id,d])=>`<option value="${id}">${esc(d.name)} · ${L(d.price)}</option>`).join('')}</select></div>
       <div class="field"><label for="ppQty">Quantity</label><input id="ppQty" type="number" min="1" step="1" value="1"></div>
       <div class="field" style="position:relative"><label for="ppAmt">Amount paid (Lek)</label><input id="ppAmt" type="number" min="0" step="any" value="${list[0]?list[0][1].price:0}"><span class="cphint" id="ppAmt_hint"></span></div>
@@ -1720,6 +1720,7 @@ document.addEventListener('click',async e=>{
     case'bkup':if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Replaces all data — tap again';break}restoreBackup();break;
     case'finexcel':exportFinances();break;
     case'ppadd':productModal(null);break;
+    case'ppwalk':{const c=$('#ppClient');if(c){c.value='Walk-in';c.focus()}break}
     case'ppeditsel':{const v=($('#ppProd')||{}).value;if(v)productModal(v);break}
     case'chdayx':UI.chDay=null;render();break;
     case'debtall':UI.debtAll=!UI.debtAll;render();break;
@@ -1774,6 +1775,7 @@ document.addEventListener('submit',async e=>{
   if(f.id==='prodForm'){const name=$('#pdName').value.trim().replace(/\s+/g,' '),price=Math.max(0,+$('#pdPrice').value||0);if(!name){toast('Enter the product name.');return}
     const id=f.dataset.id||shopId(name);if(await save(()=>store.set('products',id,{...(S.products[id]||{}),name,price,hidden:false}),'Product saved'))closeModal();return}
   if(f.id==='ppForm'){const d0=Object.fromEntries(shopList())[$('#ppProd').value];if(!d0){toast('Choose a product.');return}
+    if(!$('#ppClient').value.trim()){toast('Type the client\u2019s name or tap Walk-in.');$('#ppClient').focus();return}
     const q=Math.max(1,Math.round(+$('#ppQty').value||1)),total=(+d0.price||0)*q,amt=$('#ppAmt').value===''?total:Math.max(0,+$('#ppAmt').value||0),d=$('#ppDate').value||today(),nm=$('#ppClient').value.trim().replace(/\s+/g,' '),cid=nm?findClient(nm):null;
     const rec={kind:'product',date:d,ts:new Date(d+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:cid||'',item:d0.name+(q>1?' ×'+q:''),amount:amt,method:$('#ppMethod').value,by:UI.role};
     if(nm&&!cid)rec.name=nm;const nt=$('#ppNote').value.trim();if(nt)rec.note=nt;if(amt<total){rec.owed=total-amt;rec.total=total;if(!amt)rec.unpaid=true}
