@@ -386,6 +386,7 @@ const PRODUCTS=[
   {g:'Pilates for Pregnancy (private)',k:'pg8',n:'Pilates for Pregnancy · 8 sessions',p:45000,c:8,days:60},
   {g:'Pilates for Scoliosis (private)',k:'sc1',n:'Pilates for Scoliosis · 1 session',p:6000,c:1,days:30},
   {g:'Pilates for Scoliosis (private)',k:'sc8',n:'Pilates for Scoliosis · 8 sessions',p:45000,c:8,days:60},
+  {g:'Offer',k:'lim',n:'Offer · Limitless (unlimited sessions)',p:32000,c:0,unl:true,days:37},
   {g:'Other',k:'other',n:'Other / retail',p:0,c:0},
 ];
 function shortPkg(s){return String(s||'').replace(/\s*\([^)]*\)/g,'').replace(/(\d+)\s*sessions?\b/gi,'$1').replace(/(\d+)\s+S\b/g,'$1')}
@@ -474,9 +475,9 @@ function usage(){if(_uc)return _uc;const m=new Map(),idx={},now=Date.now();for(c
     for(const b of cl.booked||[]){const c=S.clients[b.c];if(!c)continue;if(c.packageStart&&cl.date<c.packageStart)continue;if(b.burn||end<now)idx[b.c]=(idx[b.c]||0)+1}}
   return _uc={m,idx,paid}}
 const usedOf=id=>usage().idx[id]||0;
-const leftOf=c=>{const id=usage().m.get(c);return (+c.credits||0)-(id?usedOf(id):0)};
+const leftOf=c=>{if(isUnl(c))return Infinity;const id=usage().m.get(c);return (+c.credits||0)-(id?usedOf(id):0)};
 const isDone=(cl,b)=>!b.burn&&new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000<Date.now();
-function leftCell(c){const n=leftOf(c);return `<span style="color:${n<=0?'var(--bad)':n<=2?'var(--warn)':'inherit'};font-weight:600">${n}</span>`}
+function leftCell(c){const n=leftOf(c);if(n===Infinity)return '<span style="font-weight:600" title="Unlimited sessions">\u221e</span>';return `<span style="color:${n<=0?'var(--bad)':n<=2?'var(--warn)':'inherit'};font-weight:600">${n}</span>`}
 function clientFlags(c){const f=[];if(c&&c.plan&&c.expires&&c.expires>=today()&&!pkgPaid(c))f.push({k:'nosale',txt:'No sale for this package',cls:'bad'});
   if(c.expires&&c.expires<today())f.push({k:'expired',txt:'Package expired',cls:'bad'});
   else if(c.expires&&daysBetween(today(),c.expires)<5)f.push({k:'exp',txt:'Expires soon',cls:'warn'});
@@ -1072,7 +1073,7 @@ function grpVis(pid,fid,gid,cid){const pi=$('#'+pid),f=$('#'+fid);if(!pi||!f)ret
 function applyDisc(cid,pid,aid,fromClient){if(pid==='qsProd')grpVis('qsProd','qsGrpF','qsGrp','qsClient');if(pid==='sProd')grpVis('sProd','sGrpF','sGrp','sClient');const ci=$('#'+cid),pi=$('#'+pid),ai=$('#'+aid);if(!ci||!pi||!ai)return;const M=UI.amtManual||(UI.amtManual={});if(fromClient&&M[aid]){amtHint(cid,pid,aid);return}M[aid]=0;const pr=PRODUCTS.find(x=>x.k===pi.value);if(!pr)return;const id=findClient(ci.value.trim()),pct=id?discOf(S.clients[id]):0;ai.value=Math.round(pr.p*(1-pct/100)/100)*100;amtHint(cid,pid,aid)}
 function cpHint(el){const h=document.getElementById(el.id+'_hint');if(!h)return;const v=el.value.trim();
   if(!v){h.textContent='';h.className='cphint';return}
-  if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+leftOf(c)+' left'+(discOf(c)?' \u00b7 '+discLabel(c):'');h.className='cphint ok'}
+  if(findClient(v)){const c=S.clients[findClient(v)];h.textContent='\u2713 '+(planName(c.plan)||'No package')+' \u00b7 '+(leftOf(c)===Infinity?'unlimited':leftOf(c))+' left'+(discOf(c)?' \u00b7 '+discLabel(c):'');h.className='cphint ok'}
   else{h.textContent='+ New client will be added';h.className='cphint new'}}
 function ageOf(b){const d=parse(b),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))a--;return a}
 function bdayPanel(){
@@ -1097,6 +1098,7 @@ function regForm(c){const f=c.form;if(!f)return '';
     <dl class="rf">${row('Email',esc(c.email||''))}${row('Emergency contact',esc(c.emergency||''))}${row('Languages',esc(f.languages))}${row('Interested in',esc(f.services))}${row('Prefers',esc(f.sessionPref))}${row('Goals',esc(f.goals))}${row('Available',av)}${row('Consent',esc(f.consent))}</dl>
   </section>`}
 function pkgInfo(plan){const t=String(plan||'');if(!t)return null;const n=(t.match(/(\d+)/)||[])[1]||'';
+  if(/limitless|unlimited|offer/i.test(t))return{k:'pt',label:'Limitless',n:'\u221e'};
   const k=/duet|duo|trio|four/i.test(t)?'duo':/semi|group|yoga|mat/i.test(t)?'grp':'pt';
   const label=k==='duo'?(/trio/i.test(t)?'Trio':/four/i.test(t)?'Four':'Duet'):k==='grp'?(/yoga/i.test(t)?'Yoga':/mat/i.test(t)?'Mat Pilates':'Group'):(/pregn/i.test(t)?'Pregnancy':/scolio/i.test(t)?'Scoliosis':/clinic/i.test(t)?'Clinic':'Private');
   return{k,label,n}}
@@ -1206,7 +1208,7 @@ async function exportExcel(){
   const cname=x=>x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'Product':(x.client&&S.clients[x.client]?S.clients[x.client].name:(x.name||'Walk-in'));
   const P=pays.map(x=>({Date:x.date,Client:cname(x),Item:x.item,Type:x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'Product':'Package',Method:x.unpaid?'Unpaid':x.method,'Amount (L)':x.unpaid?0:+x.amount||0,'Unpaid (L)':+x.owed>0?+x.owed:'',Note:x.note||'',By:x.by||''}));
   const E=exps.map(x=>({Date:x.date,Item:x.note||'',Category:x.cat||'','Amount (L)':+x.amount||0,By:x.by||''}));
-  const C=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,c])=>{const i=pkgInfo(c.plan);return{Name:c.name,Status:isActC(c)?'Active':'Inactive',Phone:c.phone||'',Email:c.email||'',Country:natName(c.nationality)||'',Birthday:c.birthday||'',Package:i?i.label:'',Sessions:i?(+i.n||''):'','Sessions left':c.plan?leftOf(c):'','Package start':c.packageStart||'','Package expires':c.expires||'',Trainers:(c.trainers||[]).map(staffName).join(', '),Discount:discLabel(c),'Total sessions':totalSessions(id),'Packages bought':(c.plan?1:0)+(c.packages||[]).length,Burned:burnedOf(id),Joined:c.joined||''}});
+  const C=Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,c])=>{const i=pkgInfo(c.plan);return{Name:c.name,Status:isActC(c)?'Active':'Inactive',Phone:c.phone||'',Email:c.email||'',Country:natName(c.nationality)||'',Birthday:c.birthday||'',Package:i?i.label:'',Sessions:i?(+i.n||''):'','Sessions left':c.plan?(leftOf(c)===Infinity?'unlimited':leftOf(c)):'','Package start':c.packageStart||'','Package expires':c.expires||'',Trainers:(c.trainers||[]).map(staffName).join(', '),Discount:discLabel(c),'Total sessions':totalSessions(id),'Packages bought':(c.plan?1:0)+(c.packages||[]).length,Burned:burnedOf(id),Joined:c.joined||''}});
   const amt=rows=>rows.reduce((t,r)=>t+(+r['Amount (L)']||0),0),tot=amt(P),ex=amt(E);
   const by=f=>amt(P.filter(f));
   const Sm=[['Period',label],['Total sales (L)',tot],['Packages (L)',by(r=>r.Type==='Package')],['Products (L)',by(r=>r.Type==='Product')],['Cash (L)',by(r=>r.Method==='Cash')],['Card (L)',by(r=>r.Method==='Card')],['Bank transfer (L)',by(r=>r.Method==='Bank transfer')],['Unpaid (L)',P.reduce((t,r)=>t+(+r['Unpaid (L)']||0),0)],['Studio expenses (L)',ex],['Sales minus expenses (L)',tot-ex],['Clients (all)',C.length],['Active clients',C.filter(c=>c.Status==='Active').length],['Exported',new Date().toLocaleString('en-GB')]].map(([Item,Value])=>({Item,Value}));
@@ -1503,7 +1505,7 @@ function clientModal(id){
     <div class="field wide pkgedit"><div class="eyebrow" style="margin-bottom:8px">Active package${UI.role!=='owner'?' <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 changes only through Record a sale</span>':''}</div><div class="form" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
       ${(()=>{const pi=pkgInfo(c.plan),tl=pi?String(c.plan).split('·')[0].trim():'';return `<div class="field"><label for="clPType">Type</label><select id="clPType" ${UI.role!=='owner'?'data-lock disabled':''}><option value="">No package</option>${(tl&&!PKG_TYPES.some(t=>t.toLowerCase()===tl.toLowerCase())?[tl,...PKG_TYPES]:PKG_TYPES).map(t=>`<option ${t.toLowerCase()===tl.toLowerCase()?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
       <div class="field"><label for="clPN">Sessions</label><input id="clPN" ${UI.role!=='owner'?'data-lock disabled':''} type="number" min="0" value="${pi?pi.n:''}"></div>`})()}
-      <div class="field"><label for="clLeft">Sessions left</label><input id="clLeft" ${UI.role!=='owner'?'data-lock disabled':''} type="number" value="${leftOf(c)}"></div>
+      <div class="field"><label for="clLeft">Sessions left</label><input id="clLeft" ${UI.role!=='owner'?'data-lock disabled':''} type="number" value="${leftOf(c)===Infinity?'':leftOf(c)}" placeholder="${leftOf(c)===Infinity?'Unlimited':''}"></div>
       <div class="field"><label for="clStart">Start</label><input id="clStart" ${UI.role!=='owner'?'data-lock disabled':''} type="date" value="${esc(c.packageStart||'')}"></div>
       <div class="field"><label for="clExp">Expires</label><input id="clExp" ${UI.role!=='owner'?'data-lock disabled':''} type="date" value="${esc(c.expires||'')}"></div>
       ${Object.keys(S.groups||{}).length?`<div class="field wide"><label for="clGrp">Group</label><select id="clGrp">${grpOptions(id?grpOf(id):'')}</select></div>`:''}
@@ -1569,9 +1571,10 @@ async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
   if(!ok)return false;
   if(clientId){
     const c=S.clients[clientId]||{},up={plan:pr.n};
-    if(pr.unl){const base=isUnl(c)?c.unlimitedUntil:d;up.unlimitedUntil=addDays(base,pr.days)}
+    if(pr.unl){const hist=[...(c.packages||[])],left=c.plan&&!isUnl(c)?leftOf(c):0;if(c.plan)hist.push({plan:c.plan,start:c.packageStart||'',end:c.expires||'',left:isUnl(c)?0:left,trainers:c.trainers||[],closed:d,carried:0});
+      const end=addDays(d,pr.days);Object.assign(up,{packages:hist,packageStart:d,expires:end,unlimitedUntil:end,credits:0,active:true,price:+amount||0})}
     else if(pr.c){
-      const hist=[...(c.packages||[])],left=c.plan?leftOf(c):0,still=c.plan&&left>0&&!(c.expires&&c.expires<d);
+      const hist=[...(c.packages||[])],left=c.plan&&!isUnl(c)?leftOf(c):0,still=c.plan&&left>0&&!(c.expires&&c.expires<d);
       if(c.plan)hist.push({plan:c.plan,start:c.packageStart||'',end:c.expires||'',left,trainers:c.trainers||[],closed:d,carried:still?left:0});
       Object.assign(up,{packages:hist,packageStart:d,expires:pr.c>=36?(()=>{const x=parse(d);x.setMonth(x.getMonth()+(pr.c>=72?6:3));return addDays(ymd(x),7)})():addDays(d,37),credits:pr.c+(still?left:0),active:true,price:+amount||0});
     }
