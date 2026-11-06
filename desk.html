@@ -967,7 +967,7 @@ const TL0=7*60,TL1=21*60;
 const toMin=t=>{const[a,b]=String(t||'0:0').split(':').map(Number);return a*60+(b||0)};
 function dayLine(d){
   const me=UI.role==='trainer'?UI.trainer:null,t=today();
-  const tr=Object.entries(S.staff).filter(([id,s])=>s.role==='Instructor'&&(!me||id===me)).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const tr=Object.entries(S.staff).filter(([id,s])=>s.role==='Instructor'&&(!me||id===me)).sort((a,b)=>trRank(a[1].name)-trRank(b[1].name)||a[1].name.localeCompare(b[1].name));
   const all=Object.entries(S.classes).filter(([,c])=>c.date===d&&(!me||c.instructor===me));
   const rows=[...tr.map(([id,s])=>({id,name:s.name})),...(!me&&all.some(([,c])=>!S.staff[c.instructor])?[{id:'',name:'Unassigned'}]:[])];
   if(!rows.length)return '<div class="panel empty">No trainers yet. Add them on the Staff page as Trainer.</div>';
@@ -995,7 +995,7 @@ function dayLine(d){
 function trainerGrid(days){
   const t=today();
   const me=UI.role==='trainer'?UI.trainer:null;
-  const tr=Object.entries(S.staff).filter(([id,s])=>s.role==='Instructor'&&(!me||id===me)).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const tr=Object.entries(S.staff).filter(([id,s])=>s.role==='Instructor'&&(!me||id===me)).sort((a,b)=>trRank(a[1].name)-trRank(b[1].name)||a[1].name.localeCompare(b[1].name));
   const wk=Object.entries(S.classes).filter(([,c])=>c.date>=days[0]&&c.date<=days[6]&&(!me||c.instructor===me));
   const rows=[...tr.map(([id,s])=>({id,name:s.name})),...(!me&&wk.some(([,c])=>!S.staff[c.instructor])?[{id:'',name:'Unassigned'}]:[])];
   if(!rows.length)return '<div class="panel empty">No trainers yet. Add them on the Staff page as Trainer.</div>';
@@ -1432,7 +1432,7 @@ function groupModal(id){
 function pStaff(){
   const p=P(),mon=today().slice(0,7);
   const taught=id=>Object.values(S.classes).filter(c=>c.instructor===id&&(c.date||'').startsWith(mon)&&c.date<=today()).length;
-  const list=Object.entries(S.staff).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  const list=Object.entries(S.staff).sort((a,b)=>trRank(a[1].name)-trRank(b[1].name)||a[1].name.localeCompare(b[1].name));
   const pp=pins();
   return `<div class="pagehead"><div><div class="eyebrow">${list.length} people</div><h1>Staff</h1></div><button class="btn primary" data-act="addstaff">Add staff</button></div>
   ${list.length?`<div class="cards">${list.map(([id,s])=>{const n=taught(id);return `<button class="card" data-staff="${id}">
