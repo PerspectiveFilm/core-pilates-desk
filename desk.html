@@ -348,7 +348,14 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const L=n=>Math.round(+n||0).toLocaleString('en-US')+' L';
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-const today=()=>ymd(new Date());
+const TZ='Europe/Tirane';
+const _tzf=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+const tzParts=ms=>{const o={};for(const p of _tzf.formatToParts(new Date(ms)))o[p.type]=+p.value;if(o.hour===24)o.hour=0;return o};
+const tzOff=ms=>{const p=tzParts(ms);return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Math.floor(ms/1000)*1000};
+const wallMs=(date,time)=>{const[y,m,d]=String(date).split('-').map(Number),[h,mi]=String(time||'00:00').split(':').map(Number);const g=Date.UTC(y,(m||1)-1,d||1,h||0,mi||0);return g-tzOff(g-tzOff(g))};
+const nowHM=()=>{const p=tzParts(Date.now());return pad(p.hour)+':'+pad(p.minute)};
+const fmtHM=ms=>{const p=tzParts(ms);return pad(p.hour)+':'+pad(p.minute)};
+const today=()=>{const p=tzParts(Date.now());return p.year+'-'+pad(p.month)+'-'+pad(p.day)};
 const parse=s=>{const[a,b,c]=String(s).split('-').map(Number);return new Date(a,(b||1)-1,c||1)};
 const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return ymd(d)};
 const monday=s=>{const d=parse(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d)};
@@ -484,12 +491,12 @@ const classesOn=d=>Object.entries(S.classes).filter(([,c])=>c.date===d&&(UI.role
 const isUnl=c=>c&&c.unlimitedUntil&&c.unlimitedUntil>=today();
 let _uc=null;
 function usage(){if(_uc)return _uc;const m=new Map(),idx={},now=Date.now();for(const [id,c] of Object.entries(S.clients))m.set(c,id);const paid={};for(const x of Object.values(S.payments))if(x.client&&x.kind==='package'&&x.date)(paid[x.client]??=[]).push(x);
-  for(const cl of Object.values(S.classes)){const end=new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000;
+  for(const cl of Object.values(S.classes)){const end=wallMs(cl.date,cl.time)+(+cl.dur||50)*60000;
     for(const b of cl.booked||[]){const c=S.clients[b.c];if(!c)continue;if(c.packageStart&&cl.date<c.packageStart)continue;if(b.burn||end<now)idx[b.c]=(idx[b.c]||0)+1}}
   return _uc={m,idx,paid}}
 const usedOf=id=>usage().idx[id]||0;
 const leftOf=c=>{if(isUnl(c))return Infinity;const id=usage().m.get(c);return (+c.credits||0)-(id?usedOf(id):0)};
-const isDone=(cl,b)=>!b.burn&&new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000<Date.now();
+const isDone=(cl,b)=>!b.burn&&wallMs(cl.date,cl.time)+(+cl.dur||50)*60000<Date.now();
 function leftCell(c){const n=leftOf(c);if(n===Infinity)return '<span style="font-weight:600" title="Unlimited sessions">\u221e</span>';return `<span style="color:${n<=0?'var(--bad)':n<=2?'var(--warn)':'inherit'};font-weight:600">${n}</span>`}
 function clientFlags(c){const f=[];if(c&&c.plan&&c.expires&&c.expires>=today()&&!pkgPaid(c))f.push({k:'nosale',txt:'No sale for this package',cls:'bad'});
   if(c.expires&&c.expires<today())f.push({k:'expired',txt:'Package expired',cls:'bad'});
@@ -626,7 +633,7 @@ function pDash(){
   <div class="grid2">
     <section class="panel"><header><h2>Today’s sessions</h2><span class="muted">${cls.length?'Tap a session to open it':''}</span></header>
       ${cls.length?`<div class="rows">${cls.map(([id,c])=>{const n=(c.booked||[]).length,pct=c.cap?Math.min(100,n/c.cap*100):0;
-        const past=c.time<=new Date().toTimeString().slice(0,5);return `<div class="row rowlink" data-class="${id}"><span class="t" style="color:${past?'var(--bad)':'var(--ok)'};font-weight:700" title="${past?'Started':'Coming up'}">${esc(c.time)}</span><div style="min-width:0">${sessLabel(c)} <span class="muted">· ${esc(staffName(c.instructor))}</span>
+        const past=c.time<=nowHM();return `<div class="row rowlink" data-class="${id}"><span class="t" style="color:${past?'var(--bad)':'var(--ok)'};font-weight:700" title="${past?'Started':'Coming up'}">${esc(c.time)}</span><div style="min-width:0">${sessLabel(c)} <span class="muted">· ${esc(staffName(c.instructor))}</span>
         </div>
         <span style="display:flex;gap:8px;align-items:center"><span class="num muted">${n}/${c.cap}</span></span></div>`}).join('')}</div>`
         :`<div class="empty">No sessions scheduled today.${p.editClasses?' Add them on the Schedule page.':''}</div>`}
@@ -635,7 +642,7 @@ function pDash(){
     return `<section class="panel"><header><div><h2>Call list \u00b7 packages ending</h2><span class="muted">Tick each client after you call them. Resets every day.</span></div><span class="pill ${nc===alerts.length&&alerts.length?'ok':'warn'}">${nc}/${alerts.length} called today</span></header>
       ${alerts.length?`<div class="rows">${list.map(a=>{const ok=called(a);return `<div class="row callrow ${ok?'done':''}" style="grid-template-columns:auto minmax(0,1fr) auto">
         <label class="tick"><input type="checkbox" data-call="${a.id}" ${ok?'checked':''} aria-label="Called ${esc(a.c.name)}"><span></span></label>
-        <button class="btn sm" style="border:0;background:none;text-align:left;padding:0;min-width:0" data-client="${a.id}"><b>${esc(a.c.name)}</b><br><span class="muted">${pkgH(a.c.plan,'No package')}${expShort(a.c)}</span>${ok?`<br><span style="font-size:.75rem;color:var(--ok)">\u2713 Called ${a.c.calledAt?new Date(a.c.calledAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}${a.c.calledBy?' by '+esc(a.c.calledBy):''}</span>`:(a.c.calledOn?`<br><span class="muted" style="font-size:.75rem">Last called ${esc(fmtDay(a.c.calledOn))}</span>`:'')}</button>
+        <button class="btn sm" style="border:0;background:none;text-align:left;padding:0;min-width:0" data-client="${a.id}"><b>${esc(a.c.name)}</b><br><span class="muted">${pkgH(a.c.plan,'No package')}${expShort(a.c)}</span>${ok?`<br><span style="font-size:.75rem;color:var(--ok)">\u2713 Called ${a.c.calledAt?new Date(a.c.calledAt).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):''}${a.c.calledBy?' by '+esc(a.c.calledBy):''}</span>`:(a.c.calledOn?`<br><span class="muted" style="font-size:.75rem">Last called ${esc(fmtDay(a.c.calledOn))}</span>`:'')}</button>
         <span style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">${flagPills(a.c,1)}</span></div>`}).join('')}</div>${listAll.length>10?`<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="callmore">${UI.callAll?'Show less':'See more ('+(listAll.length-10)+')'}</button></div>`:''}`
       :'<div class="empty">No packages expired in the last 30 days.</div>'}
     </section>`})()}
@@ -712,7 +719,7 @@ function trainerPage(tid){
         <div style="display:flex;justify-content:flex-end"><button class="btn primary" type="submit">Save note</button></div>
       </form>
       <div class="rows" style="margin-top:10px">${notes.length?notes.map(([id,n])=>`<div style="padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px">
-        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="muted" style="font-size:.78rem">${n.ts?esc(new Date(n.ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' \u00b7 '+new Date(n.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})):''}${n.client&&S.clients[n.client]?' \u00b7 <b style="color:var(--ink)">'+esc(S.clients[n.client].name)+'</b>':''}</span>
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="muted" style="font-size:.78rem">${n.ts?esc(new Date(n.ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' \u00b7 '+new Date(n.ts).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'})):''}${n.client&&S.clients[n.client]?' \u00b7 <b style="color:var(--ink)">'+esc(S.clients[n.client].name)+'</b>':''}</span>
         <button class="btn sm danger" data-delnote="${id}" aria-label="Delete note">\u00d7</button></div>
         <div style="white-space:pre-wrap">${esc(n.text)}</div></div>`).join(''):'<div class="empty">No notes yet.</div>'}</div>
     </section>
@@ -839,7 +846,7 @@ function notesPanel(){
   const f=UI.noteFilter||'';
   const all=Object.entries(S.notes||{}).filter(([,n])=>!f||n.trainer===f).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
   const list=all.slice(0,UI.noteMore?60:8);
-  const when=ts=>{if(!ts)return '';const d=new Date(ts),k=ymd(d);return (k===today()?'Today':k===addDays(today(),-1)?'Yesterday':d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}))+' \u00b7 '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})};
+  const when=ts=>{if(!ts)return '';const d=new Date(ts),tp=tzParts(ts),k=tp.year+'-'+pad(tp.month)+'-'+pad(tp.day);return (k===today()?'Today':k===addDays(today(),-1)?'Yesterday':d.toLocaleDateString('en-GB',{timeZone:TZ,day:'numeric',month:'short'}))+' \u00b7 '+d.toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'})};
   return `<section class="panel"><header><div><h2>Trainer notes</h2><span class="muted">Latest notes from the trainers</span></div>
     <select id="noteFilter" style="width:auto"><option value="">All trainers</option>${trainersList().map(([id,s])=>`<option value="${id}" ${id===f?'selected':''}>${esc(s.name)}</option>`).join('')}</select></header>
     ${list.length?`<div class="notegrid">${list.map(([,n])=>`<div class="note"><div class="muted" style="font-size:.78rem;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span><b style="color:var(--accent)">${esc(staffName(n.trainer))}</b>${n.client&&S.clients[n.client]?' \u2192 <b style="color:var(--ink)">'+esc(S.clients[n.client].name)+'</b>':''}</span><span>${esc(when(n.ts))}</span></div><div style="white-space:pre-wrap">${esc(n.text)}</div></div>`).join('')}</div>
@@ -892,7 +899,7 @@ function revDay(){
   return `<section class="panel"><header><div><h2>Payments \u00b7 ${esc(lbl)}</h2><span class="muted">${pays.length} sale${pays.length===1?'':'s'} \u00b7 <b class="num" style="color:var(--ink)">${L(tot)}</b>${Object.keys(by).length?' \u00b7 '+Object.entries(by).map(([m,v])=>esc(m)+' '+kfmt(v)).join(' \u00b7 '):''}</span></div>
     <div class="toolbar">${P().allPayments||P().payDates?`<button class="btn sm" data-act="dp-1" aria-label="Previous day">\u2190</button><button class="btn sm" data-act="dp0" ${d===t?'disabled':''}>Today</button><button class="btn sm" data-act="dp1" aria-label="Next day" ${d>=t?'disabled':''}>\u2192</button>`:''}${P().revenue||P().payDates?chartToggle():''}</div></header>
     ${pays.length?`<div class="tablewrap"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:620px;height:auto;display:block" role="img" aria-label="Payments by hour">${grid}${bars}</svg></div>${off?`<p class="muted" style="font-size:.78rem;margin:4px 0 0">${L(off)} recorded outside 07\u201321h</p>`:''}
-    <div class="rows" style="margin-top:8px">${pays.map(([,x])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr) auto"><span class="t" style="font-size:.82rem">${x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}</span><div style="min-width:0"><b>${x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'Product':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</b> <span class="muted" style="font-size:.82rem">\u00b7 ${esc(planName(x.item)||x.item)} \u00b7 ${esc(methodLabel(x))}</span></div><span class="num" style="font-weight:600">${L(x.amount)}</span></div>`).join('')}</div>`:'<div class="empty">No payments on this day yet.</div>'}
+    <div class="rows" style="margin-top:8px">${pays.map(([,x])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr) auto"><span class="t" style="font-size:.82rem">${x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):''}</span><div style="min-width:0"><b>${x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'Product':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</b> <span class="muted" style="font-size:.82rem">\u00b7 ${esc(planName(x.item)||x.item)} \u00b7 ${esc(methodLabel(x))}</span></div><span class="num" style="font-weight:600">${L(x.amount)}</span></div>`).join('')}</div>`:'<div class="empty">No payments on this day yet.</div>'}
   </section>`;
 }
 function revDaily(){
@@ -918,7 +925,7 @@ function revDaily(){
 function daySales(k){const pays=payList().filter(([,x])=>x.date===k),tot=pays.reduce((a,[,x])=>a+(+x.amount||0),0);
   const nm=x=>x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'Product':(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'));
   return `<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><b>${esc(fmtLong(k))}</b><span><b class="num">${L(tot)}</b> <span class="muted">· ${pays.length} sale${pays.length===1?'':'s'}</span> <button class="xbtn" data-act="chdayx" aria-label="Close">×</button></span></div>
-  ${pays.length?`<div class="rows">${pays.map(([,x])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr) auto;padding:6px 0"><span class="t" style="font-size:.8rem">${x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}</span><div style="min-width:0;font-size:.88rem"><b>${esc(nm(x))}</b> <span class="muted">· ${esc(planName(x.item)||x.item)} · ${esc(methodLabel(x))}</span>${+x.owed>0?` <span class="pill bad">Owes ${L(x.owed)}</span>`:''}${x.note?`<div class="muted" style="font-size:.78rem">✎ ${esc(x.note)}</div>`:''}</div><span class="num" style="font-weight:600">${L(x.amount)}</span></div>`).join('')}</div>`:'<div class="muted" style="font-size:.85rem">No sales this day.</div>'}</div>`}
+  ${pays.length?`<div class="rows">${pays.map(([,x])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr) auto;padding:6px 0"><span class="t" style="font-size:.8rem">${x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):''}</span><div style="min-width:0;font-size:.88rem"><b>${esc(nm(x))}</b> <span class="muted">· ${esc(planName(x.item)||x.item)} · ${esc(methodLabel(x))}</span>${+x.owed>0?` <span class="pill bad">Owes ${L(x.owed)}</span>`:''}${x.note?`<div class="muted" style="font-size:.78rem">✎ ${esc(x.note)}</div>`:''}</div><span class="num" style="font-weight:600">${L(x.amount)}</span></div>`).join('')}</div>`:'<div class="muted" style="font-size:.85rem">No sales this day.</div>'}</div>`}
 function revSix(){
   const now=new Date(),ms=[];
   const yr=now.getFullYear();for(let i=0;i<12;i++){const d=new Date(yr,i,1);ms.push({k:ymd(d).slice(0,7),n:d.toLocaleDateString('en-GB',{month:'short'})})}
@@ -966,7 +973,7 @@ function dayLine(d){
   if(!rows.length)return '<div class="panel empty">No trainers yet. Add them on the Staff page as Trainer.</div>';
   const span=TL1-TL0,pct=m=>Math.max(0,Math.min(100,(m-TL0)/span*100));
   const hours=[];for(let h=TL0/60;h<=TL1/60;h++)hours.push(h);
-  const now=new Date(),nowM=now.getHours()*60+now.getMinutes();
+  const _np=tzParts(Date.now()),nowM=_np.hour*60+_np.minute;
   const nowLine=d===t&&nowM>=TL0&&nowM<=TL1?`<div class="tlnow" style="left:${pct(nowM)}%"></div>`:'';
   let total=0;const PX=64,H=(TL1-TL0)/60*PX,py=m=>(Math.max(TL0,Math.min(TL1,m))-TL0)/60*PX;
   const cols=rows.map(r=>{
@@ -1070,7 +1077,7 @@ function debtPayPanel(){const ds=debtList();if(!ds.length)return '';
 async function payDebt(k,amt0,m,dt,nt){const d=debtList().find(x=>x.k===k);if(!d){toast('This client has no debt.');return false}
   const amt=Math.min(d.owed,Math.max(0,+amt0||0));if(!amt){toast('Enter the amount received.');return false}
   const items=d.items.sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||''));
-  return await save(async()=>{let left=amt;const rec={kind:'debt',date:dt,ts:new Date(dt+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:d.client||'',name:d.client?'':d.name,item:'Debt payment',amount:amt,by:UI.role,refs:items.map(i=>i[0])};applyMethod(rec,m);if(nt)rec.note=nt;
+  return await save(async()=>{let left=amt;const rec={kind:'debt',date:dt,ts:wallMs(dt,nowHM())||Date.now(),client:d.client||'',name:d.client?'':d.name,item:'Debt payment',amount:amt,by:UI.role,refs:items.map(i=>i[0])};applyMethod(rec,m);if(nt)rec.note=nt;
     await store.set('payments',uid(),rec);
     for(const[id,x]of items){if(left<=0)break;const pay=Math.min(left,+x.owed);left-=pay;const up={...x},rest=(+x.owed)-pay;if(rest>0)up.owed=rest;else{delete up.owed;delete up.unpaid;up.settled=dt}await store.set('payments',id,up)}},
     amt<d.owed?'Debt payment saved — '+d.name+' still owes '+L(d.owed-amt):'Debt paid in full — '+d.name+' owes nothing now')}
@@ -1221,7 +1228,7 @@ function pPay(){
     return `<section class="panel"><header><h2>By month</h2></header><div class="rows">${m.map((v,i)=>`<button class="frow" style="border:0;border-top:1px solid var(--line);background:none;width:100%;text-align:left;cursor:pointer" data-pmonth="${d.slice(0,4)}-${pad(i+1)}"><span style="width:40px">${MN[i]}</span><span class="fill" style="flex:1;max-width:none;margin:0"><i style="width:${v/mx*100}%;background:var(--brand)"></i></span><b class="num" style="min-width:110px;text-align:right">${L(v)}</b></button>`).join('')}</div></section>`})():''}
   <section class="panel"><header><h2>Sales log</h2><span class="muted">${day.length} sale${day.length===1?'':'s'}</span></header>
     ${day.length?`<div class="tablewrap"><table><thead><tr><th>${pm==='day'?'Time':'Date'}</th><th>Client</th><th>Item</th><th>Method</th><th class="r">Amount</th>${p.delPayment||p.editPayment?'<th></th>':''}</tr></thead><tbody>
-    ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}${x.note?`<div class="muted" style="font-size:.8rem;max-width:280px;white-space:normal">\u270e ${esc(x.note)}</div>`:''}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(methodLabel(x))}${!x.unpaid&&+x.owed>0?' <span class="pill bad" style="white-space:nowrap">Owes '+L(x.owed)+'</span>':''}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
+    ${day.map(([id,x])=>`<tr><td class="num" style="white-space:nowrap">${pm==='day'?(x.ts?new Date(x.ts).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):''):esc(fmtDay(x.date))}</td><td>${x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'<span class="pill acc">Product</span>':esc(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in'))}</td><td>${esc(x.item)}${x.note?`<div class="muted" style="font-size:.8rem;max-width:280px;white-space:normal">\u270e ${esc(x.note)}</div>`:''}</td><td>${x.unpaid?'<span class="pill bad">Unpaid</span>':esc(methodLabel(x))}${!x.unpaid&&+x.owed>0?' <span class="pill bad" style="white-space:nowrap">Owes '+L(x.owed)+'</span>':''}</td><td class="r num">${x.unpaid?`<span style="color:var(--bad)">${L(x.owed)}</span>`:L(x.amount)}</td>
       ${p.delPayment||p.editPayment?`<td class="r" style="white-space:nowrap">${p.editPayment?`<button class="btn sm" data-editpay="${id}">Edit</button>`:''}${p.delPayment?` <button class="btn sm danger" data-delpay="${id}">Delete</button>`:''}</td>`:''}</tr>`).join('')}
     </tbody></table></div>`:`<div class="empty">No sales recorded for this ${pm}.</div>`}
   </section>`;
@@ -1366,7 +1373,7 @@ function pLog(){
   return `<div class="pagehead"><div><div class="eyebrow">Owner only</div><h1>Change history</h1><div class="muted" style="margin-top:4px">Every add, edit and delete — who did it and when.</div></div></div>
   <div class="panel"><header><div class="toolbar" style="flex:1"><input id="logQ" placeholder="Search name, client, staff…" value="${esc(UI.logQ||'')}" style="max-width:320px;min-width:180px;flex:1"></div>
     <div class="chips">${[['all','All'],['added','Added'],['edited','Edited'],['deleted','Deleted']].map(([k,n])=>`<button class="chip" data-logf="${k}" aria-pressed="${f===k}">${n}</button>`).join('')}</div></header>
-  ${shown.length?`<div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Item</th><th>Details</th></tr></thead><tbody>${shown.map(x=>`<tr><td class="num" style="white-space:nowrap">${new Date(x.ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} ${new Date(x.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td>${esc(x.who)}</td><td><span class="pill ${col[x.action]||''}">${esc(x.action)}</span> <span class="muted">${esc(COL_NAMES[x.col]||x.col)}</span></td><td><b>${esc(x.label)}</b></td><td class="muted" style="font-size:.85rem">${esc(x.changes||'')}</td></tr>`).join('')}</tbody></table></div>${list.length>300?`<div class="muted" style="padding:10px">Showing latest 300 of ${list.length}.</div>`:''}`:'<div class="empty">No changes recorded yet. From now on every change shows here.</div>'}
+  ${shown.length?`<div class="tablewrap"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Item</th><th>Details</th></tr></thead><tbody>${shown.map(x=>`<tr><td class="num" style="white-space:nowrap">${new Date(x.ts).toLocaleDateString('en-GB',{timeZone:TZ,day:'numeric',month:'short'})} ${new Date(x.ts).toLocaleTimeString('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit'})}</td><td>${esc(x.who)}</td><td><span class="pill ${col[x.action]||''}">${esc(x.action)}</span> <span class="muted">${esc(COL_NAMES[x.col]||x.col)}</span></td><td><b>${esc(x.label)}</b></td><td class="muted" style="font-size:.85rem">${esc(x.changes||'')}</td></tr>`).join('')}</tbody></table></div>${list.length>300?`<div class="muted" style="padding:10px">Showing latest 300 of ${list.length}.</div>`:''}`:'<div class="empty">No changes recorded yet. From now on every change shows here.</div>'}
   </div>`;
 }
 /* --- Staff --- */
@@ -1595,7 +1602,7 @@ function payModal(id){const x=S.payments[id];if(!x)return;
   openModal(`<header><div><div class="eyebrow">Edit sale</div><h2>${esc(x.kind==='product'&&!(x.client&&S.clients[x.client])&&!x.name?'Product':(x.client&&S.clients[x.client]?clientName(x.client):(x.name||'Walk-in')))}</h2></div><button class="x" data-close aria-label="Close">×</button></header>
   <form class="form" id="payForm" data-id="${id}">
     <div class="field"><label for="pDate">Date</label><input type="date" id="pDate" value="${esc(x.date||'')}"></div>
-    <div class="field"><label for="pTime">Time</label><input type="time" id="pTime" value="${x.ts?new Date(x.ts).toTimeString().slice(0,5):''}"></div>
+    <div class="field"><label for="pTime">Time</label><input type="time" id="pTime" value="${x.ts?fmtHM(x.ts):''}"></div>
     <div class="field wide"><label for="pClient">Client</label><select id="pClient"><option value="">${x.kind==='product'?'— (product)':'Walk-in'}</option>${allC.map(([cid,c])=>`<option value="${cid}" ${cid===x.client?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
     <div class="field wide"><label for="pItem">Item</label><input id="pItem" value="${esc(x.item||'')}"></div>
     <div class="field wide"><label for="pNote">Note</label><input id="pNote" value="${esc(x.note||'')}" placeholder="What it was and why"></div>
@@ -1604,14 +1611,14 @@ function payModal(id){const x=S.payments[id];if(!x)return;
     <div class="field"><label for="pOwed">Still owed (Lek)</label><input type="number" id="pOwed" value="${x.unpaid?0:(+x.owed||0)}" min="0" step="any"></div>
     <div class="field wide"><span class="muted" style="font-size:.8rem">Changing a sale does not change the client’s package or sessions — edit those on the client.</span><div class="actions" style="margin-top:8px"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save changes</button></div></div>
   </form>`)}
-function usedSince(cid,start){let n=0;const now=Date.now();for(const cl of Object.values(S.classes)){if(start&&cl.date<start)continue;const end=new Date(cl.date+'T'+(cl.time||'00:00')+':00').getTime()+(+cl.dur||50)*60000;for(const b of cl.booked||[])if(b.c===cid&&(b.burn||end<now))n++}return n}
+function usedSince(cid,start){let n=0;const now=Date.now();for(const cl of Object.values(S.classes)){if(start&&cl.date<start)continue;const end=wallMs(cl.date,cl.time)+(+cl.dur||50)*60000;for(const b of cl.booked||[])if(b.c===cid&&(b.burn||end<now))n++}return n}
 function undoPkgPatch(cid,prev){const c=S.clients[cid];if(!c)return null;
   if(prev)return{plan:prev.plan||'',packageStart:prev.packageStart||'',expires:prev.expires||'',credits:+prev.credits||0,unlimitedUntil:prev.unlimitedUntil||'',price:+prev.price||0,packages:(c.packages||[]).slice(0,prev.npk||0)};
   const hist=[...(c.packages||[])],h=hist.pop();
   if(!h)return{plan:'',packageStart:'',expires:'',credits:0,packages:[]};
   return{plan:h.plan||'',packageStart:h.start||'',expires:h.end||'',credits:(+h.left||0)+usedSince(cid,h.start),trainers:h.trainers&&h.trainers.length?h.trainers:(c.trainers||[]),packages:hist}}
 async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
-  const pr=findP(prodKey),d=dt||today(),when=new Date(d+'T'+(tm||new Date().toTimeString().slice(0,5))+':00').getTime()||Date.now();
+  const pr=findP(prodKey),d=dt||today(),when=wallMs(d,tm||nowHM())||Date.now();
   const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,by:UI.role};applyMethod(rec,method);if(note&&note.trim())rec.note=note.trim();if(clientId&&(pr.c||pr.unl)&&S.clients[clientId]){const c0=S.clients[clientId];rec.prev={plan:c0.plan||'',packageStart:c0.packageStart||'',expires:c0.expires||'',credits:+c0.credits||0,unlimitedUntil:c0.unlimitedUntil||'',price:+c0.price||0,npk:(c0.packages||[]).length}}
   if(paid<total){rec.owed=total-paid;rec.total=total;if(!paid)rec.unpaid=true}
   const ok=await save(()=>store.set('payments',uid(),rec));
@@ -1670,7 +1677,7 @@ async function loadDemo(){
   const slots=[['08:00','Reformer Group','st_elira'],['12:30','Mat Pilates','st_arben'],['18:00','Reformer Group','st_elira'],['19:15','Reformer Beginners','st_arben']];
   const classes={};let k=0;
   for(let d=0;d<6;d++)slots.forEach(([tm,ty,ins],j)=>{if(d===5&&j>1)return;const date=addDays(w,d);const n=(d*3+j*2)%7;
-    const booked=[...Array(n)].map((_,i)=>({c:'cl_'+((d+j+i)%8),u:(d+j+i)%8===4,in:date<t||(date===t&&tm<new Date().toTimeString().slice(0,5))}));
+    const booked=[...Array(n)].map((_,i)=>({c:'cl_'+((d+j+i)%8),u:(d+j+i)%8===4,in:date<t||(date===t&&tm<nowHM())}));
     const seen=new Set();classes['cs_'+(k++)]={date,time:tm,dur:50,type:ty,instructor:ins,cap:ty==='Mat Pilates'?12:8,booked:booked.filter(b=>!seen.has(b.c)&&seen.add(b.c))}});
   const pays={};[[0,'cl_1','10-session pack',13000,'Card'],[0,'','Single PT session',1500,'Cash'],[0,'cl_5','5-session pack',7000,'Cash'],[-1,'cl_4','Monthly unlimited',18000,'Bank transfer'],[-2,'cl_7','10-session pack',13000,'Card'],[-3,'cl_0','5-session pack',7000,'Cash']]
     .forEach(([o,c,it,a,m],i)=>{pays['py_demo'+i]={date:addDays(t,o),ts:Date.now()+o*864e5-i*6e5,client:c,item:it,amount:a,method:m,by:'owner'}});
@@ -1839,7 +1846,7 @@ document.addEventListener('submit',async e=>{
   if(f.id==='ppForm'){const d0=Object.fromEntries(shopList())[$('#ppProd').value];if(!d0){toast('Choose a product.');return}
     if(!$('#ppClient').value.trim()){toast('Type the client\u2019s name or tap Walk-in.');$('#ppClient').focus();return}
     const q=Math.max(1,Math.round(+$('#ppQty').value||1)),total=(+d0.price||0)*q,amt=$('#ppAmt').value===''?total:Math.max(0,+$('#ppAmt').value||0),d=$('#ppDate').value||today(),nm=$('#ppClient').value.trim().replace(/\s+/g,' '),cid=nm?findClient(nm):null;
-    const rec={kind:'product',date:d,ts:new Date(d+'T'+new Date().toTimeString().slice(0,5)+':00').getTime()||Date.now(),client:cid||'',item:d0.name+(q>1?' ×'+q:''),amount:amt,by:UI.role};applyMethod(rec,readMethod('ppMethod'));
+    const rec={kind:'product',date:d,ts:wallMs(d,nowHM())||Date.now(),client:cid||'',item:d0.name+(q>1?' ×'+q:''),amount:amt,by:UI.role};applyMethod(rec,readMethod('ppMethod'));
     if(nm&&!cid)rec.name=nm;const nt=$('#ppNote').value.trim();if(nt)rec.note=nt;if(amt<total){rec.owed=total-amt;rec.total=total;if(!amt)rec.unpaid=true}
     if(await save(()=>store.set('payments',uid(),rec),amt<total?'Sale saved — '+L(total-amt)+' added to Debtors':'Product sale saved')){UI.amtManual={};['ppClient','ppNote'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});const qq=$('#ppQty');if(qq)qq.value=1;ppSync()}
     return}
@@ -1849,8 +1856,8 @@ document.addEventListener('submit',async e=>{
       const up={...x};if(left>0){up.owed=left}else{delete up.owed;delete up.unpaid;up.settled=d}await store.set('payments',id,up)},left>0?'Payment saved \u2014 still owes '+L(left):'Debt paid in full');
     if(ok)closeModal();return}
   if(f.id==='payForm'){if(!P().editPayment)return;const id=f.dataset.id,x=S.payments[id];if(!x)return;
-    const d=$('#pDate').value||x.date,tm=$('#pTime').value||(x.ts?new Date(x.ts).toTimeString().slice(0,5):'12:00'),amt=Math.max(0,+$('#pAmt').value||0),m=readMethod('pMethod'),un=m==='Unpaid';
-    const nx={...x,date:d,ts:new Date(d+'T'+tm+':00').getTime()||x.ts,client:$('#pClient').value,item:$('#pItem').value.trim()||x.item,amount:un?0:amt,editedBy:UI.role,editedAt:Date.now()};if(un){nx.method=x.method||'Cash';delete nx.split}else applyMethod(nx,m);{const nt=($('#pNote')||{}).value||'';if(nt.trim())nx.note=nt.trim();else delete nx.note}
+    const d=$('#pDate').value||x.date,tm=$('#pTime').value||(x.ts?fmtHM(x.ts):'12:00'),amt=Math.max(0,+$('#pAmt').value||0),m=readMethod('pMethod'),un=m==='Unpaid';
+    const nx={...x,date:d,ts:wallMs(d,tm)||x.ts,client:$('#pClient').value,item:$('#pItem').value.trim()||x.item,amount:un?0:amt,editedBy:UI.role,editedAt:Date.now()};if(un){nx.method=x.method||'Cash';delete nx.split}else applyMethod(nx,m);{const nt=($('#pNote')||{}).value||'';if(nt.trim())nx.note=nt.trim();else delete nx.note}
     const ow=Math.max(0,+($('#pOwed')||{}).value||0);if(un){nx.unpaid=true;nx.owed=amt}else{delete nx.unpaid;if(ow>0)nx.owed=ow;else delete nx.owed}
     if(await save(()=>store.set('payments',id,nx),'Sale updated'))closeModal();return}
   if(f.id==='codeForm'){const a1=$('#cc1').value,a2=$('#cc2').value;if(a1.length<6){toast('At least 6 characters.');return}if(a1!==a2){toast('The two codes don\u2019t match.');return}
@@ -1935,7 +1942,7 @@ document.addEventListener('submit',async e=>{
     const gsel=$('#clGrp')?$('#clGrp').value:null;
     let saleMsg='';
     if(id&&UI.role==='owner'){const old=S.clients[id],m=pkgSale(old),np=d.plan!==undefined?d.plan:old.plan,ns=d.packageStart||old.packageStart;
-      if(m&&np&&(np!==old.plan||ns!==old.packageStart)){const x=m.x,pid=Object.keys(S.payments).find(k=>S.payments[k]===x);if(pid){const tm=x.ts?new Date(x.ts).toTimeString().slice(0,5):'12:00';d.__sale={pid,nx:{...x,item:np,date:ns,ts:new Date(ns+'T'+tm+':00').getTime()||x.ts,editedBy:UI.role,editedAt:Date.now()}};saleMsg=' \u2014 sale on Payments updated too'}}
+      if(m&&np&&(np!==old.plan||ns!==old.packageStart)){const x=m.x,pid=Object.keys(S.payments).find(k=>S.payments[k]===x);if(pid){const tm=x.ts?fmtHM(x.ts):'12:00';d.__sale={pid,nx:{...x,item:np,date:ns,ts:wallMs(ns,tm)||x.ts,editedBy:UI.role,editedAt:Date.now()}};saleMsg=' \u2014 sale on Payments updated too'}}
       else if(!m&&np&&(np!==old.plan||ns!==old.packageStart))saleMsg=' \u2014 no sale found for this package, record it on Payments'}
     const sx=d.__sale;delete d.__sale;
     if(id){if(await save(async()=>{await store.upd('clients',id,d);if(sx)await store.set('payments',sx.pid,sx.nx);if(gsel!==null&&gsel!==grpOf(id))await setClientGroup(id,gsel)},'Client saved'+saleMsg))closeModal()}
