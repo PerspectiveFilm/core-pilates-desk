@@ -1568,7 +1568,7 @@ function clientModal(id){
     </div></div>
     ${id?`<div class="field wide">${pkgHistory(c,1)}</div>`:''}
     ${regFormFields(c)}
-    <div class="field wide"><div class="actions">${id&&p.delClient?'<button type="button" class="btn danger" data-act="delclient">Delete client</button>':''}${id&&UI.role!=='trainer'?`<button type="button" class="btn" data-sell="${id}">Sell pack</button>`:''}<button class="btn primary" type="submit">${id?'Save':'Add client'}</button></div><div id="delSlot"></div></div>
+    <div class="field wide"><div class="actions">${id&&p.delClient?'<button type="button" class="btn danger" data-act="delclient">Delete client</button>':''}<button class="btn primary" type="submit">${id?'Save':'Add client'}</button></div><div id="delSlot"></div></div>
   </form>
 `);
   if(id){const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=true);const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='none';f.querySelector('.actions')?.insertAdjacentHTML('beforeend','<button type="button" class="btn primary" data-act="cledit">Edit</button>')}}
