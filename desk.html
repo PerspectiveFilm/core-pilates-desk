@@ -217,6 +217,30 @@
 #cpd .gdot{display:inline-block;width:10px;height:10px;border-radius:5px}
 #cpd .gspots{color:#fff;font:700 .9rem var(--mono);padding:3px 10px;border-radius:99px;white-space:nowrap}
 #cpd .gcard{gap:10px}
+#cpd .inbox{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:16px;align-items:start}
+#cpd .inlist{max-height:72vh;overflow:auto}
+#cpd .inchat{display:flex;flex-direction:column;min-height:60vh}
+#cpd .thrd{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:10px 6px;border-top:1px solid var(--line);border-radius:6px}
+#cpd .thrd:hover{background:var(--sunk)}
+#cpd .thrd.on{background:var(--accent-soft)}
+#cpd .thlast{display:block;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cpd .chdot{width:10px;height:10px;border-radius:5px;flex:none;display:inline-block}
+#cpd .chsetup{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+#cpd .chcard{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:10px}
+#cpd .chcard .pill{margin-left:auto}
+#cpd .msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:6px 0;max-height:56vh}
+#cpd .msg{max-width:78%;padding:8px 11px;border-radius:12px;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+#cpd .msg span{display:block;font-size:.68rem;opacity:.7;margin-top:3px}
+#cpd .msg.in{background:var(--sunk);align-self:flex-start}
+#cpd .msg.out{background:var(--accent);color:var(--accent-ink);align-self:flex-end}
+#cpd .reply{display:flex;gap:8px;align-items:flex-end;border-top:1px solid var(--line);padding-top:10px;margin-top:8px}
+#cpd .reply textarea{flex:1;min-height:44px}
+#cpd .inback{display:none}
+@media (max-width:760px){#cpd .inbox{grid-template-columns:minmax(0,1fr)}
+#cpd .inbox.open .inlist{display:none}
+#cpd .inbox:not(.open) .inchat{display:none}
+#cpd .inback{display:inline-block}
+}
 #cpd .rowlink{cursor:pointer}
 #cpd .rowlink:hover{background:var(--sunk)}
 #cpd .row .t{font-family:var(--mono);font-size:.95rem}
@@ -436,13 +460,14 @@ function applyMethod(rec,m){if(m&&typeof m==='object'){rec.method='Split';rec.sp
 const STAFF_ROLES=['Instructor','Reception','Manager'];
 const DEFAULT_PINS={owner:'1111',manager:'2222',reception:'3333'};
 const PERMS={
-  owner:{label:'Owner',pages:['dash','sched','team','groups','clients','pay','fin','data','log','staff'],revenue:1,payroll:1,editClasses:1,delClient:1,allPayments:1,delPayment:1,editPayment:1,pins:1},
+  owner:{label:'Owner',pages:['dash','inbox','sched','team','groups','clients','pay','fin','data','log','staff'],revenue:1,payroll:1,editClasses:1,delClient:1,allPayments:1,delPayment:1,editPayment:1,pins:1},
   manager:{label:'Manager',pages:['dash','sched','team','groups','clients','pay','staff'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:1,delPayment:0,pins:0},
-  reception:{label:'Reception',pages:['dash','sched','team','groups','clients','pay'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:0,payDates:1,delPayment:1,editPayment:1,pins:0},
+  reception:{label:'Reception',pages:['dash','inbox','sched','team','groups','clients','pay'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:0,payDates:1,delPayment:1,editPayment:1,pins:0},
   trainer:{label:'Trainer',pages:['team','sched','groups'],revenue:0,payroll:0,editClasses:0,delClient:0,allPayments:0,delPayment:0,pins:0},
 };
 const LOGO='<svg viewBox="0 0 100 100" fill="none" stroke="#D9967A" aria-hidden="true"><circle cx="47" cy="47" r="27" stroke-width="2.6"/><circle cx="54" cy="53" r="26" stroke-width="2.6"/><circle cx="51" cy="50" r="20" stroke-width="3"/><ellipse cx="49" cy="49" rx="17" ry="16" stroke-width="2.6"/><circle cx="50" cy="50" r="12" stroke-width="5.5"/></svg>';
 const ICONS={
+  inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
   groups:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><circle cx="15.5" cy="10" r="1.8"/><path d="M5.5 16.5c.5-1.8 1.6-2.7 3-2.7s2.5.9 3 2.7M12.5 16.5c.5-1.8 1.6-2.7 3-2.7s2.5.9 3 2.7"/></svg>',
   log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
   data:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.5 6"/></svg>',
@@ -454,10 +479,10 @@ const ICONS={
   pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>',
   staff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 21c.6-4 3.4-6.5 7-6.5s6.4 2.5 7 6.5"/><path d="M12 14.5v3"/></svg>',
 };
-const PAGE_NAMES={dash:'Dashboard',sched:'Schedule',team:'Team',groups:'Groups',clients:'Clients',pay:'Payments',fin:'Finances',data:'Data',log:'History',staff:'Staff'};
+const PAGE_NAMES={dash:'Dashboard',inbox:'Inbox',sched:'Schedule',team:'Team',groups:'Groups',clients:'Clients',pay:'Payments',fin:'Finances',data:'Data',log:'History',staff:'Staff'};
 
 /* ---------- state & store ---------- */
-const S={pub:{},groups:{},products:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
+const S={pub:{},groups:{},products:{},threads:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
 const UI={role:null,page:'dash',week:monday(today()),clientFilter:'active',clientQ:'',payDay:today(),loginRole:'reception',loaded:false};
 let store=null,viewerIsOwner=false,modalRefresh=null;
 
@@ -546,7 +571,7 @@ async function fbStart(render){
     if(!r){UI.role=null;UI.trainer=null;render();return}
     if(UI.lockTrainer&&!(r.role==='trainer'&&r.tid===UI.lockTrainer)){FB.auth.signOut();return}
     UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':(UI.page||'dash');
-    if(!subs){subs=true;const cols=r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products'];
+    if(!subs){subs=true;const cols=r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads'];
       UI.got={};UI.loadT0=Date.now();setTimeout(()=>{if(!UI.dataReady)render()},12000);
       for(const c of cols)store.sub(c,o=>{S[c]=o;UI.got[c]=1;if(!UI.dataReady&&UI.got.clients&&UI.got.staff)UI.dataReady=true;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(!UI.importing)render()})}
     UI.loaded=true;render()});
@@ -588,7 +613,7 @@ function login(){
 function shell(){
   const p=P(),page=p.pages.includes(UI.page)?UI.page:p.pages[0];UI.page=page;
   const nav=p.pages.map(k=>`<button data-nav="${k}" ${k===page?'aria-current="page"':''}>${ICONS[k]}<span>${PAGE_NAMES[k]}</span></button>`).join('');
-  const body={dash:pDash,sched:pSched,team:pTeam,groups:pGroups,clients:pClients,pay:pPay,fin:pFin,data:pData,log:pLog,staff:pStaff}[page]();
+  const body={dash:pDash,inbox:pInbox,sched:pSched,team:pTeam,groups:pGroups,clients:pClients,pay:pPay,fin:pFin,data:pData,log:pLog,staff:pStaff}[page]();
   return `<div class="app">
     <aside class="rail"><div class="brand">${LOGO}<div><b>Core Pilates</b><span>Studio desk · Tirana</span></div></div>
       <nav class="nav" aria-label="Pages">${nav}</nav>
@@ -1436,6 +1461,34 @@ function groupModal(id){
     ${ed?`<div class="field wide"><label for="gAdd">Add a client</label><div style="display:flex;gap:8px"><select id="gAdd"><option value="">Choose client…</option>${allC.map(([cid,c])=>`<option value="${cid}">${esc(c.name)}</option>`).join('')}</select><button type="button" class="btn" data-gaddm>Add</button></div><span class="muted" style="font-size:.78rem">Untick a client to remove them.</span></div>
     <div class="field wide"><div class="actions">${id&&UI.role==='owner'?'<button type="button" class="btn danger" data-gdel="'+id+'" style="margin-right:auto">Delete group</button>':''}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save group</button></div></div>`:''}
   </form>`)}
+/* ---------- Inbox ---------- */
+const CHANNELS={instagram:{n:'Instagram',c:'#C13584'},facebook:{n:'Facebook',c:'#1877F2'},whatsapp:{n:'WhatsApp',c:'#25D366'},email:{n:'Email',c:'#5B6F79'}};
+const chDot=ch=>`<span class="chdot" style="background:${(CHANNELS[ch]||{}).c||'#999'}" title="${esc((CHANNELS[ch]||{}).n||ch)}"></span>`;
+let _msgUnsub=null,_msgFor=null;UI.msgs=UI.msgs||{};
+function watchMsgs(tid){if(_msgFor===tid)return;if(_msgUnsub){try{_msgUnsub()}catch{}_msgUnsub=null}_msgFor=tid;if(!tid)return;
+  if(FB){_msgUnsub=FB.fs.collection('messages').where('thread','==',tid).onSnapshot(q=>{UI.msgs[tid]=q.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(x.at||0)-(y.at||0)).slice(-300);if(UI.page==='inbox')render()},e=>toast('Could not load messages ('+e.code+')'))}
+  else{UI.msgs[tid]=UI.msgs[tid]||[]}}
+function pInbox(){const st=(S.settings.inbox||{}),f=UI.inboxCh||'all',q=(UI.inboxQ||'').toLowerCase();
+  const th=Object.entries(S.threads||{}).filter(([,t])=>(f==='all'||t.channel===f)&&(!q||(t.name+' '+(t.handle||'')+' '+(t.last||'')).toLowerCase().includes(q))).sort((a,b)=>(b[1].lastAt||0)-(a[1].lastAt||0));
+  const sel=UI.inboxSel&&S.threads[UI.inboxSel]?UI.inboxSel:null;watchMsgs(sel);
+  const conn=Object.keys(CHANNELS).filter(k=>st[k]&&st[k].connected);
+  const unread=Object.values(S.threads||{}).reduce((a,t)=>a+(+t.unread||0),0);
+  const setup=`<section class="panel"><header><div><h2>Connect your channels</h2><span class="muted">Messages appear here once a channel is connected</span></div></header>
+    <div class="chsetup">${Object.entries(CHANNELS).map(([k,c])=>`<div class="chcard">${chDot(k)}<b>${c.n}</b><span class="pill ${st[k]&&st[k].connected?'ok':''}">${st[k]&&st[k].connected?'Connected':st[k]&&st[k].pending?'Waiting for approval':'Not connected'}</span></div>`).join('')}</div></section>`;
+  const t=sel?S.threads[sel]:null,msgs=sel?(UI.msgs[sel]||[]):[];
+  return `<div class="pagehead"><div><div class="eyebrow">${unread?unread+' unread':'All caught up'}</div><h1>Inbox</h1></div></div>
+  ${conn.length<4?setup:''}
+  <div class="inbox ${sel?'open':''}">
+    <section class="panel inlist"><div class="toolbar" style="margin-bottom:8px"><input id="inboxQ" placeholder="Search messages…" value="${esc(UI.inboxQ||'')}" style="flex:1;min-width:0"></div>
+      <div class="chips" style="margin-bottom:8px">${['all',...Object.keys(CHANNELS)].map(k=>`<button class="chip" data-inch="${k}" aria-pressed="${f===k}">${k==='all'?'All':CHANNELS[k].n}</button>`).join('')}</div>
+      ${th.length?`<div class="rows">${th.map(([id,x])=>`<button class="thrd ${id===sel?'on':''}" data-thread="${id}">${chDot(x.channel)}<span style="min-width:0;flex:1"><b>${esc(x.name||x.handle||'Unknown')}</b>${x.client&&S.clients[x.client]?' <span class="pill ok">client</span>':''}<span class="muted thlast">${esc(x.last||'')}</span></span><span class="muted" style="font-size:.72rem;text-align:right">${x.lastAt?esc(new Date(x.lastAt).toLocaleDateString('en-GB',{timeZone:TZ,day:'numeric',month:'short'})):''}${+x.unread?`<br><span class="snum zero">${x.unread}</span>`:''}</span></button>`).join('')}</div>`:`<div class="empty">No messages yet.${conn.length?'':' Connect a channel to start.'}</div>`}
+    </section>
+    <section class="panel inchat">${t?`<header><div style="display:flex;align-items:center;gap:8px"><button class="btn sm inback" data-act="inback">←</button>${chDot(t.channel)}<div><h2>${esc(t.name||t.handle||'Unknown')}</h2><span class="muted" style="font-size:.8rem">${esc((CHANNELS[t.channel]||{}).n||'')}${t.handle?' · '+esc(t.handle):''}</span></div></div>
+        <div class="toolbar"><select id="thClient" style="max-width:200px"><option value="">Link to client…</option>${Object.entries(S.clients).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([cid,c])=>`<option value="${cid}" ${cid===t.client?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div></header>
+      <div class="msgs" id="msgs">${msgs.length?msgs.map(m=>`<div class="msg ${m.dir==='out'?'out':'in'}"><div>${esc(m.text||'')}</div><span>${m.at?esc(new Date(m.at).toLocaleString('en-GB',{timeZone:TZ,day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})):''}${m.dir==='out'?' · '+esc(m.by||'')+(m.status&&m.status!=='sent'?' · '+esc(m.status):''):''}</span></div>`).join(''):'<div class="empty">No messages in this chat yet.</div>'}</div>
+      <form id="replyForm" class="reply"><textarea id="replyText" rows="2" placeholder="Write a reply…"></textarea><button class="btn primary" type="submit">Send</button></form>`
+      :`<div class="empty">Choose a conversation on the left.</div>`}</section>
+  </div>`}
 function pStaff(){
   const p=P(),mon=today().slice(0,7);
   const taught=id=>Object.values(S.classes).filter(c=>c.instructor===id&&(c.date||'').startsWith(mon)&&c.date<=today()).length;
@@ -1751,6 +1804,8 @@ document.addEventListener('click',async e=>{
   if(ds.pphide){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Remove?';return}await save(()=>store.set('products',ds.pphide,{...(S.products[ds.pphide]||{}),name:Object.fromEntries(shopList())[ds.pphide]?.name||'',hidden:true}),'Product removed');closeModal();return}
   if(ds.undopkg){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Tap again to undo';return}const pt=undoPkgPatch(ds.undopkg,null);if(pt&&await save(()=>store.upd('clients',ds.undopkg,pt),'Package undone \u2014 previous package is active again'))clientModal(ds.undopkg);return}
   if(ds.pkdel){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='Tap again to remove';return}if(await save(()=>store.set('products',ds.pkdel,{...S.products[ds.pkdel],hidden:true}),'Package removed'))closeModal();return}
+  if(ds.thread){UI.inboxSel=ds.thread;const t0=S.threads[ds.thread];if(t0&&+t0.unread)store.upd('threads',ds.thread,{unread:0}).catch(()=>{});render();setTimeout(()=>{const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight},50);return}
+  if(ds.inch){UI.inboxCh=ds.inch;render();return}
   if(ds.settle){settleModal(ds.settle);return}
   if(ds.editpay){if(P().editPayment)payModal(ds.editpay);return}
   if(ds.delpay){const row=t.closest('tr');t.outerHTML='<span style="display:inline-flex;gap:4px"><button class="btn sm" data-keep>Keep</button><button class="btn sm danger" data-delpay2="'+ds.delpay+'">Confirm</button></span>';return}
@@ -1794,6 +1849,7 @@ document.addEventListener('click',async e=>{
     case'ppwalk':{const c=$('#ppClient');if(c){c.value='Walk-in';c.focus()}break}
     case'ppeditsel':{const v=($('#ppProd')||{}).value;if(v)productModal(v);break}
     case'chdayx':UI.chDay=null;render();break;
+    case'inback':UI.inboxSel=null;render();break;
     case'debtall':UI.debtAll=!UI.debtAll;render();break;
     case'discseed':{t.disabled=true;await save(seedDisc);break}
     case'cledit':{const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>{if(!e.hasAttribute('data-lock'))e.disabled=false});const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='';t.remove();f.querySelector('#clName')?.focus()}break}
@@ -1815,6 +1871,7 @@ document.addEventListener('input',e=>{
   if(e.target.id==='ppAmt'){(UI.amtManual||(UI.amtManual={})).ppAmt=1;ppSync()}
   if(e.target.id==='ppQty'){if(UI.amtManual)UI.amtManual.ppAmt=0;ppSync()}
   if(e.target.id==='qsAmt'){(UI.amtManual||(UI.amtManual={})).qsAmt=1;amtHint('qsClient','qsProd','qsAmt')}if(e.target.id==='sAmt'){(UI.amtManual||(UI.amtManual={})).sAmt=1;amtHint('sClient','sProd','sAmt')}
+  if(e.target.id==='inboxQ'){UI.inboxQ=e.target.value;render()}
   if(e.target.id==='clientQ'){UI.clientQ=e.target.value;render()}
   if(e.target.id==='logQ'){UI.logQ=e.target.value;render()}
 });
@@ -1837,6 +1894,7 @@ document.addEventListener('change',e=>{
   if(e.target.id==='qsProd'){applyDisc('qsClient','qsProd','qsAmt')}
   if(e.target.dataset&&e.target.dataset.msel){const b=$('#'+e.target.id+'_split');if(b)b.style.display=e.target.value==='Split'?'grid':'none'}
   if(e.target.id==='dpClient'){const a=$('#dpAmt');if(a)a.value='';dpInfo()}
+  if(e.target.id==='thClient'&&UI.inboxSel){save(()=>store.upd('threads',UI.inboxSel,{client:e.target.value}),e.target.value?'Linked to client':'Unlinked')}
   if(e.target.id==='pkUnl'){const n=$('#pkN');if(n){n.disabled=e.target.checked;if(e.target.checked)n.value=''}}
   if(e.target.id==='ppProd'){if(UI.amtManual)UI.amtManual.ppAmt=0;ppSync()}
   if(e.target.id==='sProd'){applyDisc('sClient','sProd','sAmt')}
@@ -1860,6 +1918,12 @@ document.addEventListener('submit',async e=>{
     if(nm&&!cid)rec.name=nm;const nt=$('#ppNote').value.trim();if(nt)rec.note=nt;if(amt<total){rec.owed=total-amt;rec.total=total;if(!amt)rec.unpaid=true}
     if(await save(()=>store.set('payments',uid(),rec),amt<total?'Sale saved — '+L(total-amt)+' added to Debtors':'Product sale saved')){UI.amtManual={};['ppClient','ppNote'].forEach(k=>{const el=$('#'+k);if(el)el.value=''});const qq=$('#ppQty');if(qq)qq.value=1;ppSync()}
     return}
+  if(f.id==='replyForm'){const tid=UI.inboxSel,t=S.threads[tid],txt=$('#replyText').value.trim();if(!t||!txt)return;
+    const at=Date.now(),mid=uid();const ok=await save(async()=>{
+      if(FB){await FB.fs.collection('outbox').doc(mid).set({thread:tid,channel:t.channel,to:t.handle||'',text:txt,by:UI.role,at,status:'queued'});await FB.fs.collection('messages').doc(mid).set({thread:tid,dir:'out',text:txt,by:UI.role,at,status:'sending'})}
+      else{(UI.msgs[tid]=UI.msgs[tid]||[]).push({id:mid,thread:tid,dir:'out',text:txt,by:UI.role,at,status:'not connected'})}
+      await store.upd('threads',tid,{last:txt,lastAt:at})});
+    if(ok){$('#replyText').value='';render();setTimeout(()=>{const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight},50)}return}
   if(f.id==='settleForm'){const id=f.dataset.id,x=S.payments[id];if(!x)return;const amt=Math.min(+x.owed,Math.max(0,+$('#stAmt').value||0));if(!amt){toast('Enter the amount received.');return}
     const d=$('#stDate').value||today(),left=(+x.owed)-amt;
     const ok=await save(async()=>{await store.set('payments',uid(),{kind:'debt',date:d,ts:Date.now(),client:x.client||'',name:x.name||'',item:'Debt \u00b7 '+(planName(x.item)||x.item),amount:amt,...applyMethod({},readMethod('stMethod')),by:UI.role,ref:id});
@@ -1989,7 +2053,7 @@ let toastT;function toast(m){let el=$('.toast');if(!el){el=document.createElemen
   try{if(window.claude?.use)[db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')])}catch{}
   try{viewerIsOwner=user?!!(await user.isOwner()):false}catch{}
   store=audited(db?dbStore(db):memStore());
-  for(const c of['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products'])store.sub(c,o=>{S[c]=o;if(!UI.importing)render()});
+  for(const c of['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads'])store.sub(c,o=>{S[c]=o;if(!UI.importing)render()});
   UI.loaded=true;render();
 })();
 </script>
