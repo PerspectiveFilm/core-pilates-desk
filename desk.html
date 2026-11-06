@@ -1556,12 +1556,12 @@ function clientModal(id){
     <div class="field"><label for="clBday">Birthday</label><input id="clBday" type="date" value="${esc(c.birthday||'')}"></div>
     <div class="field"><label for="clDisc">Discount</label><div style="display:flex;gap:6px"><select id="clDisc"><option value="">None</option><option value="loyalty" ${c.discType==='loyalty'?'selected':''}>Loyalty 10%</option><option value="influencer" ${c.discType==='influencer'?'selected':''}>Influencer 30%</option><option value="other" ${c.discType==='other'?'selected':''}>Other</option></select><input id="clDiscPct" type="number" min="0" max="100" placeholder="%" value="${c.discType==='other'?esc(c.discPct||''):''}" style="width:80px" title="Other discount %"></div></div>
     <div class="field"><label for="clSrc">How they found us</label><select id="clSrc"><option value="">Choose\u2026</option>${SOURCES.map(x=>`<option ${x===c.source?'selected':''}>${x}</option>`).join('')}</select></div>
-    <div class="field wide pkgedit"><div class="eyebrow" style="margin-bottom:8px">${id?'Active package':'Group &amp; trainers <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 sell the package on Payments</span>'}${id&&UI.role!=='owner'?' <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 changes only through Record a sale</span>':''}</div><div class="form" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
-      ${id?`${(()=>{const pi=pkgInfo(c.plan),tl=pi?String(c.plan).split('·')[0].trim():'';return `<div class="field"><label for="clPType">Type</label><select id="clPType" ${UI.role!=='owner'?'data-lock disabled':''}><option value="">No package</option>${(tl&&!PKG_TYPES.some(t=>t.toLowerCase()===tl.toLowerCase())?[tl,...PKG_TYPES]:PKG_TYPES).map(t=>`<option ${t.toLowerCase()===tl.toLowerCase()?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
-      <div class="field"><label for="clPN">Sessions</label><input id="clPN" ${UI.role!=='owner'?'data-lock disabled':''} type="number" min="0" value="${pi?pi.n:''}"></div>`})()}
-      <div class="field"><label for="clLeft">Sessions left</label><input id="clLeft" ${UI.role!=='owner'?'data-lock disabled':''} type="number" value="${leftOf(c)===Infinity?'':leftOf(c)}" placeholder="${leftOf(c)===Infinity?'Unlimited':''}"></div>
-      <div class="field"><label for="clStart">Start</label><input id="clStart" ${UI.role!=='owner'?'data-lock disabled':''} type="date" value="${esc(c.packageStart||'')}"></div>
-      <div class="field"><label for="clExp">Expires</label><input id="clExp" ${UI.role!=='owner'?'data-lock disabled':''} type="date" value="${esc(c.expires||'')}"></div>
+    <div class="field wide pkgedit"><div class="eyebrow" style="margin-bottom:8px">${id?'Active package':'Group &amp; trainers <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 sell the package on Payments</span>'}${id?' <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 type and sessions change only through a sale \u00b7 start and expiry can be edited</span>':''}</div><div class="form" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+      ${id?`${(()=>{const pi=pkgInfo(c.plan),tl=pi?String(c.plan).split('·')[0].trim():'';return `<div class="field"><label for="clPType">Type</label><select id="clPType" data-lock disabled><option value="">No package</option>${(tl&&!PKG_TYPES.some(t=>t.toLowerCase()===tl.toLowerCase())?[tl,...PKG_TYPES]:PKG_TYPES).map(t=>`<option ${t.toLowerCase()===tl.toLowerCase()?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
+      <div class="field"><label for="clPN">Sessions</label><input id="clPN" data-lock disabled type="number" min="0" value="${pi?pi.n:''}"></div>`})()}
+      <div class="field"><label for="clLeft">Sessions left</label><input id="clLeft" data-lock disabled type="number" value="${leftOf(c)===Infinity?'':leftOf(c)}" placeholder="${leftOf(c)===Infinity?'Unlimited':''}"></div>
+      <div class="field"><label for="clStart">Start</label><input id="clStart" ${UI.role==='trainer'?'data-lock disabled':''} type="date" value="${esc(c.packageStart||'')}"></div>
+      <div class="field"><label for="clExp">Expires</label><input id="clExp" ${UI.role==='trainer'?'data-lock disabled':''} type="date" value="${esc(c.expires||'')}"></div>
 `:''}
       ${Object.keys(S.groups||{}).length?`<div class="field wide"><label for="clGrp">Group</label><select id="clGrp">${grpOptions(id?grpOf(id):'')}</select></div>`:''}
       <div class="field wide"><label>Trainers</label><div class="chips">${trainersList().map(([tid,t])=>`<label class="chip trchk"><input type="checkbox" name="clTr" value="${tid}" ${(c.trainers||[]).includes(tid)?'checked':''}> ${esc(t.name)}</label>`).join('')}</div></div>
@@ -1936,12 +1936,12 @@ document.addEventListener('submit',async e=>{
     if(!d.name){toast('Enter the client’s name.');return}
     {const rf=readRegForm(id?S.clients[id]?.form:null);if(rf)d.form=rf}
     if($('#clPrev'))d.sessionsBefore=Math.max(0,+$('#clPrev').value||0);
-    if(UI.role!=='owner'){delete d.packageStart;delete d.expires}
-    if($('#clLeft')&&UI.role==='owner')d.credits=(+$('#clLeft').value||0)+(id&&d.packageStart===S.clients[id]?.packageStart?usedOf(id):0);
-    if($('#clPType')&&UI.role==='owner'){const t=$('#clPType').value,n=+$('#clPN').value||0;d.plan=t?t+(n?' \u00b7 '+n:''):'';if(t)d.active=true}
+    if(UI.role==='trainer'||!$('#clStart')){delete d.packageStart;delete d.expires}
+    if(id&&d.packageStart&&S.clients[id]&&S.clients[id].plan&&d.packageStart!==S.clients[id].packageStart&&!isUnl(S.clients[id]))d.credits=leftOf(S.clients[id])+usedSince(id,d.packageStart);
+    if(false){const t=$('#clPType').value,n=+$('#clPN').value||0;d.plan=t?t+(n?' \u00b7 '+n:''):'';if(t)d.active=true}
     const gsel=$('#clGrp')?$('#clGrp').value:null;
     let saleMsg='';
-    if(id&&UI.role==='owner'){const old=S.clients[id],m=pkgSale(old),np=d.plan!==undefined?d.plan:old.plan,ns=d.packageStart||old.packageStart;
+    if(id&&UI.role!=='trainer'){const old=S.clients[id],m=pkgSale(old),np=d.plan!==undefined?d.plan:old.plan,ns=d.packageStart||old.packageStart;
       if(m&&np&&(np!==old.plan||ns!==old.packageStart)){const x=m.x,pid=Object.keys(S.payments).find(k=>S.payments[k]===x);if(pid){const tm=x.ts?fmtHM(x.ts):'12:00';d.__sale={pid,nx:{...x,item:np,date:ns,ts:wallMs(ns,tm)||x.ts,editedBy:UI.role,editedAt:Date.now()}};saleMsg=' \u2014 sale on Payments updated too'}}
       else if(!m&&np&&(np!==old.plan||ns!==old.packageStart))saleMsg=' \u2014 no sale found for this package, record it on Payments'}
     const sx=d.__sale;delete d.__sale;
