@@ -1,18 +1,19 @@
 /**
  * Core Pilates — Instagram + Facebook Messenger → Studio desk Inbox
  * Every minute: copies new DMs into the desk Inbox and sends replies typed in the desk.
- * Setup: Project Settings ▸ Script properties: PAGE_ID, PAGE_TOKEN (long-lived Page token), optional IG_ID.
+ * Setup: Project Settings ▸ Script properties: PAGE_TOKEN (Core Pilates Page token). PAGE_ID is fixed to Core Pilates & Yoga.
  * Then run `setup` once and approve.
  */
 const PROJECT = 'core-pilates---system';
 const BASE = 'https://firestore.googleapis.com/v1/projects/' + PROJECT + '/databases/(default)/documents';
-const GRAPH = 'https://graph.facebook.com/v23.0/';
+const GRAPH = 'https://graph.facebook.com/v27.0/';
 
 function setup() {
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('sync').timeBased().everyMinutes(1).create();
   const P = props_();
   const page = gget_(P.PAGE_ID + '?fields=name,instagram_business_account{id,username}');
+  if (!/core pilates/i.test(page.name || '')) throw new Error('Token is not for Core Pilates (got ' + page.name + ')');
   const ig = page.instagram_business_account || {};
   if (ig.id) PropertiesService.getScriptProperties().setProperty('IG_ID', ig.id);
   sync();
@@ -25,7 +26,8 @@ function sync() {
   try { ['messenger', 'instagram'].forEach(pull_); sendOutbox_(); } finally { lock.releaseLock(); }
 }
 
-function props_() { return PropertiesService.getScriptProperties().getProperties(); }
+const CORE_PAGE_ID = '110354960396197'; // Core Pilates & Yoga — never another page
+function props_() { const P = PropertiesService.getScriptProperties().getProperties(); P.PAGE_ID = CORE_PAGE_ID; return P; }
 function gget_(path) {
   const P = props_(), sep = path.indexOf('?') < 0 ? '?' : '&';
   const r = UrlFetchApp.fetch(GRAPH + path + sep + 'access_token=' + encodeURIComponent(P.PAGE_TOKEN), { muteHttpExceptions: true });
