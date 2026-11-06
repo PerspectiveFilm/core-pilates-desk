@@ -650,7 +650,9 @@ function pDash(){
 const APP_URL=location.origin+location.pathname;
 const trainerLink=id=>APP_URL+'#trainer-'+id;
 function linkBox(id){return `<div class="linkbox"><input id="lk_${id}" readonly value="${esc(trainerLink(id))}"><button type="button" class="btn sm" data-copylink="${id}">Copy link</button></div>`}
-const trainersList=()=>Object.entries(S.staff).filter(([,s])=>s.role==='Instructor').sort((a,b)=>a[1].name.localeCompare(b[1].name));
+const TR_ORDER=['ozlem','orhan','fabjola','mehmet','erjon','elvis','anxhelina','brajana'];
+const trRank=n=>{const i=TR_ORDER.indexOf(String(n||'').trim().split(/\s+/)[0].toLowerCase());return i<0?99:i};
+const trainersList=()=>Object.entries(S.staff).filter(([,s])=>s.role==='Instructor').sort((a,b)=>trRank(a[1].name)-trRank(b[1].name)||a[1].name.localeCompare(b[1].name));
 function trainerStats(tid){
   const t=today(),w0=monday(t),w1=addDays(w0,6),m=t.slice(0,7),ago=addDays(t,-30);
   const mine=Object.entries(S.classes).filter(([,c])=>c.instructor===tid);
