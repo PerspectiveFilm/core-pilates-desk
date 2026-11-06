@@ -200,6 +200,13 @@
 }
 #cpd .minis{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem;color:var(--muted);padding:8px 12px;border:1px solid var(--line);border-radius:8px}
 #cpd .minis b{color:var(--ink)}
+#cpd .pkgsum{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+#cpd .pkgname{font-family:var(--display);font-weight:700;font-size:1.1rem}
+#cpd .pkgleft{font-family:var(--mono);font-weight:700;font-size:1.6rem;line-height:1}
+#cpd .pkgleft.bad{color:var(--bad)}
+#cpd .pkgleft.warn{color:var(--warn)}
+#cpd .pkgdates{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.88rem}
+#cpd #clientForm .pkgdatefld input:disabled{background:transparent;border-style:dashed;color:var(--muted)}
 #cpd .pkgedit{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--accent-soft)}
 #cpd .btn.burned{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
 #cpd #clientForm :disabled{opacity:1;color:var(--ink);background:var(--surface);cursor:default}
@@ -1556,13 +1563,16 @@ function clientModal(id){
     <div class="field"><label for="clBday">Birthday</label><input id="clBday" type="date" value="${esc(c.birthday||'')}"></div>
     <div class="field"><label for="clDisc">Discount</label><div style="display:flex;gap:6px"><select id="clDisc"><option value="">None</option><option value="loyalty" ${c.discType==='loyalty'?'selected':''}>Loyalty 10%</option><option value="influencer" ${c.discType==='influencer'?'selected':''}>Influencer 30%</option><option value="other" ${c.discType==='other'?'selected':''}>Other</option></select><input id="clDiscPct" type="number" min="0" max="100" placeholder="%" value="${c.discType==='other'?esc(c.discPct||''):''}" style="width:80px" title="Other discount %"></div></div>
     <div class="field"><label for="clSrc">How they found us</label><select id="clSrc"><option value="">Choose\u2026</option>${SOURCES.map(x=>`<option ${x===c.source?'selected':''}>${x}</option>`).join('')}</select></div>
-    <div class="field wide pkgedit"><div class="eyebrow" style="margin-bottom:8px">${id?'Active package':'Group &amp; trainers <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 sell the package on Payments</span>'}${id?' <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 type and sessions change only through a sale \u00b7 start and expiry can be edited</span>':''}</div><div class="form" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
-      ${id?`${(()=>{const pi=pkgInfo(c.plan),tl=pi?String(c.plan).split('·')[0].trim():'';return `<div class="field"><label for="clPType">Type</label><select id="clPType" data-lock disabled><option value="">No package</option>${(tl&&!PKG_TYPES.some(t=>t.toLowerCase()===tl.toLowerCase())?[tl,...PKG_TYPES]:PKG_TYPES).map(t=>`<option ${t.toLowerCase()===tl.toLowerCase()?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
-      <div class="field"><label for="clPN">Sessions</label><input id="clPN" data-lock disabled type="number" min="0" value="${pi?pi.n:''}"></div>`})()}
-      <div class="field"><label for="clLeft">Sessions left</label><input id="clLeft" data-lock disabled type="number" value="${leftOf(c)===Infinity?'':leftOf(c)}" placeholder="${leftOf(c)===Infinity?'Unlimited':''}"></div>
-      <div class="field"><label for="clStart">Start</label><input id="clStart" ${UI.role==='trainer'?'data-lock disabled':''} type="date" value="${esc(c.packageStart||'')}"></div>
-      <div class="field"><label for="clExp">Expires</label><input id="clExp" ${UI.role==='trainer'?'data-lock disabled':''} type="date" value="${esc(c.expires||'')}"></div>
-`:''}
+    <div class="field wide pkgedit"><div class="eyebrow" style="margin-bottom:8px">${id?'Active package':'Group &amp; trainers <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">\u00b7 sell the package on Payments</span>'}</div><div class="form" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+      ${id?(()=>{const pi=pkgInfo(c.plan),lf=leftOf(c),act=isActC(c),dl=c.expires?daysBetween(today(),c.expires):null;
+        if(!c.plan)return `<div class="field wide"><div class="pkgsum"><b>No active package</b><span class="muted">Sell one on Payments → Record a sale</span></div></div>`;
+        return `<div class="field wide"><div class="pkgsum">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div><div class="pkgname">${esc(planName(c.plan))}</div><div class="muted" style="font-size:.82rem">${pi&&pi.n&&pi.n!=='∞'?pi.n+' sessions':'Unlimited sessions'}${c.price?' · '+L(c.price):''}</div></div>
+            <div style="text-align:right"><div class="pkgleft ${lf<=0?'bad':lf<=2?'warn':''}">${lf===Infinity?'∞':lf}</div><div class="muted" style="font-size:.78rem">sessions left</div></div></div>
+          <div class="pkgdates"><span><span class="muted">Start</span> <b>${c.packageStart?esc(fmtDay(c.packageStart)):'—'}</b></span><span>→</span><span><span class="muted">Expires</span> <b>${c.expires?esc(fmtDay(c.expires)):'—'}</b></span><span class="pill ${act?'ok':'bad'}">${act?(dl===0?'Expires today':'Active · '+dl+' day'+(dl===1?'':'s')+' left'):clientFlags(c).some(f=>f.k==='nosale')?'No sale for this package':'Expired'}</span></div>
+        </div></div>
+        <div class="field pkgdatefld"><label for="clStart">Change start date</label><input id="clStart" ${UI.role==='trainer'?'data-lock disabled':''} type="date" value="${esc(c.packageStart||'')}"></div>
+        <div class="field pkgdatefld"><label for="clExp">Change expiry date</label><input id="clExp" ${UI.role==='trainer'?'data-lock disabled':''} type="date" value="${esc(c.expires||'')}"></div>`})():''}
       ${Object.keys(S.groups||{}).length?`<div class="field wide"><label for="clGrp">Group</label><select id="clGrp">${grpOptions(id?grpOf(id):'')}</select></div>`:''}
       <div class="field wide"><label>Trainers</label><div class="chips">${trainersList().map(([tid,t])=>`<label class="chip trchk"><input type="checkbox" name="clTr" value="${tid}" ${(c.trainers||[]).includes(tid)?'checked':''}> ${esc(t.name)}</label>`).join('')}</div></div>
     </div></div>
@@ -1938,7 +1948,7 @@ document.addEventListener('submit',async e=>{
     if($('#clPrev'))d.sessionsBefore=Math.max(0,+$('#clPrev').value||0);
     if(UI.role==='trainer'||!$('#clStart')){delete d.packageStart;delete d.expires}
     if(id&&d.packageStart&&S.clients[id]&&S.clients[id].plan&&d.packageStart!==S.clients[id].packageStart&&!isUnl(S.clients[id]))d.credits=leftOf(S.clients[id])+usedSince(id,d.packageStart);
-    if(false){const t=$('#clPType').value,n=+$('#clPN').value||0;d.plan=t?t+(n?' \u00b7 '+n:''):'';if(t)d.active=true}
+    if(false){const t='',n=0;d.plan=t?t+(n?' \u00b7 '+n:''):'';if(t)d.active=true}
     const gsel=$('#clGrp')?$('#clGrp').value:null;
     let saleMsg='';
     if(id&&UI.role!=='trainer'){const old=S.clients[id],m=pkgSale(old),np=d.plan!==undefined?d.plan:old.plan,ns=d.packageStart||old.packageStart;
