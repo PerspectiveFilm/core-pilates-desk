@@ -567,6 +567,8 @@ const payList=()=>Object.entries(S.payments).sort((a,b)=>(b[1].ts||0)-(a[1].ts||
 
 /* ---------- Firebase (live version) ---------- */
 const FB=window.CP_FB||null;
+/* Client portal signs in on its OWN login session, so it never logs staff out in the same browser */
+if(FB&&/^#portal$/i.test(location.hash||'')){try{const a=firebase.apps.find(x=>x.name==='portal')||firebase.initializeApp(FB.cfg,'portal');FB.auth=a.auth();FB.fs=a.firestore();try{FB.fs.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}}catch(e){}}
 const fbRole=email=>{email=String(email||'').toLowerCase();const m=/^t-(.+)@corepilates\.app$/.exec(email);if(m)return{role:'trainer',tid:m[1]};const r=/^(owner|manager|reception|client)@corepilates\.app$/.exec(email);return r?{role:r[1]}:null};
 function fbLoginsPanel(){
   const rows=[['reception','Reception'],['client','Client portal (one shared code for all clients)'],...trainersList().map(([id,s])=>['t-'+id,s.name+' (trainer)'])];
@@ -589,6 +591,7 @@ async function fbStart(render){
     if(!r){UI.role=null;UI.trainer=null;render();return}
     if(UI.lockTrainer&&!(r.role==='trainer'&&r.tid===UI.lockTrainer)){FB.auth.signOut();return}
     if(UI.portal&&r.role!=='client'){FB.auth.signOut();return}
+    if(!UI.portal&&r.role==='client'){FB.auth.signOut();return}
     UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':r.role==='client'?'book':(UI.page||'dash');
     if(!subs){subs=true;if(r.role==='client'){FB.fs.collection('settings').doc('clientNames').onSnapshot(d=>{S.names=d.exists?(d.data().list||[]):[];render()},()=>{});}
       const cols=r.role==='client'?['classes']:r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads','bookings']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads','bookings'];
@@ -1950,7 +1953,7 @@ document.addEventListener('click',async e=>{
   if(ds.burn&&cid){toggleBurn(cid,ds.burn);return}
   if(ds.unbook&&cid){unbook(cid,ds.unbook);return}
   switch(ds.act){
-    case'toportal':location.hash='portal';break;
+    case'toportal':location.hash='portal';location.reload();break;
     case'logout':if(FB)FB.auth.signOut();UI.role=null;UI.trainer=null;UI.teamSel=null;ss.set('cp_role',null);ss.set('cp_trainer',null);closeModal();render();break;
     case'wk-1':UI.week=addDays(UI.week,-7);render();break;
     case'wk1':UI.week=addDays(UI.week,7);render();break;
@@ -2186,7 +2189,7 @@ let toastT;function toast(m){let el=$('.toast');if(!el){el=document.createElemen
 /* ---------- boot ---------- */
 (async()=>{
   const readHash=()=>{const m=/^#trainer-([A-Za-z0-9_.~-]+)$/.exec(location.hash||'');UI.lockTrainer=m?m[1]:null;UI.portal=/^#portal$/i.test(location.hash||'')};readHash();
-  window.addEventListener('hashchange',()=>{readHash();UI.role=null;render()});
+  window.addEventListener('hashchange',()=>{const wasP=!!UI.portal,wasT=UI.lockTrainer;readHash();if(!!UI.portal!==wasP){location.reload();return}if(UI.lockTrainer!==wasT){UI.role=null;render()}});
   const saved=FB?null:ss.get('cp_role');if(saved&&PERMS[saved]){UI.role=saved;if(saved==='trainer'){UI.trainer=ss.get('cp_trainer');if(!UI.trainer)UI.role=null}}
   if(UI.lockTrainer&&!(UI.role==='trainer'&&UI.trainer===UI.lockTrainer)){UI.role=null;UI.trainer=null}
   if(UI.portal&&UI.role!=='client'){UI.role=null}
