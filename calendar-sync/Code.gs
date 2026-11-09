@@ -1,18 +1,19 @@
 /**
  * Core Pilates — Google Calendar (coretirana@gmail.com) → Studio desk bookings
  * Every 5 minutes: copies bookings from the calendar (yesterday → next 60 days) into the desk.
- * Setup: paste this into a new Apps Script project under coretirana@gmail.com, then Run ▸ setup and approve.
+ * Setup: share coretirana@gmail.com calendar (See all event details) with the account running this script, then Run ▸ setup.
  */
 const PROJECT = 'core-pilates---system';
 const BASE = 'https://firestore.googleapis.com/v1/projects/' + PROJECT + '/databases/(default)/documents';
 const TZ = 'Europe/Tirane';
 const DAYS_AHEAD = 60;
+const CAL_ID = 'coretirana@gmail.com'; // calendar shared with the account running this script
 
 function setup() {
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('sync').timeBased().everyMinutes(5).create();
   sync();
-  patch_('settings/calendar', { connected: true, account: Session.getActiveUser().getEmail(), at: Date.now() }, ['connected', 'account', 'at']);
+  patch_('settings/calendar', { connected: true, account: CAL_ID, at: Date.now() }, ['connected', 'account', 'at']);
 }
 
 function sync() {
@@ -21,7 +22,7 @@ function sync() {
   try {
     const from = new Date(Date.now() - 86400000), to = new Date(Date.now() + DAYS_AHEAD * 86400000);
     const fromD = Utilities.formatDate(from, TZ, 'yyyy-MM-dd');
-    const events = CalendarApp.getDefaultCalendar().getEvents(from, to);
+    const events = (CalendarApp.getCalendarById(CAL_ID) || (CalendarApp.subscribeToCalendar(CAL_ID), CalendarApp.getCalendarById(CAL_ID))).getEvents(from, to);
     const have = existing_(fromD), seen = {};
     events.forEach(ev => {
       if (ev.isAllDayEvent()) return;
