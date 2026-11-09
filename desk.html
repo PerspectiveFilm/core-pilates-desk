@@ -344,6 +344,21 @@
 }
 @media (prefers-reduced-motion:reduce){#cpd *{transition:none!important;animation:none!important}
 }
+#cpd .bkwrap{max-width:760px;display:grid;gap:16px}
+#cpd .bksug{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#cpd .bkslots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+#cpd .bkslot{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:.6rem .7rem;text-align:left;display:flex;flex-direction:column;gap:2px;font:inherit;color:inherit;cursor:pointer}
+#cpd .bkslot b{font-size:1.05rem;font-variant-numeric:tabular-nums}
+#cpd .bkslot small{color:var(--muted);font-size:.78rem}
+#cpd .bkslot.free{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+#cpd .bkslot.free b{color:var(--ok)}
+#cpd .bkslot[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#cpd .bkslot[aria-pressed="true"] small,#cpd .bkslot[aria-pressed="true"] b{color:var(--bg)}
+#cpd .bkslot:disabled{opacity:.45;cursor:not-allowed;text-decoration:line-through}
+#cpd .bkstep{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+#cpd .bkstep i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:.8rem;font-weight:700}
+#cpd .bkdone{text-align:center;padding:28px 16px}
+#cpd .bkdone .big{font-size:2.4rem}
 
 #cpd,#cpd *{box-sizing:border-box}
 #cpd{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
@@ -441,7 +456,8 @@ const typeName=t=>TYPE_ALIAS[t]||t||'Personal Training';
 const pkgH=(p,f)=>{const t=planName(p);return t?esc(t).replace(/(\d+)\s*$/,'<b>$1</b>'):esc(f)};
 const planName=t=>shortPkg(String(t||'').replace('-class','-session').replace('Private session','Single PT session'));
 const kindOf=t=>{t=typeName(t);return /duo/i.test(t)?'duo':/group|semi|yoga|mat pilates/i.test(t)?'grp':'pt'};
-const sessLabel=c=>{const k=kindOf(c.type),names=(c.booked||[]).map(b=>S.clients[b.c]?.name||'Client');
+const bName=b=>S.clients[b.c]?.name||b.name||'Client';
+const sessLabel=c=>{const k=kindOf(c.type),names=(c.booked||[]).map(bName);
   if(k==='grp')return `<b>${esc(typeName(c.type))}</b>`;
   const tn=typeName(c.type),tag=k==='duo'?'DUO':/assess/i.test(tn)?'Assessment':/pregn/i.test(tn)?'Pregnancy':/scolio/i.test(tn)?'Scoliosis':'PT';
   return `<b>${tag}</b>${names.length?' · '+esc(names.join(' & ')):''}`};
@@ -458,15 +474,17 @@ function methodParts(x){if(x.unpaid)return{};if(x.split)return{...x.split};retur
 const methodLabel=x=>x.unpaid?'Unpaid':x.split?Object.entries(x.split).filter(([,v])=>+v>0).map(([k,v])=>k+' '+L(v)).join(' + '):(x.method||'');
 function applyMethod(rec,m){if(m&&typeof m==='object'){rec.method='Split';rec.split={Cash:+m.Cash||0,Card:+m.Card||0}}else{rec.method=m;delete rec.split}return rec}
 const STAFF_ROLES=['Instructor','Reception','Manager'];
-const DEFAULT_PINS={owner:'1111',manager:'2222',reception:'3333'};
+const DEFAULT_PINS={owner:'1111',manager:'2222',reception:'3333',client:'5555'};
 const PERMS={
   owner:{label:'Owner',pages:['dash','inbox','sched','team','groups','clients','pay','fin','data','log','staff'],revenue:1,payroll:1,editClasses:1,delClient:1,allPayments:1,delPayment:1,editPayment:1,pins:1},
   manager:{label:'Manager',pages:['dash','sched','team','groups','clients','pay','staff'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:1,delPayment:0,pins:0},
   reception:{label:'Reception',pages:['dash','sched','team','groups','clients','pay'],revenue:1,payroll:0,editClasses:1,delClient:0,allPayments:0,payDates:1,delPayment:1,editPayment:1,pins:0},
   trainer:{label:'Trainer',pages:['team','sched','groups'],revenue:0,payroll:0,editClasses:0,delClient:0,allPayments:0,delPayment:0,pins:0},
+  client:{label:'Client portal',pages:['book'],revenue:0,payroll:0,editClasses:0,delClient:0,allPayments:0,delPayment:0,pins:0},
 };
 const LOGO='<svg viewBox="0 0 100 100" fill="none" stroke="#D9967A" aria-hidden="true"><circle cx="47" cy="47" r="27" stroke-width="2.6"/><circle cx="54" cy="53" r="26" stroke-width="2.6"/><circle cx="51" cy="50" r="20" stroke-width="3"/><ellipse cx="49" cy="49" rx="17" ry="16" stroke-width="2.6"/><circle cx="50" cy="50" r="12" stroke-width="5.5"/></svg>';
 const ICONS={
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>',
   inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
   groups:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><circle cx="15.5" cy="10" r="1.8"/><path d="M5.5 16.5c.5-1.8 1.6-2.7 3-2.7s2.5.9 3 2.7M12.5 16.5c.5-1.8 1.6-2.7 3-2.7s2.5.9 3 2.7"/></svg>',
   log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
@@ -479,7 +497,7 @@ const ICONS={
   pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg>',
   staff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 21c.6-4 3.4-6.5 7-6.5s6.4 2.5 7 6.5"/><path d="M12 14.5v3"/></svg>',
 };
-const PAGE_NAMES={dash:'Dashboard',inbox:'Inbox',sched:'Schedule',team:'Team',groups:'Groups',clients:'Clients',pay:'Payments',fin:'Finances',data:'Data',log:'History',staff:'Staff'};
+const PAGE_NAMES={book:'Book a session',dash:'Dashboard',inbox:'Inbox',sched:'Schedule',team:'Team',groups:'Groups',clients:'Clients',pay:'Payments',fin:'Finances',data:'Data',log:'History',staff:'Staff'};
 
 /* ---------- state & store ---------- */
 const S={pub:{},groups:{},products:{},threads:{},bookings:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
@@ -509,7 +527,7 @@ function dbStore(db){
 async function save(fn,okMsg){
   try{await fn();if(okMsg)toast(okMsg);return true}
   catch(e){
-    const m=e&&e.code==='invalid_argument'?'You don’t have permission to change studio data. Ask the owner to share this page with you as Contributor.':
+    const m=e&&e.message==='FULL'?'Session is full. Someone just took the last spot.':e&&e.message==='DUP'?'This person is already booked in that session.':e&&e.code==='invalid_argument'?'You don’t have permission to change studio data. Ask the owner to share this page with you as Contributor.':
       e&&e.code==='quota_exceeded'?'Storage is full. Delete old records to free space.':'Couldn’t save: '+(e?.message||e)+'. Try again.';
     toast(m);return false}
 }
@@ -549,9 +567,9 @@ const payList=()=>Object.entries(S.payments).sort((a,b)=>(b[1].ts||0)-(a[1].ts||
 
 /* ---------- Firebase (live version) ---------- */
 const FB=window.CP_FB||null;
-const fbRole=email=>{email=String(email||'').toLowerCase();const m=/^t-(.+)@corepilates\.app$/.exec(email);if(m)return{role:'trainer',tid:m[1]};const r=/^(owner|manager|reception)@corepilates\.app$/.exec(email);return r?{role:r[1]}:null};
+const fbRole=email=>{email=String(email||'').toLowerCase();const m=/^t-(.+)@corepilates\.app$/.exec(email);if(m)return{role:'trainer',tid:m[1]};const r=/^(owner|manager|reception|client)@corepilates\.app$/.exec(email);return r?{role:r[1]}:null};
 function fbLoginsPanel(){
-  const rows=[['reception','Reception'],...trainersList().map(([id,s])=>['t-'+id,s.name+' (trainer)'])];
+  const rows=[['reception','Reception'],['client','Client portal (one shared code for all clients)'],...trainersList().map(([id,s])=>['t-'+id,s.name+' (trainer)'])];
   return `<section class="panel"><header><div><h2>Staff logins</h2><span class="muted">Create a login code for each person (at least 6 characters). They choose their role/name on the login screen and type this code.</span></div></header>
   <div class="rows">${rows.map(([k,n])=>`<div class="row tlrow"><b>${esc(n)}</b><span class="muted num" style="font-size:.8rem">${esc(k)}@corepilates.app</span><div class="pinbox"><input id="lc_${esc(k)}" type="text" placeholder="New code" style="width:120px"><button type="button" class="btn sm primary" data-mklogin="${esc(k)}">Create login</button></div></div>`).join('')}</div>
   <p class="muted" style="margin:10px 0 0;font-size:.8rem">To change someone’s code later: delete their user in Firebase → Authentication, then create it again here. Everyone can change their own code with “Change my code”.</p></section>`}
@@ -570,12 +588,15 @@ async function fbStart(render){
     const r=u&&fbRole(u.email);
     if(!r){UI.role=null;UI.trainer=null;render();return}
     if(UI.lockTrainer&&!(r.role==='trainer'&&r.tid===UI.lockTrainer)){FB.auth.signOut();return}
-    UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':(UI.page||'dash');
-    if(!subs){subs=true;const cols=r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads','bookings']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads','bookings'];
+    if(UI.portal&&r.role!=='client'){FB.auth.signOut();return}
+    UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':r.role==='client'?'book':(UI.page||'dash');
+    if(!subs){subs=true;if(r.role==='client'){FB.fs.collection('settings').doc('clientNames').onSnapshot(d=>{S.names=d.exists?(d.data().list||[]):[];render()},()=>{});}
+      const cols=r.role==='client'?['classes']:r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads','bookings']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads','bookings'];
       UI.got={};UI.loadT0=Date.now();setTimeout(()=>{if(!UI.dataReady)render()},12000);
-      for(const c of cols)store.sub(c,o=>{S[c]=o;UI.got[c]=1;if(!UI.dataReady&&UI.got.clients&&UI.got.staff)UI.dataReady=true;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(!UI.importing)render()})}
+      for(const c of cols)store.sub(c,o=>{S[c]=o;UI.got[c]=1;if(!UI.dataReady&&(r.role==='client'||UI.got.clients&&UI.got.staff))UI.dataReady=true;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(c==='clients'&&(r.role==='owner'||r.role==='reception'))fbSyncNames();if(!UI.importing)render()})}
     UI.loaded=true;render()});
 }
+let _namesSig='';function fbSyncNames(){const l=Object.entries(S.clients).map(([id,c])=>[id,String(c.name||'').trim()]).filter(x=>x[1]).sort((a,b)=>a[1].localeCompare(b[1])),sig=JSON.stringify(l);if(sig===_namesSig)return;_namesSig=sig;FB.fs.collection('settings').doc('clientNames').set({list:l.map(([id,name])=>({id,name}))}).catch(()=>{})}
 let _pubSig='';function fbSyncPublic(){const t=trainersList().map(([id,s])=>({id,name:s.name})),sig=JSON.stringify(t);if(sig===_pubSig||sig===JSON.stringify((S.pub||{}).trainers||[]))return;_pubSig=sig;FB.fs.collection('settings').doc('public').set({trainers:t}).catch(()=>{})}
 /* ---------- render ---------- */
 function render(){
@@ -597,7 +618,13 @@ function login(){
     ${st?`<div class="field"><label for="pin">PIN</label><input id="pin" class="pin" ${FB?'type="password" autocomplete="current-password"':'inputmode="numeric" autocomplete="off" maxlength="6"'} placeholder="\u2022\u2022\u2022\u2022"></div>
     <div class="err" id="loginErr"></div><button class="btn primary" type="submit">Open my page</button>`:''}
   </form></div>`}
-  const r=UI.loginRole;
+  if(UI.portal){UI.loginRole='client';
+    return `<div class="login"><form class="box" id="loginForm">
+    <div class="loginlogo">${LOGO}</div><div><div class="eyebrow">Core Pilates Tirana</div><h1>Client Portal</h1><p class="muted" style="margin:6px 0 0">Book your session. Enter the studio code you got from reception.</p></div>
+    <div class="field"><label for="pin">Studio code</label><input id="pin" class="pin" ${FB?'type="password" autocomplete="current-password"':'inputmode="numeric" autocomplete="off" maxlength="6"'} placeholder="\u2022\u2022\u2022\u2022"></div>
+    <div class="err" id="loginErr"></div><button class="btn primary" type="submit">Open booking</button>
+    ${!UI.loaded?'<p class="muted">Connecting\u2026</p>':''}</form></div>`}
+  const r=UI.loginRole==='client'?null:UI.loginRole;
   return `<div class="login"><form class="box" id="loginForm">
     <div class="loginlogo">${LOGO}</div><div><div class="eyebrow">Core Pilates Tirana</div><h1>Studio desk</h1><p class="muted" style="margin:6px 0 0">Staff only. Choose your role and enter your PIN.</p></div>
     <div class="roles" role="group" aria-label="Role">
@@ -608,16 +635,17 @@ function login(){
     <div class="err" id="loginErr"></div>
     <button class="btn primary" type="submit">Enter</button>
     ${!UI.loaded?'<p class="muted">Connecting…</p>':''}
+    <button type="button" class="btn" data-act="toportal" style="margin-top:4px">Client? Book a session \u2192</button>
   </form></div>`;
 }
 function shell(){
   const p=P(),page=p.pages.includes(UI.page)?UI.page:p.pages[0];UI.page=page;
   const nav=p.pages.map(k=>`<button data-nav="${k}" ${k===page?'aria-current="page"':''}>${ICONS[k]}<span>${PAGE_NAMES[k]}</span></button>`).join('');
-  const body={dash:pDash,inbox:pInbox,sched:pSched,team:pTeam,groups:pGroups,clients:pClients,pay:pPay,fin:pFin,data:pData,log:pLog,staff:pStaff}[page]();
+  const body={book:pBook,dash:pDash,inbox:pInbox,sched:pSched,team:pTeam,groups:pGroups,clients:pClients,pay:pPay,fin:pFin,data:pData,log:pLog,staff:pStaff}[page]();
   return `<div class="app">
-    <aside class="rail"><div class="brand">${LOGO}<div><b>Core Pilates</b><span>Studio desk · Tirana</span></div></div>
-      <nav class="nav" aria-label="Pages">${nav}</nav>
-      <div class="who"><span class="pill acc">${p.label}${UI.role==='trainer'?' \u00b7 '+esc(staffName(UI.trainer)):''}</span>${FB?'<button class="btn sm" data-act="chgcode">Change my code</button>':''}<button class="btn sm" data-act="logout">${FB?'Log out':'Lock desk'}</button></div></aside>
+    <aside class="rail"><div class="brand">${LOGO}<div><b>Core Pilates</b><span>${UI.role==='client'?'Client Portal':'Studio desk'} · Tirana</span></div></div>
+      <nav class="nav" aria-label="Pages" ${UI.role==='client'?'style="display:none"':''}>${nav}</nav>
+      <div class="who"><span class="pill acc">${p.label}${UI.role==='trainer'?' \u00b7 '+esc(staffName(UI.trainer)):''}</span>${FB&&UI.role!=='client'?'<button class="btn sm" data-act="chgcode">Change my code</button>':''}<button class="btn sm" data-act="logout">${FB?'Log out':'Lock desk'}</button></div></aside>
     <main class="main">
       <div class="mobilewho"><b style="font-family:var(--display);display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:7px;background:var(--navy);display:grid;place-items:center">${LOGO.replace('<svg ','<svg width="22" height="22" ')}</span>Core Pilates</b><span style="display:flex;gap:6px;align-items:center"><span class="pill acc">${p.label}</span>${FB?'<button class="btn sm" data-act="chgcode">Code</button>':''}<button class="btn sm" data-act="logout">${FB?'Log out':'Lock'}</button></span></div>
       ${store&&store.mode==='local'?'<div class="banner info"><span>Preview mode. Changes stay in this tab only. Open the published link while signed in to save studio data.</span></div>':''}
@@ -997,6 +1025,77 @@ function pSched(){
   </div>`}).join('')}</div>`}`;
 }
 const TL0=7*60,TL1=21*60;
+/* ---------- Client portal: booking ---------- */
+const BK_H0=7,BK_H1=20,BK_DAYS=30;
+const bkTrainers=()=>(FB&&UI.role==='client'?(S.pub.trainers||[]).map(t=>[t.id,{name:t.name}]):trainersList().map(([id,s])=>[id,{name:s.name}])).sort((a,b)=>trRank(a[1].name)-trRank(b[1].name)||a[1].name.localeCompare(b[1].name));
+const bkNames=()=>FB&&UI.role==='client'?(S.names||[]):Object.entries(S.clients).map(([id,c])=>({id,name:c.name||''}));
+const normN=x=>String(x||'').trim().toLowerCase().replace(/\s+/g,' ');
+function bkSlots(tid,d){
+  const out=[],np=tzParts(Date.now()),nowM=d===today()?np.hour*60+np.minute:-1,st=UI.bk||{};
+  const cls=Object.entries(S.classes).filter(([,c])=>c.instructor===tid&&c.date===d);
+  for(let h=BK_H0;h<=BK_H1;h++){const a=h*60,t=pad(h)+':00';
+    if(a<=nowM+30)continue;
+    const over=cls.filter(([,c])=>toMin(c.time)<a+50&&toMin(c.time)+(+c.dur||50)>a);
+    if(!over.length){out.push({key:'new|'+t,time:t,label:'Private session',sub:'Free',free:1});continue}
+    for(const [id,c] of over){const n=(c.booked||[]).length,cap=+c.cap||1,mine=(c.booked||[]).some(b=>(st.cid&&b.c===st.cid)||(st.name&&normN(b.name||S.clients[b.c]?.name)===normN(st.name)));
+      if(Math.floor(toMin(c.time)/60)!==h&&!(toMin(c.time)<a)) continue;
+      const startsHere=Math.floor(toMin(c.time)/60)===h;
+      if(!startsHere){out.push({key:'x|'+id+'|'+t,time:t,label:'Taken',sub:'',off:1});continue}
+      if(mine)out.push({key:'x|'+id,time:c.time,label:typeName(c.type),sub:'You are booked',off:1});
+      else if(n>=cap)out.push({key:'x|'+id,time:c.time,label:typeName(c.type),sub:'Full',off:1});
+      else out.push({key:'join|'+id,time:c.time,label:typeName(c.type),sub:cap>1?(cap-n)+' of '+cap+' spots left':'Free',free:cap-n>0})}}
+  const seen=new Set();return out.filter(x=>{const k=x.key;if(seen.has(k))return false;seen.add(k);return true});
+}
+function pBook(){
+  const st=UI.bk||(UI.bk={name:'',cid:'',tr:'',date:today(),pick:''}),t=today();
+  if(st.done){const d=st.done;return `<div class="bkwrap"><section class="panel bkdone"><div class="big">\u2713</div><h1 style="margin:6px 0">You\u2019re booked</h1>
+    <p style="font-size:1.05rem;margin:0"><b>${esc(fmtLong(d.date))}</b> at <b>${esc(d.time)}</b></p><p class="muted" style="margin:6px 0 0">${esc(d.label)} with ${esc(d.trName)} \u00b7 ${esc(d.name)}</p>
+    <p class="muted" style="margin:14px 0 0;font-size:.85rem">To change or cancel, please contact the studio.</p>
+    <div style="margin-top:18px"><button class="btn primary" data-act="bkagain">Book another session</button></div></section></div>`}
+  const trs=bkTrainers(),q=normN(st.name);
+  const sug=q.length>=2&&!st.cid?bkNames().filter(x=>normN(x.name).includes(q)).sort((a,b)=>(normN(b.name).startsWith(q)-normN(a.name).startsWith(q))||a.name.localeCompare(b.name)).slice(0,6):[];
+  const days=[...Array(7)].map((_,i)=>addDays(t,i));
+  const slots=st.tr?bkSlots(st.tr,st.date):[];
+  const pk=slots.find(x=>x.key===st.pick);if(st.pick&&!pk)st.pick='';
+  const miss=[!st.name.trim()&&'your name',!st.tr&&'a trainer',!st.pick&&'a time'].filter(Boolean);
+  const trN=(trs.find(x=>x[0]===st.tr)||[0,{name:''}])[1].name;
+  return `<div class="bkwrap"><div class="pagehead"><div><div class="eyebrow">Core Pilates Tirana \u00b7 Client Portal</div><h1>Book a session</h1><p class="muted" style="margin:4px 0 0">Times are Tirana time.</p></div></div>
+  <section class="panel"><div class="bkstep"><i>1</i><h2 style="margin:0">Your name</h2></div>
+    <input id="bkName" autocomplete="off" placeholder="Name and surname" value="${esc(st.name)}" aria-label="Your name and surname" style="width:100%">
+    ${st.cid?'<div class="muted" style="font-size:.8rem;margin-top:6px;color:var(--ok)">\u2713 Found you in our client list</div>':''}
+    ${sug.length?`<div class="bksug">${sug.map(x=>`<button type="button" class="chip" data-bkname="${esc(x.id)}">${esc(x.name)}</button>`).join('')}</div><div class="muted" style="font-size:.78rem;margin-top:6px">Tap your name if you see it, or keep typing.</div>`:''}
+  </section>
+  <section class="panel"><div class="bkstep"><i>2</i><h2 style="margin:0">Trainer</h2></div>
+    ${trs.length?`<div class="chips">${trs.map(([id,s])=>`<button type="button" class="chip" data-bktr="${esc(id)}" aria-pressed="${st.tr===id}">${esc(s.name)}</button>`).join('')}</div>`:'<div class="empty">No trainers yet.</div>'}
+  </section>
+  <section class="panel"><div class="bkstep"><i>3</i><h2 style="margin:0">Day and time</h2></div>
+    <div class="toolbar" style="margin-bottom:10px"><div class="chips">${days.map(d=>`<button type="button" class="chip" data-bkday="${d}" aria-pressed="${st.date===d}">${d===t?'Today':d===addDays(t,1)?'Tomorrow':esc(fmtDay(d))}</button>`).join('')}</div>
+    <input type="date" id="bkDate" value="${st.date}" min="${t}" max="${addDays(t,BK_DAYS)}" aria-label="Pick another day" style="width:auto"></div>
+    ${!st.tr?'<div class="empty">Choose a trainer to see free times.</div>':slots.length?`<div class="bkslots">${slots.map(x=>`<button type="button" class="bkslot ${x.free?'free':''}" data-bkslot="${esc(x.key)}" aria-pressed="${st.pick===x.key}" ${x.off?'disabled':''}><b>${esc(x.time)}</b><span>${esc(x.label)}</span><small>${esc(x.sub)}</small></button>`).join('')}</div>`:'<div class="empty">No free times this day. Try another day or trainer.</div>'}
+  </section>
+  <section class="panel"><div class="err" id="bkMsg"></div>
+    ${pk?`<p style="margin:0 0 10px"><b>${esc(fmtLong(st.date))} \u00b7 ${esc(pk.time)}</b> \u00b7 ${esc(pk.label)} with ${esc(trN)}</p>`:''}
+    <button class="btn primary" data-act="bkgo" ${miss.length||UI.bkBusy?'disabled':''} style="width:100%">${UI.bkBusy?'Booking\u2026':'Book session'}</button>
+    ${miss.length?`<p class="muted" style="margin:8px 0 0;font-size:.85rem">Still needed: ${miss.join(', ')}.</p>`:''}
+  </section></div>`;
+}
+async function bkGo(){
+  const st=UI.bk;if(!st||!st.name.trim()||!st.tr||!st.pick||UI.bkBusy)return;
+  const [kind,ref,tm]=st.pick.split('|'),name=st.name.trim().replace(/\s+/g,' ');
+  const entry={c:st.cid||('g_'+uid()),name,in:false,u:false,portal:true,at:Date.now()};
+  const trN=(bkTrainers().find(x=>x[0]===st.tr)||[0,{name:''}])[1].name;
+  let id,create=null,label,time;
+  if(kind==='new'){time=ref;label='Private session';
+    if(trBusy(st.tr,st.date,time,50)){toast('That time was just taken. Pick another.');st.pick='';render();return}
+    id='p_'+st.tr+'_'+st.date+'_'+time.replace(':','');create={date:st.date,time,dur:50,type:'Personal Training',cap:1,instructor:st.tr,src:'portal',createdAt:Date.now()}}
+  else if(kind==='join'){id=ref;const c=S.classes[id];if(!c){st.pick='';render();return}time=c.time;label=typeName(c.type)}
+  else return;
+  UI.bkBusy=true;render();
+  try{await addBooked(id,entry,create);st.done={date:st.date,time,label,trName:trN,name};st.pick=''}
+  catch(e){const m=e&&e.message;toast(m==='FULL'?'Sorry, that time just filled up. Please pick another.':m==='DUP'?'You are already booked in that session.':/permission/i.test(String(e&&(e.code||m)))?'Booking was refused. Please pick another time or contact the studio.':'Could not book: '+(m||e));st.pick=''}
+  finally{UI.bkBusy=false;render()}
+}
+
 /* ---------- Google Calendar bookings ---------- */
 function bkClient(b){const g=String(b.guests||'').toLowerCase(),t=String(b.title||'').toLowerCase()+' '+String(b.note||'').toLowerCase();
   for(const [id,c] of Object.entries(S.clients)){const e=String(c.email||'').toLowerCase().trim();if(e&&g.includes(e))return id}
@@ -1025,10 +1124,10 @@ function dayLine(d){
   const cols=rows.map(r=>{
     const cs=all.filter(([,c])=>r.id?c.instructor===r.id:!S.staff[c.instructor]).sort((a,b)=>a[1].time.localeCompare(b[1].time));
     const booked=cs.filter(([,c])=>(c.booked||[]).length).length;total+=booked;
-    const blocks=cs.map(([id,c])=>{const st=toMin(c.time),du=+c.dur||50,k=kindOf(c.type),names=(c.booked||[]).map(b=>(S.clients[b.c]?.name||'Client').split(' ')[0]);
+    const blocks=cs.map(([id,c])=>{const st=toMin(c.time),du=+c.dur||50,k=kindOf(c.type),names=(c.booked||[]).map(b=>bName(b).split(' ')[0]);
       const lab=k==='grp'?`${esc(typeName(c.type))} ${(c.booked||[]).length}/${c.cap}`:(k==='duo'?'DUO':(/pregn/i.test(typeName(c.type))?'Pregnancy':/scolio/i.test(typeName(c.type))?'Scoliosis':'PT'))+(names.length?' \u00b7 '+esc(names.join(' & ')):'');
       const sameH=cs.filter(([,o])=>Math.floor(toMin(o.time)/60)===Math.floor(st/60)),ix=sameH.findIndex(([oid])=>oid===id),nH=sameH.length;
-      const full=(c.booked||[]).map(b=>S.clients[b.c]?.name||'Client').join(', ');
+      const full=(c.booked||[]).map(bName).join(', ');
       return `<button class="vblk slot ${slotCls(c)}" data-class="${id}" style="top:${py(Math.floor(st/60)*60)+4}px;height:${PX-8}px;left:calc(${ix/nH*100}% + 4px);width:calc(${100/nH}% - 8px);right:auto" title="${esc(c.time)} \u00b7 ${esc(typeName(c.type))}${full?' \u00b7 '+esc(full):''}"><b>${esc(c.time)}</b><span>${k==='grp'?lab:(lab.split(' \u00b7 ')[0])+(names.length?' \u00b7 '+esc(names[0])+(names.length>1?' +'+(names.length-1):''):'')}</span></button>`}).join('');
     const nowLine=d===t&&nowM>=TL0&&nowM<=TL1?`<div class="vnow" style="top:${py(nowM)}px"></div>`:'';
     return {head:`<div class="vhead"><b>${esc(r.name)}</b><span class="muted">${booked} session${booked===1?'':'s'}</span></div>`,col:`<div class="vtrack tltrack ${P().editClasses?'canadd':''}" data-tadd="${r.id}" data-vert="1" style="height:${H}px">${blocks}${nowLine}</div>`}});
@@ -1541,7 +1640,7 @@ function classModal(id){
     const keep=$('#bkSel')?.value||'';
     const box=$('#modal .modal');if(!box)return;
     box.innerHTML=`<header><div><div class="eyebrow">${esc(fmtLong(c.date))} · ${esc(c.time)} · ${c.dur||50} min</div><h2>${esc(typeName(c.type))}</h2><p class="muted" style="margin:4px 0 0">${esc(staffName(c.instructor))} · ${bk.length}/${c.cap} booked · ${bk.filter(b=>isDone(c,b)).length} done</p></div><button class="x" data-close aria-label="Close">×</button></header>
-      ${bk.length?`<div class="booked">${bk.map(b=>{const cl=S.clients[b.c];return `<div><span><b>${esc(cl?.name||'Removed client')}</b>${cl&&healthFlag(cl)?` <span class="hflag" title="${esc(healthText(cl))}">\u26a0 ${esc(healthText(cl))}</span>`:''}</span>
+      ${bk.length?`<div class="booked">${bk.map(b=>{const cl=S.clients[b.c];return `<div><span><b>${esc(cl?.name||b.name||'Removed client')}</b>${!cl&&b.name?' <span class="pill warn">New \u00b7 not in clients yet</span>':''}${b.portal?' <span class="pill">Booked online</span>':''}${cl&&healthFlag(cl)?` <span class="hflag" title="${esc(healthText(cl))}">\u26a0 ${esc(healthText(cl))}</span>`:''}</span>
         <span style="display:flex;gap:6px">${!b.burn&&isDone(c,b)?'<span class="pill ok">Done</span>':''}${`<button class="btn sm ${b.burn?'burned':''}" data-burn="${b.c}" title="Client didn't come — session counts as used">${b.burn?'\ud83d\udd25 Burned':'Burn'}</button>`}<button class="btn sm danger" data-unbook="${b.c}">Cancel</button></span></div>`}).join('')}</div>`:'<div class="empty" style="padding:12px">No one booked yet.</div>'}
       ${bk.length<c.cap?`<div class="toolbar"><select id="bkSel" style="flex:1;min-width:0"><option value="">Choose a client to book…</option>${opts.map(([cid,cl])=>`<option value="${cid}" ${cid===keep?'selected':''}>${esc(cl.name)} — ${totalSessions(cid)} sessions</option>`).join('')}</select><button class="btn primary" data-act="book">Book</button></div>`
       :'<div class="banner">Session is full.</div>'}
@@ -1715,12 +1814,26 @@ async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
   }
   toast('Sale recorded: '+pr.n+' · '+L(amount));return true;
 }
+/* add one person to a session safely: never more than its spots (transaction on the live database) */
+async function addBooked(classId,entry,create){
+  const dup=(bk)=>bk.some(x=>(entry.c&&x.c===entry.c)||(entry.name&&!entry.c&&String(x.name||S.clients[x.c]?.name||'').trim().toLowerCase()===entry.name.trim().toLowerCase()));
+  if(FB){const ref=FB.fs.collection('classes').doc(classId);
+    return FB.fs.runTransaction(async tx=>{const sn=await tx.get(ref);
+      if(!sn.exists){if(!create)throw new Error('This session no longer exists.');tx.set(ref,{...create,booked:[entry]});return}
+      const d=sn.data(),bk=d.booked||[];if(bk.length>=(+d.cap||1))throw new Error('FULL');if(dup(bk))throw new Error('DUP');
+      tx.update(ref,{booked:[...bk,entry]})})}
+  const c=S.classes[classId];
+  if(!c){if(!create)throw new Error('This session no longer exists.');return store.set('classes',classId,{...create,booked:[entry]})}
+  const bk=c.booked||[];if(bk.length>=(+c.cap||1))throw new Error('FULL');if(dup(bk))throw new Error('DUP');
+  return store.upd('classes',classId,{booked:[...bk,entry]});
+}
+const trBusy=(tid,date,time,dur,skip)=>{const a=toMin(time),b=a+(+dur||50);return Object.entries(S.classes).find(([id,c])=>id!==skip&&c.instructor===tid&&c.date===date&&toMin(c.time)<b&&toMin(c.time)+(+c.dur||50)>a)};
 async function book(classId,clientId){
   const c=S.classes[classId],cl=S.clients[clientId],err=$('#bkErr');
   if(!clientId){err.textContent='Choose a client first.';return}
   const unl=isUnl(cl);
   if((c.booked||[]).length>=c.cap){err.textContent='Session is full.';return}
-  if(await save(()=>store.upd('classes',classId,{booked:[...(c.booked||[]),{c:clientId,u:unl,in:false}]}))){
+  if(await save(()=>addBooked(classId,{c:clientId,u:unl,in:false}))){
     toast(cl.name+' booked');
   }
 }
@@ -1779,6 +1892,10 @@ document.addEventListener('click',async e=>{
   if(t.classList.contains('overlay'))return;
   const ds=t.dataset;
   if(ds.role){UI.loginRole=ds.role;render();$('#pin')?.focus();return}
+  if(ds.bkname!==undefined&&UI.bk){const x=bkNames().find(n=>n.id===ds.bkname);if(x){UI.bk.name=x.name;UI.bk.cid=x.id;UI.bk.pick=''}render();return}
+  if(ds.bktr!==undefined&&UI.bk){UI.bk.tr=ds.bktr;UI.bk.pick='';render();return}
+  if(ds.bkday&&UI.bk){UI.bk.date=ds.bkday;UI.bk.pick='';render();return}
+  if(ds.bkslot&&UI.bk){UI.bk.pick=UI.bk.pick===ds.bkslot?'':ds.bkslot;render();return}
   if(ds.nav){closeModal();UI.page=ds.nav;render();window.scrollTo(0,0);return}
   if(ds.class){classModal(ds.class);return}
   if(ds.client){clientModal(ds.client);return}
@@ -1832,6 +1949,7 @@ document.addEventListener('click',async e=>{
   if(ds.burn&&cid){toggleBurn(cid,ds.burn);return}
   if(ds.unbook&&cid){unbook(cid,ds.unbook);return}
   switch(ds.act){
+    case'toportal':location.hash='portal';break;
     case'logout':if(FB)FB.auth.signOut();UI.role=null;UI.trainer=null;UI.teamSel=null;ss.set('cp_role',null);ss.set('cp_trainer',null);closeModal();render();break;
     case'wk-1':UI.week=addDays(UI.week,-7);render();break;
     case'wk1':UI.week=addDays(UI.week,7);render();break;
@@ -1869,6 +1987,8 @@ document.addEventListener('click',async e=>{
     case'discseed':{t.disabled=true;await save(seedDisc);break}
     case'cledit':{const f=$('#clientForm');if(f){f.querySelectorAll('input,select,textarea').forEach(e=>{if(!e.hasAttribute('data-lock'))e.disabled=false});const sb=f.querySelector('button[type=submit]');if(sb)sb.style.display='';t.remove();f.querySelector('#clName')?.focus()}break}
     case'addcli':{const w=$('#cCliWrap');if(w){const n=w.querySelectorAll('[data-cpick]').length;w.insertAdjacentHTML('beforeend',clientPicker('cCli'+n));document.getElementById('cCli'+n)?.focus()}break}
+    case'bkgo':bkGo();break;
+    case'bkagain':if(UI.bk){UI.bk.done=null;UI.bk.pick=''}render();break;
     case'callmore':UI.callAll=!UI.callAll;render();break;
     case'dy-1':case'dy1':UI.dataYear=String(+(UI.dataYear||today().slice(0,4))+(ds.act==='dy1'?1:-1));render();break;
     case'histimport':{if(UI.importing)break;UI.importing=1;const m=$('#histMsg');try{const rows=FB?await fbPickBackup():await (await fetch('import-2026.json')).json();if(!rows){UI.importing=0;break}const old=Object.keys(S.expenses).filter(k=>/^ex_[rk]/.test(k));for(let i=0;i<old.length;i+=25)await Promise.all(old.slice(i,i+25).map(k=>store.del('expenses',k)));let n=0;for(let i=0;i<rows.length;i+=25){await Promise.all(rows.slice(i,i+25).map(([c,id,d])=>store.set(c,id,d)));n=Math.min(rows.length,i+25);const mm=$('#histMsg');if(mm)mm.textContent='Importing… '+n+' / '+rows.length}await store.set('settings','hist2026h',{done:true,at:Date.now(),count:rows.length});UI.importing=0;render();toast('Imported '+rows.length+' records')}catch(e){UI.importing=0;render();toast('Import stopped: '+(e.message||e)+'. Press Import again to continue.')}UI.importing=0;break}
@@ -1887,12 +2007,14 @@ document.addEventListener('input',e=>{
   if(e.target.id==='ppQty'){if(UI.amtManual)UI.amtManual.ppAmt=0;ppSync()}
   if(e.target.id==='qsAmt'){(UI.amtManual||(UI.amtManual={})).qsAmt=1;amtHint('qsClient','qsProd','qsAmt')}if(e.target.id==='sAmt'){(UI.amtManual||(UI.amtManual={})).sAmt=1;amtHint('sClient','sProd','sAmt')}
   if(e.target.id==='inboxQ'){UI.inboxQ=e.target.value;render()}
+  if(e.target.id==='bkName'&&UI.bk){const v=e.target.value;UI.bk.name=v;const m=bkNames().filter(n=>normN(n.name)===normN(v));UI.bk.cid=m.length===1?m[0].id:'';UI.bk.pick='';render()}
   if(e.target.id==='clientQ'){UI.clientQ=e.target.value;render()}
   if(e.target.id==='logQ'){UI.logQ=e.target.value;render()}
 });
 document.addEventListener('change',e=>{
   {const t=e.target;if(t.checked&&/^rf(Med|Past|Pain)$/.test(t.name))document.querySelectorAll(`input[name=${t.name}]`).forEach(x=>{if(x!==t&&(t.value==='None'||x.value==='None'))x.checked=false})}
   if((e.target.id==='payDay'||e.target.id==='sDate'||e.target.id==='ppDate')&&e.target.value&&UI.page==='pay'){UI.payDay=e.target.value;render()}
+  if(e.target.id==='bkDate'&&e.target.value&&UI.bk){const t=today(),v=e.target.value<t?t:e.target.value>addDays(t,BK_DAYS)?addDays(t,BK_DAYS):e.target.value;UI.bk.date=v;UI.bk.pick='';render()}
   if(e.target.id==='schedDate'&&e.target.value){UI.schedDay=e.target.value;UI.week=monday(e.target.value);render()}
   if(e.target.id==='fxCad'&&+e.target.value>0){save(()=>store.set('settings','fx',{cad:+e.target.value}))}
   if(e.target.classList.contains('cell')&&e.target.dataset.fr!=null){
@@ -1953,7 +2075,9 @@ document.addEventListener('submit',async e=>{
     try{await FB.auth.currentUser.updatePassword(a1);closeModal();toast('Code changed')}catch(e){toast(/recent-login/.test(e.code||'')?'For safety, log out and in again, then change your code.':'Could not change: '+(e.message||e.code))}return}
   if(f.id==='loginForm'){
     const v=$('#pin').value.trim();
-    if(FB){const tid=UI.lockTrainer||(UI.loginRole==='trainer'?$('#loginTrainer')?.value:null),email=tid?('t-'+tid+'@corepilates.app').toLowerCase():UI.loginRole+'@corepilates.app';
+    if(FB){if(UI.portal)UI.loginRole='client';
+      if(!UI.loginRole){$('#loginErr').textContent='Choose your role first.';return}
+      const tid=UI.lockTrainer||(UI.loginRole==='trainer'?$('#loginTrainer')?.value:null),email=tid?('t-'+tid+'@corepilates.app').toLowerCase():UI.loginRole+'@corepilates.app';
       if(v.length<6){$('#loginErr').textContent='Codes are at least 6 characters.';return}
       $('#loginErr').textContent='Signing in\u2026';
       try{await FB.auth.signInWithEmailAndPassword(email,v)}catch(e){$('#loginErr').textContent=/wrong-password|invalid-credential|invalid-login|user-not-found/.test(e.code||'')?'That code doesn\u2019t match. Try again.':/too-many/.test(e.code||'')?'Too many tries. Wait a minute and try again.':'Could not sign in: '+(e.message||e.code);$('#pin').value='';$('#pin').focus()}
@@ -1964,7 +2088,8 @@ document.addEventListener('submit',async e=>{
       else{$('#loginErr').textContent='That PIN doesn\u2019t match '+(st?st.name:'this trainer')+'. Try again.';$('#pin').value='';$('#pin').focus()}
       return;
     }
-    if(v&&v===pins()[UI.loginRole]){UI.role=UI.loginRole;ss.set('cp_role',UI.role);UI.page='dash';render()}
+    if(UI.portal)UI.loginRole='client';
+    if(v&&v===pins()[UI.loginRole]){UI.role=UI.loginRole;ss.set('cp_role',UI.role);UI.page=UI.role==='client'?'book':'dash';render()}
     else{$('#loginErr').textContent='That PIN doesn’t match the '+PERMS[UI.loginRole].label+' PIN. Try again.';$('#pin').value='';$('#pin').focus()}
   }
   if(f.id==='finAdd'){const n=$('#finNew').value.trim();if(!n){toast('Type a name for the cost line.');return}
@@ -2015,6 +2140,8 @@ document.addEventListener('submit',async e=>{
   }
   if(f.id==='classForm'){
     const id=f.dataset.id,d={type:$('#cType').value,instructor:$('#cInst').value,date:$('#cDate').value,time:$('#cTime').value,dur:c0dur(id),cap:Math.max(1,+$('#cCap').value||1)};
+    if(d.instructor){const cl=trBusy(d.instructor,d.date,d.time,d.dur,id);if(cl){toast(staffName(d.instructor)+' already has a session at '+cl[1].time+' that day. Pick another time or trainer.');return}}
+    if(id&&S.classes[id]&&(S.classes[id].booked||[]).length>d.cap){toast('More people are booked than spots. Raise the spots or cancel someone first.');return}
     if(id){if(await save(()=>store.upd('classes',id,d),'Session updated'))classModal(id)}
     else{const names=[...document.querySelectorAll('#cCliWrap [data-cpick]')].map(x=>x.value.trim()).filter(Boolean);const ids=[];for(const nm of names){const cid=await ensureClient(nm);if(cid&&!ids.includes(cid))ids.push(cid)}
       d.cap=Math.max(d.cap,ids.length);
@@ -2057,10 +2184,12 @@ let toastT;function toast(m){let el=$('.toast');if(!el){el=document.createElemen
 
 /* ---------- boot ---------- */
 (async()=>{
-  const readHash=()=>{const m=/^#trainer-([A-Za-z0-9_.~-]+)$/.exec(location.hash||'');UI.lockTrainer=m?m[1]:null};readHash();
+  const readHash=()=>{const m=/^#trainer-([A-Za-z0-9_.~-]+)$/.exec(location.hash||'');UI.lockTrainer=m?m[1]:null;UI.portal=/^#portal$/i.test(location.hash||'')};readHash();
   window.addEventListener('hashchange',()=>{readHash();UI.role=null;render()});
   const saved=FB?null:ss.get('cp_role');if(saved&&PERMS[saved]){UI.role=saved;if(saved==='trainer'){UI.trainer=ss.get('cp_trainer');if(!UI.trainer)UI.role=null}}
   if(UI.lockTrainer&&!(UI.role==='trainer'&&UI.trainer===UI.lockTrainer)){UI.role=null;UI.trainer=null}
+  if(UI.portal&&UI.role!=='client'){UI.role=null}
+  if(!UI.portal&&UI.role==='client'){UI.role=null}
   render();
   if(FB){store=audited(dbStore(FB.fs));fbStart(render);return}
   let db=null,user=null;
