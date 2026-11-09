@@ -482,7 +482,7 @@ const ICONS={
 const PAGE_NAMES={dash:'Dashboard',inbox:'Inbox',sched:'Schedule',team:'Team',groups:'Groups',clients:'Clients',pay:'Payments',fin:'Finances',data:'Data',log:'History',staff:'Staff'};
 
 /* ---------- state & store ---------- */
-const S={pub:{},groups:{},products:{},threads:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
+const S={pub:{},groups:{},products:{},threads:{},bookings:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
 const UI={role:null,page:'dash',week:monday(today()),clientFilter:'active',clientQ:'',payDay:today(),loginRole:'reception',loaded:false};
 let store=null,viewerIsOwner=false,modalRefresh=null;
 
@@ -571,7 +571,7 @@ async function fbStart(render){
     if(!r){UI.role=null;UI.trainer=null;render();return}
     if(UI.lockTrainer&&!(r.role==='trainer'&&r.tid===UI.lockTrainer)){FB.auth.signOut();return}
     UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':(UI.page||'dash');
-    if(!subs){subs=true;const cols=r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads'];
+    if(!subs){subs=true;const cols=r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads','bookings']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads','bookings'];
       UI.got={};UI.loadT0=Date.now();setTimeout(()=>{if(!UI.dataReady)render()},12000);
       for(const c of cols)store.sub(c,o=>{S[c]=o;UI.got[c]=1;if(!UI.dataReady&&UI.got.clients&&UI.got.staff)UI.dataReady=true;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(!UI.importing)render()})}
     UI.loaded=true;render()});
@@ -660,6 +660,7 @@ function pDash(){
     <div class="stat"><span class="eyebrow">Sales this month</span><span class="v">${L(revMonth)}</span></div>`:`<div class="stat"><span class="eyebrow">Clients needing attention</span><span class="v">${alerts.length}</span></div>`}
   </div>
   ${clientStats()}
+  ${calPanel(d)}
   ${p.revenue||p.payDates?revChart():revDay()}
   ${quickSaleRow()}
   <div class="grid2">
@@ -985,7 +986,7 @@ function pSched(){
   if(v==='line'){const d=UI.schedDay||t;
     return `<div class="pagehead"><div><div class="eyebrow">${d===t?'Today':d===addDays(t,1)?'Tomorrow':d===addDays(t,-1)?'Yesterday':'Schedule'}</div><h1>${esc(fmtLong(d))}</h1><div class="muted" style="margin-top:4px">${(()=>{const cs=Object.values(S.classes).filter(x=>x.date===d&&(x.booked||[]).length);const cl=cs.reduce((n,x)=>n+(x.booked||[]).length,0);return cs.length+' session'+(cs.length===1?'':'s')+' \u00b7 '+cl+' client'+(cl===1?'':'s')})()}</div></div>
     <div class="toolbar"><button class="btn" data-act="sd-1" aria-label="Previous day">\u2190 Prev day</button><button class="btn" data-act="sd0" ${d===t?'disabled':''}>Today</button><input type="date" id="schedDate" value="${d}" style="width:auto" aria-label="Pick a day"><button class="btn primary" data-act="sd1" aria-label="Next day">Next day \u2192</button>${tabs}
-    ${p.editClasses?'<button class="btn" data-act="addclass">Add session</button>':''}</div></div>${dayLine(d)}`}
+    ${p.editClasses?'<button class="btn" data-act="addclass">Add session</button>':''}</div></div>${dayLine(d)}${calPanel(d)}`}
   return `<div class="pagehead"><div><div class="eyebrow">Week of ${esc(fmtDay(w))}</div><h1>Schedule</h1></div>
     <div class="toolbar"><button class="btn" data-act="wk-1" aria-label="Previous week">←</button><button class="btn" data-act="wk0">This week</button><button class="btn" data-act="wk1" aria-label="Next week">→</button>
     ${tabs}
@@ -996,6 +997,19 @@ function pSched(){
   </div>`}).join('')}</div>`}`;
 }
 const TL0=7*60,TL1=21*60;
+/* ---------- Google Calendar bookings ---------- */
+function bkClient(b){const g=String(b.guests||'').toLowerCase(),t=String(b.title||'').toLowerCase()+' '+String(b.note||'').toLowerCase();
+  for(const [id,c] of Object.entries(S.clients)){const e=String(c.email||'').toLowerCase().trim();if(e&&g.includes(e))return id}
+  let best=null,bl=0;for(const [id,c] of Object.entries(S.clients)){const n=String(c.name||'').toLowerCase().trim();if(n.length>4&&t.includes(n)&&n.length>bl){best=id;bl=n.length}}return best}
+function calPanel(d){if(UI.role==='trainer')return'';const conn=(S.settings.calendar||{}).connected;
+  const list=Object.entries(S.bookings||{}).filter(([,b])=>b.date===d).sort((a,b)=>String(a[1].time).localeCompare(String(b[1].time)));
+  if(!conn&&!list.length)return'';const nowT=d===today()?nowHM():null;
+  return `<section class="panel" style="margin-top:16px"><header><div><h2>Google Calendar bookings</h2><span class="muted">From coretirana@gmail.com · updates every 5 min</span></div><span class="pill">${list.length}</span></header>
+  ${list.length?`<div class="rows">${list.map(([id,b])=>{const cid=bkClient(b),c=cid&&S.clients[cid],past=nowT&&b.time<=nowT;
+    return `<div class="row" style="grid-template-columns:auto minmax(0,1fr) auto"><span class="t num" style="font-weight:700;color:${past?'var(--bad)':'var(--ok)'}">${esc(b.time)}${b.end?'<span class="muted" style="font-weight:400">–'+esc(b.end)+'</span>':''}</span>
+    <div style="min-width:0"><b>${esc(b.title||'Booking')}</b>${b.guests?`<br><span class="muted" style="font-size:.8rem">${esc(b.guests)}</span>`:''}${b.note?`<br><span class="muted" style="font-size:.8rem">${esc(String(b.note).slice(0,140))}</span>`:''}</div>
+    ${c?`<button class="btn sm" data-client="${cid}">${esc(c.name)}</button>`:'<span class="muted" style="font-size:.8rem">Not matched</span>'}</div>`}).join('')}</div>`:'<div class="empty">No calendar bookings this day.</div>'}</section>`}
+
 const toMin=t=>{const[a,b]=String(t||'0:0').split(':').map(Number);return a*60+(b||0)};
 function dayLine(d){
   const me=UI.role==='trainer'?UI.trainer:null,t=today();
@@ -2054,7 +2068,7 @@ let toastT;function toast(m){let el=$('.toast');if(!el){el=document.createElemen
   try{if(window.claude?.use)[db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')])}catch{}
   try{viewerIsOwner=user?!!(await user.isOwner()):false}catch{}
   store=audited(db?dbStore(db):memStore());
-  for(const c of['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads'])store.sub(c,o=>{S[c]=o;if(!UI.importing)render()});
+  for(const c of['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads','bookings'])store.sub(c,o=>{S[c]=o;if(!UI.importing)render()});
   UI.loaded=true;render();
 })();
 </script>

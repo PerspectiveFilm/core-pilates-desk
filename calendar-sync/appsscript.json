@@ -1,0 +1,12 @@
+{
+  "timeZone": "Europe/Tirane",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/calendar.readonly",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/script.scriptapp",
+    "https://www.googleapis.com/auth/datastore",
+    "https://www.googleapis.com/auth/userinfo.email"
+  ]
+}
