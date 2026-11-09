@@ -1057,13 +1057,14 @@ function pBook(){
   const days=[...Array(7)].map((_,i)=>addDays(t,i));
   const slots=st.tr?bkSlots(st.tr,st.date):[];
   const pk=slots.find(x=>x.key===st.pick);if(st.pick&&!pk)st.pick='';
-  const miss=[!st.name.trim()&&'your name',!st.tr&&'a trainer',!st.pick&&'a time'].filter(Boolean);
+  const miss=[!st.cid&&'your name from our client list',!st.tr&&'a trainer',!st.pick&&'a time'].filter(Boolean);
   const trN=(trs.find(x=>x[0]===st.tr)||[0,{name:''}])[1].name;
   return `<div class="bkwrap"><div class="pagehead"><div><div class="eyebrow">Core Pilates Tirana \u00b7 Client Portal</div><h1>Book a session</h1><p class="muted" style="margin:4px 0 0">Times are Tirana time.</p></div></div>
   <section class="panel"><div class="bkstep"><i>1</i><h2 style="margin:0">Your name</h2></div>
     <input id="bkName" autocomplete="off" placeholder="Name and surname" value="${esc(st.name)}" aria-label="Your name and surname" style="width:100%">
     ${st.cid?'<div class="muted" style="font-size:.8rem;margin-top:6px;color:var(--ok)">\u2713 Found you in our client list</div>':''}
-    ${sug.length?`<div class="bksug">${sug.map(x=>`<button type="button" class="chip" data-bkname="${esc(x.id)}">${esc(x.name)}</button>`).join('')}</div><div class="muted" style="font-size:.78rem;margin-top:6px">Tap your name if you see it, or keep typing.</div>`:''}
+    ${q.length>=2&&!st.cid&&!sug.length?'<div class="err" style="margin-top:8px">We can\u2019t find this name in our client list. Please contact reception to register first.</div>':''}
+    ${sug.length?`<div class="bksug">${sug.map(x=>`<button type="button" class="chip" data-bkname="${esc(x.id)}">${esc(x.name)}</button>`).join('')}</div><div class="muted" style="font-size:.78rem;margin-top:6px">Tap your name to continue.</div>`:''}
   </section>
   <section class="panel"><div class="bkstep"><i>2</i><h2 style="margin:0">Trainer</h2></div>
     ${trs.length?`<div class="chips">${trs.map(([id,s])=>`<button type="button" class="chip" data-bktr="${esc(id)}" aria-pressed="${st.tr===id}">${esc(s.name)}</button>`).join('')}</div>`:'<div class="empty">No trainers yet.</div>'}
@@ -1080,9 +1081,9 @@ function pBook(){
   </section></div>`;
 }
 async function bkGo(){
-  const st=UI.bk;if(!st||!st.name.trim()||!st.tr||!st.pick||UI.bkBusy)return;
+  const st=UI.bk;if(!st||!st.cid||!st.tr||!st.pick||UI.bkBusy)return;
   const [kind,ref,tm]=st.pick.split('|'),name=st.name.trim().replace(/\s+/g,' ');
-  const entry={c:st.cid||('g_'+uid()),name,in:false,u:false,portal:true,at:Date.now()};
+  const entry={c:st.cid,name,in:false,u:false,portal:true,at:Date.now()};
   const trN=(bkTrainers().find(x=>x[0]===st.tr)||[0,{name:''}])[1].name;
   let id,create=null,label,time;
   if(kind==='new'){time=ref;label='Private session';
