@@ -500,7 +500,7 @@ const ICONS={
 const PAGE_NAMES={book:'Book a session',dash:'Dashboard',inbox:'Inbox',sched:'Schedule',team:'Team',groups:'Groups',clients:'Clients',pay:'Payments',fin:'Finances',data:'Data',log:'History',staff:'Staff'};
 
 /* ---------- state & store ---------- */
-const S={pub:{},groups:{},products:{},threads:{},bookings:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
+const S={pub:{},groups:{},products:{},threads:{},bookings:{},sheetin:{},classes:{},clients:{},payments:{},staff:{},settings:{},expenses:{},notes:{},finances:{},log:{}};
 const UI={role:null,page:'dash',week:monday(today()),clientFilter:'active',clientQ:'',payDay:today(),loginRole:'reception',loaded:false};
 let store=null,viewerIsOwner=false,modalRefresh=null;
 
@@ -594,9 +594,9 @@ async function fbStart(render){
     if(!UI.portal&&r.role==='client'){FB.auth.signOut();return}
     UI.role=r.role;UI.trainer=r.tid||null;UI.page=r.role==='trainer'?'team':r.role==='client'?'book':(UI.page||'dash');
     if(!subs){subs=true;if(r.role==='client'){FB.fs.collection('settings').doc('clientNames').onSnapshot(d=>{S.names=d.exists?(d.data().list||[]):[];render()},()=>{});}
-      const cols=r.role==='client'?['classes']:r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads','bookings']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads','bookings'];
+      const cols=r.role==='client'?['classes']:r.role==='owner'?['classes','clients','payments','staff','settings','expenses','notes','finances','log','groups','products','threads','bookings','sheetin']:r.role==='trainer'?['classes','clients','staff','notes','groups']:['classes','clients','payments','staff','settings','expenses','notes','groups','products','threads','bookings','sheetin'];
       UI.got={};UI.loadT0=Date.now();setTimeout(()=>{if(!UI.dataReady)render()},12000);
-      for(const c of cols)store.sub(c,o=>{S[c]=o;UI.got[c]=1;if(!UI.dataReady&&(r.role==='client'||UI.got.clients&&UI.got.staff))UI.dataReady=true;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(c==='clients'&&(r.role==='owner'||r.role==='reception'))fbSyncNames();if(!UI.importing)render()})}
+      for(const c of cols)store.sub(c,o=>{S[c]=o;UI.got[c]=1;if(!UI.dataReady&&(r.role==='client'||UI.got.clients&&UI.got.staff))UI.dataReady=true;if(c==='staff'&&r.role==='owner')fbSyncPublic();if(c==='clients'&&(r.role==='owner'||r.role==='reception'))fbSyncNames();if(c==='sheetin'||c==='clients')setTimeout(sheetInRun,800);if(!UI.importing)render()})}
     UI.loaded=true;render()});
 }
 let _namesSig='';function fbSyncNames(){const l=Object.entries(S.clients).map(([id,c])=>[id,String(c.name||'').trim()]).filter(x=>x[1]).sort((a,b)=>a[1].localeCompare(b[1])),sig=JSON.stringify(l);if(sig===_namesSig)return;_namesSig=sig;FB.fs.collection('settings').doc('clientNames').set({list:l.map(([id,name])=>({id,name}))}).catch(()=>{})}
@@ -1028,6 +1028,39 @@ function pSched(){
   </div>`}).join('')}</div>`}`;
 }
 const TL0=7*60,TL1=21*60;
+/* ---------- Google Sheet (Core-Daily) → system: rows the sheet script queued in 'sheetin' ---------- */
+const SH_TYPE={private:'Private',group:'Semi private',semi:'Semi private','semi private':'Semi private',duo:'Duet',duet:'Duet',trio:'Trio',clinic:'Clinic',yoga:'Yoga',mat:'Mat Pilates','mat pilates':'Mat Pilates','functional private':'Functional Private',pregnancy:'Pilates for Pregnancy',scoliosis:'Pilates for Scoliosis'};
+function sheetProduct(type,n){const t=SH_TYPE[String(type||'').trim().toLowerCase()]||String(type||'').trim()||'Private';n=Math.max(1,+n||1);
+  const hit=PRODUCTS.find(x=>x.c===n&&x.n.split(' \u00b7 ')[0].toLowerCase()===t.toLowerCase());if(hit)return hit;
+  return {k:'sheet',n:t+' \u00b7 '+n,c:n,days:n>=36?90:37,custom:n<36}}
+function trainerByName(nm){nm=String(nm||'').trim().toLowerCase().split(/\s+/)[0];if(!nm||nm==='studio')return '';const t=trainersList().find(([,s])=>s.name.trim().toLowerCase().split(/\s+/)[0]===nm);return t?t[0]:''}
+let _shBusy=false;
+async function sheetInRun(){
+  if(!FB||_shBusy||!UI.dataReady||!(UI.role==='owner'||UI.role==='reception'))return;
+  const todo=Object.entries(S.sheetin||{}).filter(([,r])=>r.status==='new').sort((a,b)=>(a[1].at||0)-(b[1].at||0));if(!todo.length)return;
+  _shBusy=true;
+  try{for(const [id,r] of todo){
+    const ref=FB.fs.collection('sheetin').doc(id);let mine=false;
+    try{await FB.fs.runTransaction(async tx=>{const sn=await tx.get(ref);if(sn.exists&&sn.data().status==='new'){tx.update(ref,{status:'busy',by:UI.role,busyAt:Date.now()});mine=true}})}catch(e){continue}
+    if(!mine)continue;
+    try{const ref2=await sheetInApply(id,r);await ref.update({status:'done',ref:ref2,doneAt:Date.now()})}
+    catch(e){await ref.update({status:'error',err:String(e.message||e)}).catch(()=>{})}
+  }}finally{_shBusy=false}
+}
+async function sheetInApply(id,r){{
+      const cash=+r.cash||0,card=(+r.poss||0)+(+r.debit||0),amt=cash+card,method=cash&&card?{Cash:cash,Card:card}:card?'Card':'Cash';
+      const cat=String(r.category||'').trim().toLowerCase(),extra={src:'sheet',sheetId:id,by:r.operator||'Sheet'};let ref2='';
+      if(cat==='expense'){const eid=uid();await store.set('expenses',eid,{date:r.date,cat:'Other',note:[r.name,r.note].filter(Boolean).join(' \u00b7 '),amount:+r.expense||amt,ts:Date.now(),...extra});ref2='expenses/'+eid}
+      else if(cat==='sale'||String(r.typeOfPayment||'').toLowerCase()==='for studio'){const pid=uid(),q=Math.max(1,+r.n||1);const rec={kind:'product',date:r.date,ts:wallMs(r.date,'12:00')||Date.now(),client:'',item:String(r.name||'Product').trim()+(q>1?' \u00d7'+q:''),amount:amt,...extra};if(r.note)rec.note=r.note;applyMethod(rec,method);await store.set('payments',pid,rec);ref2='payments/'+pid}
+      else{const cid=await ensureClient(r.name);if(!cid)throw new Error('No client name');const pr=sheetProduct(r.type,r.n);
+        const ok=await recordSale(cid,pr,amt,method,r.date,'12:00','',r.note||'',extra);if(!ok)throw new Error('Sale not saved');
+        const tid=trainerByName(r.instructor),c=S.clients[cid]||{},up={};
+        if(tid&&!(c.trainers||[]).includes(tid))up.trainers=[...(c.trainers||[]),tid];
+        if(r.start&&r.start!==r.date&&/^\d{4}-\d{2}-\d{2}$/.test(r.start)&&pr.c&&pr.c<36){up.packageStart=r.start;up.expires=addDays(r.start,37)}
+        if(Object.keys(up).length)await store.upd('clients',cid,up);ref2='clients/'+cid}
+      return ref2}
+}
+
 /* ---------- Client portal: booking ---------- */
 const BK_H0=7,BK_H1=20,BK_DAYS=30;
 const bkTrainers=()=>(FB&&UI.role==='client'?(S.pub.trainers||[]).map(t=>[t.id,{name:t.name}]):trainersList().map(([id,s])=>[id,{name:s.name}])).sort((a,b)=>trRank(a[1].name)-trRank(b[1].name)||a[1].name.localeCompare(b[1].name));
@@ -1798,9 +1831,9 @@ function undoPkgPatch(cid,prev){const c=S.clients[cid];if(!c)return null;
   const hist=[...(c.packages||[])],h=hist.pop();
   if(!h)return{plan:'',packageStart:'',expires:'',credits:0,packages:[]};
   return{plan:h.plan||'',packageStart:h.start||'',expires:h.end||'',credits:(+h.left||0)+usedSince(cid,h.start),trainers:h.trainers&&h.trainers.length?h.trainers:(c.trainers||[]),packages:hist}}
-async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note){
-  const pr=findP(prodKey),d=dt||today(),when=wallMs(d,tm||nowHM())||Date.now();
-  const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,by:UI.role};applyMethod(rec,method);if(note&&note.trim())rec.note=note.trim();if(clientId&&(pr.c||pr.unl)&&S.clients[clientId]){const c0=S.clients[clientId];rec.prev={plan:c0.plan||'',packageStart:c0.packageStart||'',expires:c0.expires||'',credits:+c0.credits||0,unlimitedUntil:c0.unlimitedUntil||'',price:+c0.price||0,npk:(c0.packages||[]).length}}
+async function recordSale(clientId,prodKey,amount,method,dt,tm,paidNow,note,extra){
+  const pr=typeof prodKey==='object'?prodKey:findP(prodKey),d=dt||today(),when=wallMs(d,tm||nowHM())||Date.now();
+  const total=+amount||0,paid=paidNow===''||paidNow==null?total:Math.max(0,Math.min(total,+paidNow||0)),rec={kind:pr.c||pr.unl?'package':'product',date:d,ts:when,client:clientId||'',item:pr.n,amount:paid,by:UI.role};applyMethod(rec,method);if(note&&note.trim())rec.note=note.trim();if(extra)Object.assign(rec,extra);if(clientId&&(pr.c||pr.unl)&&S.clients[clientId]){const c0=S.clients[clientId];rec.prev={plan:c0.plan||'',packageStart:c0.packageStart||'',expires:c0.expires||'',credits:+c0.credits||0,unlimitedUntil:c0.unlimitedUntil||'',price:+c0.price||0,npk:(c0.packages||[]).length}}
   if(paid<total){rec.owed=total-paid;rec.total=total;if(!paid)rec.unpaid=true}
   const ok=await save(()=>store.set('payments',uid(),rec));
   if(ok&&paid<total)toast((S.clients[clientId]?.name||'Client')+' owes '+L(total-paid)+' \u2014 added to Debtors');
