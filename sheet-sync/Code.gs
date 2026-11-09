@@ -12,6 +12,7 @@ const BASE = 'https://firestore.googleapis.com/v1/projects/' + PROJECT + '/datab
 const TZ = 'Europe/Tirane';
 const MONTHS = [['january','janar','jan'],['february','shkurt','feb'],['march','mars','mar'],['april','prill','apr'],['may','maj'],['june','qershor','jun'],
   ['july','korrik','jul'],['august','gusht','aug'],['september','septembre','shtator','sep'],['october','tetor','oct'],['november','novembre','nentor','nov'],['december','decembre','dhjetor','dec']];
+const SYNC_RE = /^(·|[SD][0-9a-zA-Z]{6,})$/; // our marks; plain row numbers in # are left alone
 const MON_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function setupSheetSync() {
@@ -27,8 +28,10 @@ function setupSheetSync() {
     if (!sh) return;
     const H = header_(sh); if (!H) return;
     const marks = [];
-    rows_(sh, H).forEach(r => { if (!r.id && r.name && r.date) marks.push('A' + r.row); });
+    const notes = [];
+    rows_(sh, H).forEach(r => { if (!r.id && r.name && r.date) (r.a0 ? notes : marks).push('A' + r.row); });
     for (let i = 0; i < marks.length; i += 200) sh.getRangeList(marks.slice(i, i + 200)).setValue('·');
+    notes.forEach(a => sh.getRange(a).setNote('·'));
   });
   patch_('settings/sheetsync', { connected: true, sheet: ss.getName(), at: Date.now() }, ['connected', 'sheet', 'at']);
 }
@@ -56,7 +59,7 @@ function sheetToDesk_(ss) {
       const id = 'S' + Utilities.getUuid().replace(/-/g, '').slice(0, 10);
       write_('sheetin/' + id, { status: 'new', at: Date.now(), tab: sh.getName(), row: r.row, date: r.date, name: r.name, typeOfPayment: r.typeOfPayment,
         category: r.category, type: r.type, n: r.n, start: r.start, instructor: r.instructor, cash: r.cash, poss: r.poss, debit: r.debit, expense: r.expense, operator: r.operator, note: r.note });
-      sh.getRange(r.row, 1).setValue(id);
+      if (r.a0) sh.getRange(r.row, 1).setNote(id); else sh.getRange(r.row, 1).setValue(id);
       delete pend[h];
     });
   });
@@ -144,9 +147,11 @@ function header_(sh) {
 function rows_(sh, H) {
   const last = sh.getLastRow(); if (last <= H.row) return [];
   const n = last - H.row, vals = sh.getRange(H.row + 1, 1, n, H.width).getValues(), disp = sh.getRange(H.row + 1, 1, n, H.width).getDisplayValues(), C = H.col;
+  const notes = sh.getRange(H.row + 1, 1, n, 1).getNotes();
   return vals.map((v, i) => {
     const g = k => C[k] === undefined ? '' : v[C[k]], s = k => String(g(k) === null ? '' : g(k)).trim();
-    return { row: H.row + 1 + i, id: String(v[0] || '').trim(), date: iso_(g('date')), name: s('name').replace(/\s+/g, ' '), typeOfPayment: s('typeOfPayment'), category: s('category'),
+    const a0 = String(v[0] || '').trim(), nt = String(notes[i][0] || '').trim();
+    return { row: H.row + 1 + i, id: SYNC_RE.test(a0) ? a0 : SYNC_RE.test(nt) ? nt : '', a0: a0, date: iso_(g('date')), name: s('name').replace(/\s+/g, ' '), typeOfPayment: s('typeOfPayment'), category: s('category'),
       type: s('type'), n: num_(g('n')) || 1, start: iso_(g('start')), instructor: s('instructor'), cash: num_(g('cash')), poss: num_(g('poss')), debit: num_(g('debit')),
       expense: num_(g('expense')), operator: s('operator'), note: s('note'), hash: Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, disp[i].slice(1).join('|'))).slice(0, 16) };
   });
