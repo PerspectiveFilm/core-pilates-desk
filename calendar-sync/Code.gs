@@ -22,7 +22,7 @@ function sync() {
   try {
     const from = new Date(Date.now() - 86400000), to = new Date(Date.now() + DAYS_AHEAD * 86400000);
     const fromD = Utilities.formatDate(from, TZ, 'yyyy-MM-dd');
-    const events = (CalendarApp.getCalendarById(CAL_ID) || (CalendarApp.subscribeToCalendar(CAL_ID), CalendarApp.getCalendarById(CAL_ID))).getEvents(from, to);
+    const events = (CalendarApp.getCalendarById(CAL_ID) || CalendarApp.getDefaultCalendar()).getEvents(from, to);
     const have = existing_(fromD), seen = {};
     events.forEach(ev => {
       if (ev.isAllDayEvent()) return;
